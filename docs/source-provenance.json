@@ -1,0 +1,16 @@
+{
+  "sourceComponents": [
+    "components/recruitment_runtime",
+    "components/master_agent",
+    "components/office_services",
+    "components/candidate_ranking"
+  ],
+  "excludedArtifactCategories": [
+    "duplicate or real-data development script",
+    "legacy live-service/debug test; focused offline suite supplied separately",
+    "not source/configuration",
+    "personal resume exports and account-specific development helpers"
+  ],
+  "previousGitHistoryIncluded": false,
+  "datasetsAndWeightsIncluded": false
+}

@@ -1,0 +1,35 @@
+# Основные зависимости
+fastapi==0.116.1
+uvicorn[standard]==0.33.0
+pydantic==2.10.6
+requests==2.32.4
+streamlit==1.40.1
+
+# Обработка данных
+pandas==2.0.3
+numpy==1.24.4
+scikit-learn==1.3.2
+
+# Визуализация
+plotly==6.2.0
+
+# Конфигурация и логирование
+pyyaml==6.0.2
+python-dotenv==1.0.1
+
+# Дополнительные утилиты
+python-multipart==0.0.20
+aiofiles==24.1.0
+
+# AI Analysis dependencies
+openai>=1.97.1
+httpx>=0.24.0
+backoff>=2.2.1
+
+# Database dependencies
+# sqlite3 - встроенная в Python
+# pymongo>=4.0.0  # For MongoDB
+# psycopg2-binary>=2.9.0  # For PostgreSQL
+clickhouse-driver>=0.2.6  # For ClickHouse native protocol
+clickhouse-connect>=0.6.8  # For ClickHouse HTTP protocol
+clickhouse-cityhash>=1.0.2.4  # Required for ClickHouse compression

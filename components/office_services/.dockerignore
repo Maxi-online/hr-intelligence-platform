@@ -1,0 +1,188 @@
+# Include any files or directories that you don't want to be copied to your
+# container here (e.g., local build artifacts, temporary files, etc.).
+#
+# For more help, visit the .dockerignore file reference guide at
+# https://docs.docker.com/engine/reference/builder/#dockerignore-file
+
+**/.DS_Store
+**/__pycache__
+**/.venv
+**/.classpath
+**/.dockerignore
+**/.env
+**/.git
+**/.gitignore
+**/.project
+**/.settings
+**/.toolstarget
+**/.vs
+**/.vscode
+**/*.*proj.user
+**/*.dbmdl
+**/*.jfm
+**/bin
+**/charts
+**/docker-compose*
+**/compose*
+**/Dockerfile*
+**/node_modules
+**/npm-debug.log
+**/obj
+**/secrets.dev.yaml
+**/values.dev.yaml
+LICENSE
+README.md
+# ====================================
+# AI Supervisor - Docker Ignore
+# ====================================
+
+# ===============================
+# ФАЙЛЫ РАЗРАБОТКИ
+# ===============================
+.git/
+.gitignore
+*.md
+LICENSE
+CHANGELOG*
+docs/
+.vscode/
+.idea/
+
+# ===============================
+# КОНФИДЕНЦИАЛЬНЫЕ ДАННЫЕ
+# ===============================
+# НЕ копируем секретные файлы в образ
+settings.json
+.env
+.env.*
+*.key
+*.pem
+*.p12
+*.pfx
+
+# Но оставляем примеры
+!settings.example.json
+!.env.example
+
+# ===============================
+# ВРЕМЕННЫЕ И СИСТЕМНЫЕ ФАЙЛЫ
+# ===============================
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Виртуальные окружения
+supevisor_env/
+supervisor_env/
+.venv/
+venv/
+env/
+
+# Логи
+*.log
+logs/
+log/
+
+# Временные файлы
+*.tmp
+*.temp
+temp/
+tmp/
+.cache/
+
+# Базы данных
+*.db
+*.sqlite
+*.sqlite3
+
+# ===============================
+# ОПЕРАЦИОННЫЕ СИСТЕМЫ
+# ===============================
+# Windows
+Thumbs.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# ===============================
+# DOCKER СПЕЦИФИЧНЫЕ
+# ===============================
+# Docker файлы (кроме основных)
+docker-compose.override.yml
+docker-compose.*.yml
+!docker-compose.yml
+
+# Volumes и bind mounts
+data/
+volume/
+mounts/
+
+# ===============================
+# IDE И РЕДАКТОРЫ
+# ===============================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ===============================
+# ТЕСТИРОВАНИЕ
+# ===============================
+.coverage
+.pytest_cache/
+htmlcov/
+.tox/
+test_results/
+
+# ===============================
+# СПЕЦИФИЧНЫЕ ДЛЯ ПРОЕКТА
+# ===============================
+# Файлы памяти и кэша
+memory_storage/
+chat_history/
+simple_memory.db
+
+# Экспорты и отчеты
+exports/
+reports/
+*.xlsx
+*.csv
+
+# Мониторинг
+monitoring/
+metrics/
+
+# Бэкапы
+*.bak
+*.backup
+backup/
+
+# ===============================
+# ИСКЛЮЧЕНИЯ (что НЕ игнорировать)
+# ===============================
+# Конфигурационные файлы проекта
+!requirements.txt
+!config.py
+!Dockerfile
+!docker-compose.yml
+!docker/
+
+# Исходный код приложения
+!*.py
+!microservices/
+!README.md

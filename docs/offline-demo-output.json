@@ -1,0 +1,10 @@
+{
+  "mode": "synthetic-schema-and-existing-score-ordering",
+  "candidate_ids": [
+    "demo-2",
+    "demo-1",
+    "demo-3"
+  ],
+  "new_ai_scores_generated": false,
+  "cross_component_integration_verified": false
+}

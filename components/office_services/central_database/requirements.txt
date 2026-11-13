@@ -1,0 +1,2 @@
+psycopg2-binary==2.9.7
+asyncio-mqtt==0.13.0

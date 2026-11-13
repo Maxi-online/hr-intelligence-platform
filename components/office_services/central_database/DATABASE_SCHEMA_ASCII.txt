@@ -1,0 +1,422 @@
+╔═══════════════════════════════════════════════════════════════════════════════════════╗
+║                    WORKFLOW OFFICE - СТРУКТУРА БАЗЫ ДАННЫХ АГЕНТОВ                     ║
+║                                    Version 2.0.0                                      ║
+╚═══════════════════════════════════════════════════════════════════════════════════════╝
+
+
+┌─────────────────────────────────────────────────────────────────────────────────────┐
+│                            🎯 ОСНОВНЫЕ ТАБЛИЦЫ АГЕНТОВ                              │
+└─────────────────────────────────────────────────────────────────────────────────────┘
+
+                                    ┌─────────────────┐
+                                    │     agents      │◄──── Главная таблица
+                                    │  (19 полей)     │
+                                    │─────────────────│
+                                    │ PK: agent_id    │
+                                    │ agent_name      │
+                                    │ agent_type      │
+                                    │ display_name    │
+                                    │ role            │
+                                    │ telegram_user   │
+                                    │ status          │
+                                    │ version         │
+                                    └────────┬────────┘
+                                             │
+                  ┌──────────────────────────┼──────────────────────────┐
+                  │                          │                          │
+         ┌────────▼────────┐       ┌────────▼────────┐       ┌─────────▼────────┐
+         │ agent_prompts   │       │ agent_gpt_      │       │ agent_tools_     │
+         │ (13 полей)      │       │ settings        │       │ mapping          │
+         │─────────────────│       │ (20+ полей)     │       │ (10 полей)       │
+         │ PK: prompt_id   │       │─────────────────│       │──────────────────│
+         │ FK: agent_id    │       │ PK: setting_id  │       │ PK: mapping_id   │
+         │                 │       │ FK: agent_id    │       │ FK: agent_id     │
+         │ system_prompt   │       │                 │       │ FK: tool_id      │
+         │ tone_of_voice   │       │ model           │       │ is_enabled       │
+         │ version         │       │ reasoning_effort│       │ priority         │
+         │ is_current      │       │ max_tokens      │       └─────────┬────────┘
+         │ examples (JSON) │       │ tool_choice     │                 │
+         └─────────────────┘       │ parallel_tools  │                 │
+                                   │ prompt_cache    │                 │
+                                   └─────────────────┘                 │
+                                                                        │
+                                                               ┌────────▼────────┐
+                                                               │  agent_tools    │
+                                                               │  (12 полей)     │
+                                                               │─────────────────│
+                                                               │ PK: tool_id     │
+                                                               │ tool_name       │
+                                                               │ tool_type       │
+                                                               │ description     │
+                                                               │ parameters(JSON)│
+                                                               │ mcp_server_url  │
+                                                               │ api_endpoint    │
+                                                               └─────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────────────┐
+│                              🧠 СИСТЕМА ПАМЯТИ АГЕНТОВ                              │
+└─────────────────────────────────────────────────────────────────────────────────────┘
+
+                                    ┌─────────────────┐
+                                    │     agents      │
+                                    └────────┬────────┘
+                                             │
+                  ┌──────────────────────────┼──────────────────────────┐
+                  │                          │                          │
+         ┌────────▼────────┐       ┌────────▼────────┐       ┌─────────▼────────┐
+         │  core_memory    │       │ operational_    │       │ long_term_       │
+         │  (13 полей)     │       │ memory          │       │ memory           │
+         │─────────────────│       │ (11 полей)      │       │ (13 полей)       │
+         │ PK: memory_id   │       │─────────────────│       │──────────────────│
+         │ FK: agent_id    │       │ PK: operation_id│       │ PK: ltm_id       │
+         │                 │       │ FK: agent_id    │       │ FK: agent_id     │
+         │ memory_type:    │       │                 │       │                  │
+         │  - rule         │       │ session_id      │       │ memory_type:     │
+         │  - fact         │       │ user_id         │       │  - learned_      │
+         │  - persona      │       │ task_context    │       │    pattern       │
+         │  - constraint   │       │ current_focus   │       │  - user_pref     │
+         │  - knowledge    │       │ session_data    │       │  - success_case  │
+         │                 │       │ expires_at ⏰   │       │  - failure_case  │
+         │ memory_key      │       └─────────────────┘       │                  │
+         │ memory_value    │         (TTL: auto-delete)     │ usage_count      │
+         │ priority 1-10   │                                 │ success_rate     │
+         │ is_permanent    │                                 │ last_used_at     │
+         └─────────────────┘                                 └──────────────────┘
+         (Постоянная память)                                 (Обучение агента)
+
+
+┌─────────────────────────────────────────────────────────────────────────────────────┐
+│                         📜 ИСТОРИЯ И ЛОГИРОВАНИЕ АКТИВНОСТИ                         │
+└─────────────────────────────────────────────────────────────────────────────────────┘
+
+                                    ┌─────────────────┐
+                                    │     agents      │
+                                    └────────┬────────┘
+                                             │
+                  ┌──────────────────────────┼──────────────────────────┐
+                  │                          │                          │
+         ┌────────▼────────┐       ┌────────▼────────┐       ┌─────────▼────────┐
+         │  chat_history   │       │ agent_activity_ │       │ agent_version_   │
+         │  (14 полей)     │       │ log             │       │ history          │
+         │─────────────────│       │ (11 полей)      │       │ (12 полей)       │
+         │ PK: message_id  │       │─────────────────│       │──────────────────│
+         │ FK: agent_id    │       │ PK: log_id      │       │ PK: history_id   │
+         │                 │       │ FK: agent_id    │       │ FK: agent_id     │
+         │ session_id      │       │                 │       │                  │
+         │ user_id         │       │ activity_type:  │       │ version          │
+         │ role:           │       │  - message      │       │ previous_version │
+         │  - user         │       │  - tool_call    │       │ change_type      │
+         │  - assistant    │       │  - error        │       │ changelog        │
+         │  - system       │       │  - startup      │       │ config_snapshot_ │
+         │  - tool         │       │                 │       │   before (JSON)  │
+         │ content         │       │ activity_name   │       │ config_snapshot_ │
+         │ tool_calls(JSON)│       │ status          │       │   after (JSON)   │
+         │ platform        │       │ error_message   │       │ changed_by       │
+         │ tokens_used     │       │ duration_ms     │       │ is_rollback      │
+         │ response_time_ms│       └─────────────────┘       └──────────────────┘
+         └─────────────────┘       (Детальный аудит)         (Версионность)
+
+
+┌─────────────────────────────────────────────────────────────────────────────────────┐
+│                          ⚙️ ПРАВИЛА И МАРШРУТИЗАЦИЯ АГЕНТОВ                         │
+└─────────────────────────────────────────────────────────────────────────────────────┘
+
+                                    ┌─────────────────┐
+                                    │     agents      │
+                                    └────────┬────────┘
+                                             │
+                  ┌──────────────────────────┴──────────────────────────┐
+                  │                                                     │
+         ┌────────▼────────┐                                  ┌────────▼────────┐
+         │  agent_rules    │                                  │ agent_routing_  │
+         │  (12 полей)     │                                  │ rules           │
+         │─────────────────│                                  │ (11 полей)      │
+         │ PK: rule_id     │                                  │─────────────────│
+         │ FK: agent_id    │                                  │ PK: routing_id  │
+         │                 │                                  │ FK: source_     │
+         │ rule_type:      │                                  │     agent_id    │
+         │  - communication│                                  │ FK: target_     │
+         │  - behavior     │                                  │     agent_id    │
+         │  - security     │                                  │                 │
+         │  - delegation   │                                  │ routing_type:   │
+         │  - escalation   │                                  │  - delegation   │
+         │                 │                                  │  - escalation   │
+         │ rule_name       │                                  │  - collaboration│
+         │ rule_content    │                                  │  - report       │
+         │ applies_when    │                                  │                 │
+         │ priority        │                                  │ routing_        │
+         │ is_overridable  │                                  │   condition     │
+         └─────────────────┘                                  │ is_bidirectional│
+         (Правила поведения)                                  │ priority        │
+                                                              └─────────────────┘
+                                                              (Маршруты между агентами)
+
+         ПРИМЕР МАРШРУТИЗАЦИИ:
+         
+         Supervisor (@boss.ai)
+              │
+              ├─[delegation]─► Recruiter (@alena.ai)
+              │                      │
+              │                      ├─[delegation]─► Scrinner (@sergei.ai)
+              │                      │                      │
+              │                      │◄────[report]─────────┘
+              │                      │
+              │◄────────[report]─────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────────────┐
+│                       📚 ОБУЧАЮЩИЕ ДАННЫЕ И БАЗА ЗНАНИЙ                             │
+└─────────────────────────────────────────────────────────────────────────────────────┘
+
+                                    ┌─────────────────┐
+                                    │     agents      │
+                                    └────────┬────────┘
+                                             │
+                  ┌──────────────────────────┴──────────────────────────┐
+                  │                                                     │
+         ┌────────▼────────┐                                  ┌────────▼────────┐
+         │ agent_training_ │                                  │ agent_knowledge_│
+         │ data            │                                  │ base            │
+         │ (13 полей)      │                                  │ (16 полей)      │
+         │─────────────────│                                  │─────────────────│
+         │ PK: training_id │                                  │ PK: knowledge_id│
+         │ FK: agent_id    │                                  │ FK: agent_id    │
+         │                 │                                  │    (NULL для    │
+         │ data_type:      │                                  │     общих)      │
+         │  - example      │                                  │                 │
+         │  - knowledge_   │                                  │ title           │
+         │    base         │                                  │ content         │
+         │  - faq          │                                  │ source          │
+         │  - scenario     │                                  │ category        │
+         │  - case_study   │                                  │ subcategory     │
+         │                 │                                  │ tags (JSON)     │
+         │ title           │                                  │                 │
+         │ content         │                                  │ embedding_      │
+         │ input_example   │                                  │   vector (JSON) │
+         │ output_example  │                                  │ embedding_model │
+         │ tags (JSON)     │                                  │                 │
+         │ priority        │                                  │ access_count    │
+         └─────────────────┘                                  │ last_accessed_at│
+         (Few-Shot Learning)                                  │ relevance_score │
+                                                              │ is_verified     │
+                                                              └─────────────────┘
+                                                              (RAG - Semantic Search)
+
+
+┌─────────────────────────────────────────────────────────────────────────────────────┐
+│                    🏢 ОРГАНИЗАЦИОННАЯ СТРУКТУРА И РАЗВЕРТЫВАНИЕ                     │
+└─────────────────────────────────────────────────────────────────────────────────────┘
+
+                                    ┌─────────────────┐
+                                    │     agents      │
+                                    └────────┬────────┘
+                                             │
+                  ┌──────────────────────────┴──────────────────────────┐
+                  │                                                     │
+         ┌────────▼────────┐                                  ┌────────▼────────┐
+         │ organizational_ │                                  │ deployed_agents_│
+         │ structure       │                                  │ registry        │
+         │ (13 полей)      │                                  │ (15 полей)      │
+         │─────────────────│                                  │─────────────────│
+         │ PK: id          │                                  │ PK: deployment_ │
+         │ FK: manager_id ─┼─┐                                │     id          │
+         │ FK: agent_id    │ │                                │ FK: agent_id    │
+         │                 │ │                                │                 │
+         │ department      │ │                                │ telegram_bot_   │
+         │ division        │ │                                │   token         │
+         │ position        │ │                                │ telegram_       │
+         │ full_name       │ │                                │   username      │
+         │ hierarchy_level │ │                                │ teams_app_id    │
+         │                 │ │                                │ teams_bot_id    │
+         │ employment_type:│ │                                │ slack_app_id    │
+         │  - full_time    │ │                                │                 │
+         │  - part_time    │ │                                │ channel_roles   │
+         │  - contract     │ │                                │   (JSON)        │
+         │  - ai_agent     │ │                                │                 │
+         └─────────────────┘ │                                │ deployment_     │
+                             │                                │   status:       │
+                             │                                │  - deployed     │
+                             └────────────────┐               │  - stopped      │
+                  (Self-referencing hierarchy)│               │  - maintenance  │
+                                               │               │  - error        │
+                                               │               │                 │
+                                               │               │ last_health_    │
+                                               │               │   check         │
+                                               │               │ limits (JSON)   │
+                                               │               │ performance_    │
+                                               │               │   metrics (JSON)│
+                                               │               │ last_activity   │
+                                               │               └─────────────────┘
+                                               │               (Мониторинг статуса)
+                                    Иерархия менеджеров
+
+
+┌─────────────────────────────────────────────────────────────────────────────────────┐
+│                            📈 МЕТРИКИ И АНАЛИТИКА                                   │
+└─────────────────────────────────────────────────────────────────────────────────────┘
+
+                                    ┌─────────────────┐
+                                    │     agents      │
+                                    └────────┬────────┘
+                                             │
+                  ┌──────────────────────────┴──────────────────────────┐
+                  │                                                     │
+         ┌────────▼────────┐                                  ┌────────▼────────┐
+         │ agent_          │                                  │ system_metrics  │
+         │ performance_    │                                  │ (8 полей)       │
+         │ metrics         │                                  │─────────────────│
+         │ (12 полей)      │                                  │ PK: id          │
+         │─────────────────│                                  │ FK: agent_id    │
+         │ PK: metric_id   │                                  │     (optional)  │
+         │ FK: agent_id    │                                  │                 │
+         │                 │                                  │ metric_name     │
+         │ metric_name     │                                  │ metric_value    │
+         │ metric_type:    │                                  │ period          │
+         │  - counter      │                                  │ metadata (JSON) │
+         │  - gauge        │                                  │ timestamp       │
+         │  - histogram    │                                  └─────────────────┘
+         │  - rate         │                                  (Системные метрики)
+         │                 │
+         │ metric_value    │
+         │ metric_unit     │
+         │ period:         │
+         │  - minute       │
+         │  - hour         │
+         │  - day          │
+         │  - week         │
+         │  - month        │
+         │                 │
+         │ period_start    │
+         │ period_end      │
+         │ dimensions(JSON)│
+         │ recorded_at     │
+         └─────────────────┘
+         (Метрики по агентам)
+
+
+┌─────────────────────────────────────────────────────────────────────────────────────┐
+│                          📊 СВОДНАЯ ТАБЛИЦА ВСЕХ ТАБЛИЦ                             │
+└─────────────────────────────────────────────────────────────────────────────────────┘
+
+┌────┬─────────────────────────────────┬──────────┬───────────────────────────────────┐
+│ №  │ Таблица                         │ Полей    │ Назначение                        │
+├────┼─────────────────────────────────┼──────────┼───────────────────────────────────┤
+│ 1  │ agents                          │ 19       │ Основная информация об агентах    │
+│ 2  │ agent_prompts                   │ 13       │ Системные промпты с версионностью │
+│ 3  │ agent_gpt_settings              │ 20+      │ Настройки GPT-5/GPT-4             │
+│ 4  │ agent_tools                     │ 12       │ Каталог инструментов              │
+│ 5  │ agent_tools_mapping             │ 10       │ Связь агентов с инструментами     │
+│ 6  │ core_memory                     │ 13       │ Постоянная память агента          │
+│ 7  │ operational_memory              │ 11       │ Оперативная память сессий         │
+│ 8  │ long_term_memory                │ 13       │ Долговременная память, обучение   │
+│ 9  │ chat_history                    │ 14       │ История всех сообщений            │
+│ 10 │ agent_activity_log              │ 11       │ Лог активности агентов            │
+│ 11 │ agent_version_history           │ 12       │ История версий конфигураций       │
+│ 12 │ agent_rules                     │ 12       │ Правила поведения агентов         │
+│ 13 │ agent_routing_rules             │ 11       │ Правила маршрутизации             │
+│ 14 │ agent_training_data             │ 13       │ Обучающие данные, Few-Shot        │
+│ 15 │ agent_knowledge_base            │ 16       │ База знаний для RAG               │
+│ 16 │ organizational_structure        │ 13       │ Организационная структура         │
+│ 17 │ deployed_agents_registry        │ 15       │ Реестр развернутых агентов        │
+│ 18 │ agent_performance_metrics       │ 12       │ Метрики производительности        │
+│ 19 │ system_metrics                  │ 8        │ Системные метрики                 │
+├────┴─────────────────────────────────┴──────────┴───────────────────────────────────┤
+│ ИТОГО: 19 таблиц                                                                    │
+└─────────────────────────────────────────────────────────────────────────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────────────┐
+│                            🔑 КЛЮЧЕВЫЕ СВЯЗИ (FOREIGN KEYS)                         │
+└─────────────────────────────────────────────────────────────────────────────────────┘
+
+agents ─────┬──► agent_prompts (1:N)
+            ├──► agent_gpt_settings (1:1)
+            ├──► agent_tools_mapping (1:N) ◄──┬──► agent_tools (N:M)
+            ├──► core_memory (1:N)
+            ├──► operational_memory (1:N)
+            ├──► long_term_memory (1:N)
+            ├──► chat_history (1:N)
+            ├──► agent_activity_log (1:N)
+            ├──► agent_version_history (1:N)
+            ├──► agent_rules (1:N)
+            ├──► agent_routing_rules (source) (1:N)
+            ├──► agent_routing_rules (target) (1:N)
+            ├──► agent_training_data (1:N)
+            ├──► agent_knowledge_base (1:N)
+            ├──► organizational_structure (1:1)
+            ├──► deployed_agents_registry (1:1)
+            ├──► agent_performance_metrics (1:N)
+            └──► system_metrics (1:N)
+
+organizational_structure ──► organizational_structure (Self-referencing: manager_id)
+
+
+┌─────────────────────────────────────────────────────────────────────────────────────┐
+│                          🎨 ОСОБЕННОСТИ АРХИТЕКТУРЫ                                 │
+└─────────────────────────────────────────────────────────────────────────────────────┘
+
+✅ ВЕРСИОННОСТЬ
+   └─► agent_prompts: поле is_current позволяет хранить историю промптов
+   └─► agent_version_history: полная история всех изменений с snapshot'ами
+
+✅ TTL (TIME TO LIVE)
+   └─► operational_memory: поле expires_at для автоматической очистки
+
+✅ JSON ПОЛЯ для гибкости
+   └─► metadata, parameters, tags, dimensions, config_snapshot_*
+
+✅ ENUM для типов
+   └─► status, role, memory_type, activity_type, routing_type, etc.
+
+✅ ИНДЕКСЫ на всех FK и часто используемых полях
+   └─► Быстрый поиск по agent_id, session_id, timestamp, etc.
+
+✅ CASCADING DELETE
+   └─► При удалении agents удаляются все связанные записи
+
+✅ SELF-REFERENCING
+   └─► organizational_structure: manager_id → id (иерархия)
+
+
+┌─────────────────────────────────────────────────────────────────────────────────────┐
+│                          🚀 ПРИМЕРЫ ИСПОЛЬЗОВАНИЯ                                   │
+└─────────────────────────────────────────────────────────────────────────────────────┘
+
+1. ЗАГРУЗКА КОНФИГУРАЦИИ АГЕНТА:
+   SELECT a.*, ap.system_prompt, ags.model, ags.reasoning_effort
+   FROM agents a
+   JOIN agent_prompts ap ON a.agent_id = ap.agent_id AND ap.is_current = TRUE
+   JOIN agent_gpt_settings ags ON a.agent_id = ags.agent_id
+   WHERE a.agent_id = 'supervisor_001';
+
+2. ПОЛУЧЕНИЕ ИНСТРУМЕНТОВ АГЕНТА:
+   SELECT at.tool_name, at.description, at.parameters
+   FROM agent_tools_mapping atm
+   JOIN agent_tools at ON atm.tool_id = at.tool_id
+   WHERE atm.agent_id = 'recruiter_001' AND atm.is_enabled = TRUE
+   ORDER BY atm.priority;
+
+3. ЗАГРУЗКА CORE ПАМЯТИ:
+   SELECT memory_key, memory_value, priority
+   FROM core_memory
+   WHERE agent_id = 'supervisor_001' AND is_active = TRUE
+   ORDER BY priority;
+
+4. ЛОГИРОВАНИЕ СООБЩЕНИЯ:
+   INSERT INTO chat_history (message_id, agent_id, session_id, user_id, role, content)
+   VALUES (UUID(), 'recruiter_001', 'sess_123', 'user_456', 'assistant', 'Ответ...');
+
+5. ПОЛУЧЕНИЕ МАРШРУТОВ:
+   SELECT s.agent_name AS from, t.agent_name AS to, r.routing_type
+   FROM agent_routing_rules r
+   JOIN agents s ON r.source_agent_id = s.agent_id
+   JOIN agents t ON r.target_agent_id = t.agent_id
+   WHERE r.is_active = TRUE;
+
+
+╔═══════════════════════════════════════════════════════════════════════════════════════╗
+║                              КОНЕЦ СХЕМЫ БАЗЫ ДАННЫХ                                 ║
+║                       Автор: Workflow Office Team | v2.0.0                             ║
+╚═══════════════════════════════════════════════════════════════════════════════════════╝
+

@@ -1,0 +1,76 @@
+version: '3.8'
+services:
+  unified-llm-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: unified_llm_service
+    environment:
+      ENVIRONMENT: docker
+      DB_HOST: central-postgres
+      DB_PORT: '5432'
+      DB_NAME: office_services_agents
+      DB_USER: ${SERVICES_CENTRAL_POSTGRES_ENVIRONMENT_POSTGRES_USER:?Set SERVICES_CENTRAL_POSTGRES_ENVIRONMENT_POSTGRES_USER
+        in private environment}
+      DB_PASS: ${SERVICES_CENTRAL_POSTGRES_ENVIRONMENT_POSTGRES_PASSWORD:?Set SERVICES_CENTRAL_POSTGRES_ENVIRONMENT_POSTGRES_PASSWORD
+        in private environment}
+      SERVICES_CENTRAL_POSTGRES_ENVIRONMENT_POSTGRES_PASSWORD: ${SERVICES_CENTRAL_POSTGRES_ENVIRONMENT_POSTGRES_PASSWORD-}
+      NETWORKS_CENTRAL_NETWORK_IPAM_CONFIG_SUBNET: ${NETWORKS_CENTRAL_NETWORK_IPAM_CONFIG_SUBNET-}
+      SERVICES_CENTRAL_POSTGRES_ENVIRONMENT_POSTGRES_USER: ${SERVICES_CENTRAL_POSTGRES_ENVIRONMENT_POSTGRES_USER-}
+    volumes:
+    - ./settings.json:/app/settings.json:ro
+    - llm_service_logs:/app/logs
+    ports:
+    - 8102:8102
+    networks:
+    - central_network
+    depends_on:
+      central-postgres:
+        condition: service_healthy
+    healthcheck:
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:8102/health
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+  central-postgres:
+    image: postgres:15
+    container_name: central_agents_postgres
+    environment:
+      POSTGRES_DB: office_services_agents
+      POSTGRES_USER: ${SERVICES_CENTRAL_POSTGRES_ENVIRONMENT_POSTGRES_USER:?Set SERVICES_CENTRAL_POSTGRES_ENVIRONMENT_POSTGRES_USER
+        in private environment}
+      POSTGRES_PASSWORD: ${SERVICES_CENTRAL_POSTGRES_ENVIRONMENT_POSTGRES_PASSWORD:?Set
+        SERVICES_CENTRAL_POSTGRES_ENVIRONMENT_POSTGRES_PASSWORD in private environment}
+    volumes:
+    - central_postgres_data:/var/lib/postgresql/data
+    - ../central_database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+    - 5432:5432
+    networks:
+    - central_network
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - pg_isready -U office_services_user -d office_services_agents
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+networks:
+  central_network:
+    driver: bridge
+    ipam:
+      config:
+      - subnet: ${NETWORKS_CENTRAL_NETWORK_IPAM_CONFIG_SUBNET:?Set NETWORKS_CENTRAL_NETWORK_IPAM_CONFIG_SUBNET
+          in private environment}
+volumes:
+  central_postgres_data:
+    driver: local
+  llm_service_logs:
+    driver: local

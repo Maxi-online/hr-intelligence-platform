@@ -1,0 +1,348 @@
+services:
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+    - 8088:8088
+    environment:
+      DOCKER_ENV: 'true'
+      OPENAI_API_KEY: ${OPENAI_API_KEY-}
+      AI_ANALYSIS_PROXY_USERNAME: ${AI_ANALYSIS_PROXY_USERNAME-}
+      AI_ANALYSIS_PROXY_PASSWORD: ${AI_ANALYSIS_PROXY_PASSWORD-}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD-}
+      CLICKHOUSE_USERNAME: ${CLICKHOUSE_USERNAME-}
+      HH_API_CLIENT_ID: ${HH_API_CLIENT_ID-}
+      HH_API_CLIENT_SECRET: ${HH_API_CLIENT_SECRET-}
+      HH_API_USER_AGENT: ${HH_API_USER_AGENT-}
+      HH_API_USER_TOKENS_ACCESS_TOKEN: ${HH_API_USER_TOKENS_ACCESS_TOKEN-}
+      HH_API_USER_TOKENS_REFRESH_TOKEN: ${HH_API_USER_TOKENS_REFRESH_TOKEN-}
+      PASTED_AUTHORIZATION_CODE: ${PASTED_AUTHORIZATION_CODE-}
+      ACCESS_TOKEN: ${ACCESS_TOKEN-}
+      REFRESH_TOKEN: ${REFRESH_TOKEN-}
+      PASS: ${PASS-}
+      AI_ANALYSIS_PROXY_HOST: ${AI_ANALYSIS_PROXY_HOST-}
+      AI_ANALYSIS_PROXY_PORT: ${AI_ANALYSIS_PROXY_PORT-}
+      SERVICES_AI_ANALYSIS_HOST: ${SERVICES_AI_ANALYSIS_HOST-}
+      USER_AGENT: ${USER_AGENT-}
+      USER_AGENT_ALT_2: ${USER_AGENT_ALT_2-}
+      USER_AGENT_ALT_3: ${USER_AGENT_ALT_3-}
+      SERVICE_CREDENTIAL: ${SERVICE_CREDENTIAL-}
+      USER_AGENT_ALT_4: ${USER_AGENT_ALT_4-}
+      USER_AGENT_ALT_5: ${USER_AGENT_ALT_5-}
+      USER_AGENT_ALT_6: ${USER_AGENT_ALT_6-}
+      USER_AGENT_ALT_7: ${USER_AGENT_ALT_7-}
+      USER_AGENT_ALT_8: ${USER_AGENT_ALT_8-}
+    volumes:
+    - ./config:/app/config
+    - ./logs:/app/logs
+    command: python gateway/main.py
+    depends_on:
+    - ranking
+    - hh_api
+    - config
+    - database
+    - ai_analysis
+    networks:
+    - hrhelp-network
+  ranking:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+    - 8002:8002
+    environment:
+      DOCKER_ENV: 'true'
+      OPENAI_API_KEY: ${OPENAI_API_KEY-}
+      AI_ANALYSIS_PROXY_USERNAME: ${AI_ANALYSIS_PROXY_USERNAME-}
+      AI_ANALYSIS_PROXY_PASSWORD: ${AI_ANALYSIS_PROXY_PASSWORD-}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD-}
+      CLICKHOUSE_USERNAME: ${CLICKHOUSE_USERNAME-}
+      HH_API_CLIENT_ID: ${HH_API_CLIENT_ID-}
+      HH_API_CLIENT_SECRET: ${HH_API_CLIENT_SECRET-}
+      HH_API_USER_AGENT: ${HH_API_USER_AGENT-}
+      HH_API_USER_TOKENS_ACCESS_TOKEN: ${HH_API_USER_TOKENS_ACCESS_TOKEN-}
+      HH_API_USER_TOKENS_REFRESH_TOKEN: ${HH_API_USER_TOKENS_REFRESH_TOKEN-}
+      PASTED_AUTHORIZATION_CODE: ${PASTED_AUTHORIZATION_CODE-}
+      ACCESS_TOKEN: ${ACCESS_TOKEN-}
+      REFRESH_TOKEN: ${REFRESH_TOKEN-}
+      PASS: ${PASS-}
+      AI_ANALYSIS_PROXY_HOST: ${AI_ANALYSIS_PROXY_HOST-}
+      AI_ANALYSIS_PROXY_PORT: ${AI_ANALYSIS_PROXY_PORT-}
+      SERVICES_AI_ANALYSIS_HOST: ${SERVICES_AI_ANALYSIS_HOST-}
+      USER_AGENT: ${USER_AGENT-}
+      USER_AGENT_ALT_2: ${USER_AGENT_ALT_2-}
+      USER_AGENT_ALT_3: ${USER_AGENT_ALT_3-}
+      SERVICE_CREDENTIAL: ${SERVICE_CREDENTIAL-}
+      USER_AGENT_ALT_4: ${USER_AGENT_ALT_4-}
+      USER_AGENT_ALT_5: ${USER_AGENT_ALT_5-}
+      USER_AGENT_ALT_6: ${USER_AGENT_ALT_6-}
+      USER_AGENT_ALT_7: ${USER_AGENT_ALT_7-}
+      USER_AGENT_ALT_8: ${USER_AGENT_ALT_8-}
+    volumes:
+    - ./config:/app/config
+    - ./logs:/app/logs
+    command: python ranking/main.py
+    networks:
+    - hrhelp-network
+  hh_api:
+    build: .
+    ports:
+    - 8003:8003
+    volumes:
+    - ./hh_api:/app
+    - ./shared:/app/shared
+    - ./config:/app/config
+    environment:
+      DOCKER_ENV: 'true'
+      OPENAI_API_KEY: ${OPENAI_API_KEY-}
+      AI_ANALYSIS_PROXY_USERNAME: ${AI_ANALYSIS_PROXY_USERNAME-}
+      AI_ANALYSIS_PROXY_PASSWORD: ${AI_ANALYSIS_PROXY_PASSWORD-}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD-}
+      CLICKHOUSE_USERNAME: ${CLICKHOUSE_USERNAME-}
+      HH_API_CLIENT_ID: ${HH_API_CLIENT_ID-}
+      HH_API_CLIENT_SECRET: ${HH_API_CLIENT_SECRET-}
+      HH_API_USER_AGENT: ${HH_API_USER_AGENT-}
+      HH_API_USER_TOKENS_ACCESS_TOKEN: ${HH_API_USER_TOKENS_ACCESS_TOKEN-}
+      HH_API_USER_TOKENS_REFRESH_TOKEN: ${HH_API_USER_TOKENS_REFRESH_TOKEN-}
+      PASTED_AUTHORIZATION_CODE: ${PASTED_AUTHORIZATION_CODE-}
+      ACCESS_TOKEN: ${ACCESS_TOKEN-}
+      REFRESH_TOKEN: ${REFRESH_TOKEN-}
+      PASS: ${PASS-}
+      AI_ANALYSIS_PROXY_HOST: ${AI_ANALYSIS_PROXY_HOST-}
+      AI_ANALYSIS_PROXY_PORT: ${AI_ANALYSIS_PROXY_PORT-}
+      SERVICES_AI_ANALYSIS_HOST: ${SERVICES_AI_ANALYSIS_HOST-}
+      USER_AGENT: ${USER_AGENT-}
+      USER_AGENT_ALT_2: ${USER_AGENT_ALT_2-}
+      USER_AGENT_ALT_3: ${USER_AGENT_ALT_3-}
+      SERVICE_CREDENTIAL: ${SERVICE_CREDENTIAL-}
+      USER_AGENT_ALT_4: ${USER_AGENT_ALT_4-}
+      USER_AGENT_ALT_5: ${USER_AGENT_ALT_5-}
+      USER_AGENT_ALT_6: ${USER_AGENT_ALT_6-}
+      USER_AGENT_ALT_7: ${USER_AGENT_ALT_7-}
+      USER_AGENT_ALT_8: ${USER_AGENT_ALT_8-}
+    command: python -m uvicorn main:app --host 0.0.0.0 --port 8003 --reload
+    networks:
+    - hrhelp-network
+  config:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+    - 8004:8004
+    environment:
+      DOCKER_ENV: 'true'
+      OPENAI_API_KEY: ${OPENAI_API_KEY-}
+      AI_ANALYSIS_PROXY_USERNAME: ${AI_ANALYSIS_PROXY_USERNAME-}
+      AI_ANALYSIS_PROXY_PASSWORD: ${AI_ANALYSIS_PROXY_PASSWORD-}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD-}
+      CLICKHOUSE_USERNAME: ${CLICKHOUSE_USERNAME-}
+      HH_API_CLIENT_ID: ${HH_API_CLIENT_ID-}
+      HH_API_CLIENT_SECRET: ${HH_API_CLIENT_SECRET-}
+      HH_API_USER_AGENT: ${HH_API_USER_AGENT-}
+      HH_API_USER_TOKENS_ACCESS_TOKEN: ${HH_API_USER_TOKENS_ACCESS_TOKEN-}
+      HH_API_USER_TOKENS_REFRESH_TOKEN: ${HH_API_USER_TOKENS_REFRESH_TOKEN-}
+      PASTED_AUTHORIZATION_CODE: ${PASTED_AUTHORIZATION_CODE-}
+      ACCESS_TOKEN: ${ACCESS_TOKEN-}
+      REFRESH_TOKEN: ${REFRESH_TOKEN-}
+      PASS: ${PASS-}
+      AI_ANALYSIS_PROXY_HOST: ${AI_ANALYSIS_PROXY_HOST-}
+      AI_ANALYSIS_PROXY_PORT: ${AI_ANALYSIS_PROXY_PORT-}
+      SERVICES_AI_ANALYSIS_HOST: ${SERVICES_AI_ANALYSIS_HOST-}
+      USER_AGENT: ${USER_AGENT-}
+      USER_AGENT_ALT_2: ${USER_AGENT_ALT_2-}
+      USER_AGENT_ALT_3: ${USER_AGENT_ALT_3-}
+      SERVICE_CREDENTIAL: ${SERVICE_CREDENTIAL-}
+      USER_AGENT_ALT_4: ${USER_AGENT_ALT_4-}
+      USER_AGENT_ALT_5: ${USER_AGENT_ALT_5-}
+      USER_AGENT_ALT_6: ${USER_AGENT_ALT_6-}
+      USER_AGENT_ALT_7: ${USER_AGENT_ALT_7-}
+      USER_AGENT_ALT_8: ${USER_AGENT_ALT_8-}
+    volumes:
+    - ./config:/app/config
+    - ./logs:/app/logs
+    command: python config/main.py
+    networks:
+    - hrhelp-network
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+    - 8501:8501
+    environment:
+      DOCKER_ENV: 'true'
+      STREAMLIT_SERVER_PORT: '8501'
+      STREAMLIT_SERVER_ADDRESS: 0.0.0.0
+      OPENAI_API_KEY: ${OPENAI_API_KEY-}
+      AI_ANALYSIS_PROXY_USERNAME: ${AI_ANALYSIS_PROXY_USERNAME-}
+      AI_ANALYSIS_PROXY_PASSWORD: ${AI_ANALYSIS_PROXY_PASSWORD-}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD-}
+      CLICKHOUSE_USERNAME: ${CLICKHOUSE_USERNAME-}
+      HH_API_CLIENT_ID: ${HH_API_CLIENT_ID-}
+      HH_API_CLIENT_SECRET: ${HH_API_CLIENT_SECRET-}
+      HH_API_USER_AGENT: ${HH_API_USER_AGENT-}
+      HH_API_USER_TOKENS_ACCESS_TOKEN: ${HH_API_USER_TOKENS_ACCESS_TOKEN-}
+      HH_API_USER_TOKENS_REFRESH_TOKEN: ${HH_API_USER_TOKENS_REFRESH_TOKEN-}
+      PASTED_AUTHORIZATION_CODE: ${PASTED_AUTHORIZATION_CODE-}
+      ACCESS_TOKEN: ${ACCESS_TOKEN-}
+      REFRESH_TOKEN: ${REFRESH_TOKEN-}
+      PASS: ${PASS-}
+      AI_ANALYSIS_PROXY_HOST: ${AI_ANALYSIS_PROXY_HOST-}
+      AI_ANALYSIS_PROXY_PORT: ${AI_ANALYSIS_PROXY_PORT-}
+      SERVICES_AI_ANALYSIS_HOST: ${SERVICES_AI_ANALYSIS_HOST-}
+      USER_AGENT: ${USER_AGENT-}
+      USER_AGENT_ALT_2: ${USER_AGENT_ALT_2-}
+      USER_AGENT_ALT_3: ${USER_AGENT_ALT_3-}
+      SERVICE_CREDENTIAL: ${SERVICE_CREDENTIAL-}
+      USER_AGENT_ALT_4: ${USER_AGENT_ALT_4-}
+      USER_AGENT_ALT_5: ${USER_AGENT_ALT_5-}
+      USER_AGENT_ALT_6: ${USER_AGENT_ALT_6-}
+      USER_AGENT_ALT_7: ${USER_AGENT_ALT_7-}
+      USER_AGENT_ALT_8: ${USER_AGENT_ALT_8-}
+    volumes:
+    - ./frontend:/app/frontend
+    command: streamlit run frontend/app.py --server.port=8501 --server.address=0.0.0.0
+    depends_on:
+    - gateway
+    networks:
+    - hrhelp-network
+  ai_analysis:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+    - 8005:8005
+    environment:
+      DOCKER_ENV: 'true'
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      AI_ANALYSIS_PROXY_USERNAME: ${AI_ANALYSIS_PROXY_USERNAME-}
+      AI_ANALYSIS_PROXY_PASSWORD: ${AI_ANALYSIS_PROXY_PASSWORD-}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD-}
+      CLICKHOUSE_USERNAME: ${CLICKHOUSE_USERNAME-}
+      HH_API_CLIENT_ID: ${HH_API_CLIENT_ID-}
+      HH_API_CLIENT_SECRET: ${HH_API_CLIENT_SECRET-}
+      HH_API_USER_AGENT: ${HH_API_USER_AGENT-}
+      HH_API_USER_TOKENS_ACCESS_TOKEN: ${HH_API_USER_TOKENS_ACCESS_TOKEN-}
+      HH_API_USER_TOKENS_REFRESH_TOKEN: ${HH_API_USER_TOKENS_REFRESH_TOKEN-}
+      PASTED_AUTHORIZATION_CODE: ${PASTED_AUTHORIZATION_CODE-}
+      ACCESS_TOKEN: ${ACCESS_TOKEN-}
+      REFRESH_TOKEN: ${REFRESH_TOKEN-}
+      PASS: ${PASS-}
+      AI_ANALYSIS_PROXY_HOST: ${AI_ANALYSIS_PROXY_HOST-}
+      AI_ANALYSIS_PROXY_PORT: ${AI_ANALYSIS_PROXY_PORT-}
+      SERVICES_AI_ANALYSIS_HOST: ${SERVICES_AI_ANALYSIS_HOST-}
+      USER_AGENT: ${USER_AGENT-}
+      USER_AGENT_ALT_2: ${USER_AGENT_ALT_2-}
+      USER_AGENT_ALT_3: ${USER_AGENT_ALT_3-}
+      SERVICE_CREDENTIAL: ${SERVICE_CREDENTIAL-}
+      USER_AGENT_ALT_4: ${USER_AGENT_ALT_4-}
+      USER_AGENT_ALT_5: ${USER_AGENT_ALT_5-}
+      USER_AGENT_ALT_6: ${USER_AGENT_ALT_6-}
+      USER_AGENT_ALT_7: ${USER_AGENT_ALT_7-}
+      USER_AGENT_ALT_8: ${USER_AGENT_ALT_8-}
+    deploy:
+      resources:
+        limits:
+          memory: 3G
+          cpus: '3.0'
+        reservations:
+          memory: 1G
+          cpus: '1.0'
+    volumes:
+    - ./config:/app/config
+    - ./logs:/app/logs
+    - ./data:/app/data
+    command: python ai_analysis/main.py
+    depends_on:
+    - config
+    networks:
+    - hrhelp-network
+  database:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+    - 8006:8006
+    environment:
+      DOCKER_ENV: 'true'
+      OPENAI_API_KEY: ${OPENAI_API_KEY-}
+      AI_ANALYSIS_PROXY_USERNAME: ${AI_ANALYSIS_PROXY_USERNAME-}
+      AI_ANALYSIS_PROXY_PASSWORD: ${AI_ANALYSIS_PROXY_PASSWORD-}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD-}
+      CLICKHOUSE_USERNAME: ${CLICKHOUSE_USERNAME-}
+      HH_API_CLIENT_ID: ${HH_API_CLIENT_ID-}
+      HH_API_CLIENT_SECRET: ${HH_API_CLIENT_SECRET-}
+      HH_API_USER_AGENT: ${HH_API_USER_AGENT-}
+      HH_API_USER_TOKENS_ACCESS_TOKEN: ${HH_API_USER_TOKENS_ACCESS_TOKEN-}
+      HH_API_USER_TOKENS_REFRESH_TOKEN: ${HH_API_USER_TOKENS_REFRESH_TOKEN-}
+      PASTED_AUTHORIZATION_CODE: ${PASTED_AUTHORIZATION_CODE-}
+      ACCESS_TOKEN: ${ACCESS_TOKEN-}
+      REFRESH_TOKEN: ${REFRESH_TOKEN-}
+      PASS: ${PASS-}
+      AI_ANALYSIS_PROXY_HOST: ${AI_ANALYSIS_PROXY_HOST-}
+      AI_ANALYSIS_PROXY_PORT: ${AI_ANALYSIS_PROXY_PORT-}
+      SERVICES_AI_ANALYSIS_HOST: ${SERVICES_AI_ANALYSIS_HOST-}
+      USER_AGENT: ${USER_AGENT-}
+      USER_AGENT_ALT_2: ${USER_AGENT_ALT_2-}
+      USER_AGENT_ALT_3: ${USER_AGENT_ALT_3-}
+      SERVICE_CREDENTIAL: ${SERVICE_CREDENTIAL-}
+      USER_AGENT_ALT_4: ${USER_AGENT_ALT_4-}
+      USER_AGENT_ALT_5: ${USER_AGENT_ALT_5-}
+      USER_AGENT_ALT_6: ${USER_AGENT_ALT_6-}
+      USER_AGENT_ALT_7: ${USER_AGENT_ALT_7-}
+      USER_AGENT_ALT_8: ${USER_AGENT_ALT_8-}
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '2.0'
+        reservations:
+          memory: 1G
+          cpus: '1.0'
+    volumes:
+    - ./config:/app/config
+    - ./logs:/app/logs
+    - ./data:/app/data
+    command: python database/main.py
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+    networks:
+    - hrhelp-network
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.1
+    container_name: hrhelp-clickhouse
+    ports:
+    - 8123:8123
+    - 9000:9000
+    environment:
+    - CLICKHOUSE_DB=hrhelp
+    - CLICKHOUSE_USER=${CLICKHOUSE_USERNAME:?Set CLICKHOUSE_USERNAME in private environment}
+    - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD:?Set CLICKHOUSE_PASSWORD in private
+      environment}
+    - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
+    volumes:
+    - clickhouse_data:/var/lib/clickhouse
+    - ./config/clickhouse/init_schema.sql:/docker-entrypoint-initdb.d/init_schema.sql
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    healthcheck:
+      test:
+      - CMD
+      - clickhouse-client
+      - --query
+      - SELECT 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+    - hrhelp-network
+networks:
+  hrhelp-network:
+    driver: bridge
+volumes:
+  logs: null
+  clickhouse_data: null

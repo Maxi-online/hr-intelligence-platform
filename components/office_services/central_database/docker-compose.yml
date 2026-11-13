@@ -1,0 +1,46 @@
+# ====================================
+# Централизованная база данных агентов
+# ====================================
+version: '3.8'
+
+services:
+  # ====================================
+  # PostgreSQL для централизованной базы
+  # ====================================
+  central-postgres:
+    image: postgres:15
+    container_name: central_agents_postgres
+    environment:
+      POSTGRES_DB: office_services_agents
+      POSTGRES_USER: "${SERVICES_CENTRAL_POSTGRES_ENVIRONMENT_POSTGRES_USER:?Set SERVICES_CENTRAL_POSTGRES_ENVIRONMENT_POSTGRES_USER in private environment}"
+      POSTGRES_PASSWORD: "${SERVICES_CENTRAL_POSTGRES_ENVIRONMENT_POSTGRES_PASSWORD:?Set SERVICES_CENTRAL_POSTGRES_ENVIRONMENT_POSTGRES_PASSWORD in private environment}"
+    volumes:
+      - central_postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    networks:
+      - central_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U office_services_user -d office_services_agents"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+# ====================================
+# Networks
+# ====================================
+networks:
+  central_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: "${NETWORKS_CENTRAL_NETWORK_IPAM_CONFIG_SUBNET:?Set NETWORKS_CENTRAL_NETWORK_IPAM_CONFIG_SUBNET in private environment}"
+
+# ====================================
+# Volumes
+# ====================================
+volumes:
+  central_postgres_data:
+    driver: local

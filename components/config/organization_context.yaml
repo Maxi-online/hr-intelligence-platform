@@ -1,0 +1,36 @@
+# Fictional public example; configure a private organization separately.
+company_name: Demonstration Organization
+industry: Fictional software workshop
+company_size: Demonstration only
+departments:
+- id: engineering
+  name: Demo Engineering
+  description: Fictional review team
+  head: Demo Reviewer
+  size: 0
+  responsibilities:
+  - Review synthetic examples
+roles:
+  reviewer:
+    permissions:
+    - review_demo
+    department: engineering
+hierarchy: {}
+hiring_process:
+  stages:
+  - Human review
+  approvals:
+    final_hire_decision: reviewer
+approval_chains: {}
+sla_requirements: {}
+company_values:
+- Evidence-based review
+culture_description: Fictional integration context. No real organization, staff, salary
+  policy or service-level agreement is represented.
+communication_style: professional
+tech_stack: []
+tools_used: []
+hiring_policies:
+  salary_ranges: {}
+  benefits: []
+last_updated: '2026-11-14T00:00:00Z'

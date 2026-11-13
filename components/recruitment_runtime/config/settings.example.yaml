@@ -1,0 +1,217 @@
+# Public configuration example. Provider accounts and tokens are supplied separately.
+hh_api:
+  base_url: https://api.hh.ru
+  client_id: ${HH_API_CLIENT_ID}
+  client_secret: ${HH_API_CLIENT_SECRET}
+  user_agent: ${HH_API_USER_AGENT}
+  timeout: 30
+  max_retries: 3
+  user_tokens:
+    access_token: ${HH_API_USER_TOKENS_ACCESS_TOKEN}
+    refresh_token: ${HH_API_USER_TOKENS_REFRESH_TOKEN}
+    expires_at: 1209599
+services:
+  gateway:
+    port: 8088
+    host: ${SERVICES_GATEWAY_HOST}
+    docker_host: gateway
+    debug: false
+  ranking:
+    port: 8002
+    host: ${SERVICES_GATEWAY_HOST}
+    docker_host: ranking
+    debug: false
+  hh_api:
+    port: 8003
+    host: ${SERVICES_GATEWAY_HOST}
+    docker_host: hh_api
+    debug: false
+  config:
+    port: 8004
+    host: ${SERVICES_GATEWAY_HOST}
+    docker_host: config
+    debug: false
+  ai_analysis:
+    port: 8005
+    host: ${SERVICES_GATEWAY_HOST}
+    docker_host: ai_analysis
+    debug: false
+  database:
+    port: 8006
+    host: ${SERVICES_GATEWAY_HOST}
+    docker_host: database
+    debug: false
+  vacancy_builder:
+    port: 8008
+    host: ${SERVICES_GATEWAY_HOST}
+    docker_host: vacancy_builder
+    debug: false
+  autorecruiter:
+    port: 8010
+    host: ${SERVICES_GATEWAY_HOST}
+    docker_host: recruitment_runtime
+    debug: false
+ranking:
+  weights:
+    keyword_relevance: 0.4
+    filter_match: 0.3
+    recency: 0.2
+    profile_completeness: 0.1
+  ml_optimization:
+    enabled: true
+    model_type: random_forest
+    features_count: 500
+    training_examples: 25
+  presets:
+    developer:
+      keyword_relevance: 0.5
+      filter_match: 0.3
+      recency: 0.1
+      profile_completeness: 0.1
+    manager:
+      keyword_relevance: 0.3
+      filter_match: 0.3
+      recency: 0.2
+      profile_completeness: 0.2
+    designer:
+      keyword_relevance: 0.4
+      filter_match: 0.2
+      recency: 0.2
+      profile_completeness: 0.2
+  min_score: 0.1
+  max_candidates: 100
+hh_search:
+  max_results: 100
+  default_per_page: 20
+  max_pages: 5
+  default_filters:
+    period: 30
+    min_age: 18
+    max_age: 65
+logging:
+  level: INFO
+  format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+  file: logs/app.log
+security:
+  cors_origins:
+  - http://localhost:8501
+  - http://127.0.0.1:8501
+  rate_limit: 100
+  api_key_required: false
+cache:
+  enabled: true
+  ttl: 3600
+  max_size: 1000
+monitoring:
+  health_check_interval: 30
+  metrics_enabled: true
+  prometheus_enabled: false
+ai_analysis:
+  openai_api_key: ${OPENROUTER_API_KEY}
+  base_url: https://api.openai.com/v1
+  model: gpt-5-mini
+  max_completion_tokens: 3000
+  temperature: 0.1
+  timeout: 120
+  retry_attempts: 3
+  gpt5_features:
+    default_verbosity: medium
+    default_reasoning_effort: medium
+    use_structured_outputs: true
+    free_form_functions: true
+    use_responses_api: false
+  multi_agent:
+    enabled: true
+    agents:
+    - technical_skills
+    - experience_relevance
+    - cultural_fit
+    - growth_potential
+    master_coordinator:
+      enabled: true
+      model: gpt-5-mini
+      max_completion_tokens: 4000
+      temperature: 0.1
+      verbosity: high
+      reasoning_effort: medium
+  proxy:
+    enabled: false
+    host: ''
+    port: 0
+    username: ''
+    password: ''
+    protocol: http
+  autogpt:
+    memory:
+      long_term_enabled: true
+      short_term_ttl_minutes: 60
+      embedding_model: text-embedding-3-small
+    tools:
+      web_search_enabled: true
+      file_system_enabled: true
+      code_executor_enabled: false
+    execution_limits:
+      max_iterations: 20
+      max_tool_calls_per_iteration: 5
+      timeout_minutes: 30
+  prompts:
+    skill_analysis: 'Проанализируй навыки кандидата для вакансии "{job_title}".
+
+
+      Навыки кандидата: {skills}
+
+      Описание опыта: {experience}
+
+      Поисковый запрос: {search_query}
+
+
+      Для каждого навыка оцени:
+
+      1. Релевантность для вакансии (0-1)
+
+      2. Уровень владения (Junior/Middle/Senior/Expert)
+
+      3. Годы опыта (если можно определить)
+
+      4. Уверенность в оценке (0-1)
+
+
+      Формат ответа: JSON массив объектов с полями skill_name, relevance_score, proficiency_level,
+      years_experience, ai_confidence
+
+      '
+    overall_assessment: "Оцени ОБЩУЮ пригодность кандидата для вакансии \"{job_title}\"\
+      \ с учетом важности критериев.\n\nДАННЫЕ КАНДИДАТА:\n- Анализ навыков: {skill_analysis}\n\
+      - Поисковый запрос: {search_query}\n- Резюме кандидата: {candidate_data}\n-\
+      \ Фильтры поиска: {search_filters}\n\nВЕСА КРИТЕРИЕВ ОЦЕНКИ (важность каждого\
+      \ критерия):\n- Релевантность по ключевым словам: {keyword_relevance_weight}\
+      \ (соответствие навыков и опыта поисковому запросу)\n- Соответствие фильтрам:\
+      \ {filter_match_weight} (зарплата, локация, опыт работы)\n- Актуальность резюме:\
+      \ {recency_weight} (как недавно обновлялось резюме)\n- Полнота профиля: {profile_completeness_weight}\
+      \ (насколько подробно заполнен профиль)\n\nЗАДАЧА: Проанализируй кандидата по\
+      \ каждому критерию (0-1) и дай ИТОГОВУЮ взвешенную оценку.\n\nУчитывай веса:\
+      \ если вес критерия выше, он важнее для итоговой оценки.\n\nФормат ответа: JSON\
+      \ объект с полями:\n{\n  \"keyword_relevance_score\": 0.8,\n  \"filter_match_score\"\
+      : 0.9,\n  \"recency_score\": 0.7,\n  \"profile_completeness_score\": 0.6,\n\
+      \  \"overall_score\": 0.75,\n  \"summary\": \"Краткое резюме (2-3 предложения)\"\
+      ,\n  \"reasoning\": \"Обоснование итоговой оценки с учетом весов\"\n}\n"
+database:
+  type: clickhouse
+  clickhouse:
+    host: clickhouse
+    port: 9000
+    database: hrhelp
+    username: ${DATABASE_CLICKHOUSE_USERNAME}
+    password: ''
+    secure: false
+    timeout: 30
+  sqlite:
+    path: data/candidates.db
+  postgresql:
+    host: localhost
+    port: 5432
+    database: hrhelp
+    username: ${DATABASE_POSTGRESQL_USERNAME}
+    password: ${DATABASE_POSTGRESQL_PASSWORD}
+  cache_ttl: 3600
+  max_cache_size: 10000

@@ -1,0 +1,437 @@
+services:
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+    - 8088:8088
+    environment:
+      DOCKER_ENV: 'true'
+      HH_API_CLIENT_ID: ${HH_API_CLIENT_ID-}
+      HH_API_CLIENT_SECRET: ${HH_API_CLIENT_SECRET-}
+      HH_API_USER_AGENT: ${HH_API_USER_AGENT-}
+      HH_API_USER_TOKENS_ACCESS_TOKEN: ${HH_API_USER_TOKENS_ACCESS_TOKEN-}
+      HH_API_USER_TOKENS_REFRESH_TOKEN: ${HH_API_USER_TOKENS_REFRESH_TOKEN-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY-}
+      AI_ANALYSIS_PROXY_USERNAME: ${AI_ANALYSIS_PROXY_USERNAME-}
+      DATABASE_CLICKHOUSE_USERNAME: ${DATABASE_CLICKHOUSE_USERNAME-}
+      DATABASE_POSTGRESQL_USERNAME: ${DATABASE_POSTGRESQL_USERNAME-}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD-}
+      PASSWORD: ${PASSWORD-}
+      HH_CLIENT_SECRET: ${HH_CLIENT_SECRET-}
+      OPENROUTER_API_KEY_ALT_2: ${OPENROUTER_API_KEY_ALT_2-}
+      HR_MANAGER_PASSWORD: ${HR_MANAGER_PASSWORD-}
+      RECRUITER_PASSWORD: ${RECRUITER_PASSWORD-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD-}
+      PASS: ${PASS-}
+      SERVICES_GATEWAY_HOST: ${SERVICES_GATEWAY_HOST-}
+      AI_ANALYSIS_PROXY_HOST: ${AI_ANALYSIS_PROXY_HOST-}
+      AI_ANALYSIS_PROXY_PORT: ${AI_ANALYSIS_PROXY_PORT-}
+      AI_ANALYSIS_PROXY_PASSWORD: ${AI_ANALYSIS_PROXY_PASSWORD-}
+      DATABASE_POSTGRESQL_PASSWORD: ${DATABASE_POSTGRESQL_PASSWORD-}
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER-}
+      USER_AGENT: ${USER_AGENT-}
+    volumes:
+    - ./config:/app/config
+    - ./logs:/app/logs
+    command: python gateway/main.py
+    depends_on:
+    - ranking
+    - hh_api
+    - config
+    - database
+    - ai_analysis
+    - vacancy_builder
+    networks:
+    - recruitment_workflow-network
+  ranking:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+    - 8002:8002
+    environment:
+      DOCKER_ENV: 'true'
+      HH_API_CLIENT_ID: ${HH_API_CLIENT_ID-}
+      HH_API_CLIENT_SECRET: ${HH_API_CLIENT_SECRET-}
+      HH_API_USER_AGENT: ${HH_API_USER_AGENT-}
+      HH_API_USER_TOKENS_ACCESS_TOKEN: ${HH_API_USER_TOKENS_ACCESS_TOKEN-}
+      HH_API_USER_TOKENS_REFRESH_TOKEN: ${HH_API_USER_TOKENS_REFRESH_TOKEN-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY-}
+      AI_ANALYSIS_PROXY_USERNAME: ${AI_ANALYSIS_PROXY_USERNAME-}
+      DATABASE_CLICKHOUSE_USERNAME: ${DATABASE_CLICKHOUSE_USERNAME-}
+      DATABASE_POSTGRESQL_USERNAME: ${DATABASE_POSTGRESQL_USERNAME-}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD-}
+      PASSWORD: ${PASSWORD-}
+      HH_CLIENT_SECRET: ${HH_CLIENT_SECRET-}
+      OPENROUTER_API_KEY_ALT_2: ${OPENROUTER_API_KEY_ALT_2-}
+      HR_MANAGER_PASSWORD: ${HR_MANAGER_PASSWORD-}
+      RECRUITER_PASSWORD: ${RECRUITER_PASSWORD-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD-}
+      PASS: ${PASS-}
+      SERVICES_GATEWAY_HOST: ${SERVICES_GATEWAY_HOST-}
+      AI_ANALYSIS_PROXY_HOST: ${AI_ANALYSIS_PROXY_HOST-}
+      AI_ANALYSIS_PROXY_PORT: ${AI_ANALYSIS_PROXY_PORT-}
+      AI_ANALYSIS_PROXY_PASSWORD: ${AI_ANALYSIS_PROXY_PASSWORD-}
+      DATABASE_POSTGRESQL_PASSWORD: ${DATABASE_POSTGRESQL_PASSWORD-}
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER-}
+      USER_AGENT: ${USER_AGENT-}
+    volumes:
+    - ./config:/app/config
+    - ./logs:/app/logs
+    command: python ranking/main.py
+    networks:
+    - recruitment_workflow-network
+  hh_api:
+    build: .
+    ports:
+    - 8003:8003
+    volumes:
+    - ./hh_api:/app
+    - ./shared:/app/shared
+    - ./config:/app/config
+    environment:
+      DOCKER_ENV: 'true'
+      HH_API_CLIENT_ID: ${HH_API_CLIENT_ID-}
+      HH_API_CLIENT_SECRET: ${HH_API_CLIENT_SECRET-}
+      HH_API_USER_AGENT: ${HH_API_USER_AGENT-}
+      HH_API_USER_TOKENS_ACCESS_TOKEN: ${HH_API_USER_TOKENS_ACCESS_TOKEN-}
+      HH_API_USER_TOKENS_REFRESH_TOKEN: ${HH_API_USER_TOKENS_REFRESH_TOKEN-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY-}
+      AI_ANALYSIS_PROXY_USERNAME: ${AI_ANALYSIS_PROXY_USERNAME-}
+      DATABASE_CLICKHOUSE_USERNAME: ${DATABASE_CLICKHOUSE_USERNAME-}
+      DATABASE_POSTGRESQL_USERNAME: ${DATABASE_POSTGRESQL_USERNAME-}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD-}
+      PASSWORD: ${PASSWORD-}
+      HH_CLIENT_SECRET: ${HH_CLIENT_SECRET-}
+      OPENROUTER_API_KEY_ALT_2: ${OPENROUTER_API_KEY_ALT_2-}
+      HR_MANAGER_PASSWORD: ${HR_MANAGER_PASSWORD-}
+      RECRUITER_PASSWORD: ${RECRUITER_PASSWORD-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD-}
+      PASS: ${PASS-}
+      SERVICES_GATEWAY_HOST: ${SERVICES_GATEWAY_HOST-}
+      AI_ANALYSIS_PROXY_HOST: ${AI_ANALYSIS_PROXY_HOST-}
+      AI_ANALYSIS_PROXY_PORT: ${AI_ANALYSIS_PROXY_PORT-}
+      AI_ANALYSIS_PROXY_PASSWORD: ${AI_ANALYSIS_PROXY_PASSWORD-}
+      DATABASE_POSTGRESQL_PASSWORD: ${DATABASE_POSTGRESQL_PASSWORD-}
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER-}
+      USER_AGENT: ${USER_AGENT-}
+    command: python -m uvicorn main:app --host 0.0.0.0 --port 8003 --reload
+    networks:
+    - recruitment_workflow-network
+  config:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+    - 8004:8004
+    environment:
+      DOCKER_ENV: 'true'
+      HH_API_CLIENT_ID: ${HH_API_CLIENT_ID-}
+      HH_API_CLIENT_SECRET: ${HH_API_CLIENT_SECRET-}
+      HH_API_USER_AGENT: ${HH_API_USER_AGENT-}
+      HH_API_USER_TOKENS_ACCESS_TOKEN: ${HH_API_USER_TOKENS_ACCESS_TOKEN-}
+      HH_API_USER_TOKENS_REFRESH_TOKEN: ${HH_API_USER_TOKENS_REFRESH_TOKEN-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY-}
+      AI_ANALYSIS_PROXY_USERNAME: ${AI_ANALYSIS_PROXY_USERNAME-}
+      DATABASE_CLICKHOUSE_USERNAME: ${DATABASE_CLICKHOUSE_USERNAME-}
+      DATABASE_POSTGRESQL_USERNAME: ${DATABASE_POSTGRESQL_USERNAME-}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD-}
+      PASSWORD: ${PASSWORD-}
+      HH_CLIENT_SECRET: ${HH_CLIENT_SECRET-}
+      OPENROUTER_API_KEY_ALT_2: ${OPENROUTER_API_KEY_ALT_2-}
+      HR_MANAGER_PASSWORD: ${HR_MANAGER_PASSWORD-}
+      RECRUITER_PASSWORD: ${RECRUITER_PASSWORD-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD-}
+      PASS: ${PASS-}
+      SERVICES_GATEWAY_HOST: ${SERVICES_GATEWAY_HOST-}
+      AI_ANALYSIS_PROXY_HOST: ${AI_ANALYSIS_PROXY_HOST-}
+      AI_ANALYSIS_PROXY_PORT: ${AI_ANALYSIS_PROXY_PORT-}
+      AI_ANALYSIS_PROXY_PASSWORD: ${AI_ANALYSIS_PROXY_PASSWORD-}
+      DATABASE_POSTGRESQL_PASSWORD: ${DATABASE_POSTGRESQL_PASSWORD-}
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER-}
+      USER_AGENT: ${USER_AGENT-}
+    volumes:
+    - ./config:/app/config
+    - ./logs:/app/logs
+    command: python config/main.py
+    networks:
+    - recruitment_workflow-network
+  recruitment_runtime:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+    - 8010:8010
+    environment:
+      DOCKER_ENV: 'true'
+      HH_API_CLIENT_ID: ${HH_API_CLIENT_ID-}
+      HH_API_CLIENT_SECRET: ${HH_API_CLIENT_SECRET-}
+      HH_API_USER_AGENT: ${HH_API_USER_AGENT-}
+      HH_API_USER_TOKENS_ACCESS_TOKEN: ${HH_API_USER_TOKENS_ACCESS_TOKEN-}
+      HH_API_USER_TOKENS_REFRESH_TOKEN: ${HH_API_USER_TOKENS_REFRESH_TOKEN-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY-}
+      AI_ANALYSIS_PROXY_USERNAME: ${AI_ANALYSIS_PROXY_USERNAME-}
+      DATABASE_CLICKHOUSE_USERNAME: ${DATABASE_CLICKHOUSE_USERNAME-}
+      DATABASE_POSTGRESQL_USERNAME: ${DATABASE_POSTGRESQL_USERNAME-}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD-}
+      PASSWORD: ${PASSWORD-}
+      HH_CLIENT_SECRET: ${HH_CLIENT_SECRET-}
+      OPENROUTER_API_KEY_ALT_2: ${OPENROUTER_API_KEY_ALT_2-}
+      HR_MANAGER_PASSWORD: ${HR_MANAGER_PASSWORD-}
+      RECRUITER_PASSWORD: ${RECRUITER_PASSWORD-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD-}
+      PASS: ${PASS-}
+      SERVICES_GATEWAY_HOST: ${SERVICES_GATEWAY_HOST-}
+      AI_ANALYSIS_PROXY_HOST: ${AI_ANALYSIS_PROXY_HOST-}
+      AI_ANALYSIS_PROXY_PORT: ${AI_ANALYSIS_PROXY_PORT-}
+      AI_ANALYSIS_PROXY_PASSWORD: ${AI_ANALYSIS_PROXY_PASSWORD-}
+      DATABASE_POSTGRESQL_PASSWORD: ${DATABASE_POSTGRESQL_PASSWORD-}
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER-}
+      USER_AGENT: ${USER_AGENT-}
+    volumes:
+    - ./autorecruiter:/app/autorecruiter
+    - ./shared:/app/shared
+    - ./config:/app/config
+    - ./logs:/app/logs
+    command: python autorecruiter/main.py
+    depends_on:
+    - ai_analysis
+    - ranking
+    - hh_api
+    - vacancy_builder
+    - gateway
+    networks:
+    - recruitment_workflow-network
+  ai_analysis:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+    - 8005:8005
+    environment:
+      DOCKER_ENV: 'true'
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      HH_API_CLIENT_ID: ${HH_API_CLIENT_ID-}
+      HH_API_CLIENT_SECRET: ${HH_API_CLIENT_SECRET-}
+      HH_API_USER_AGENT: ${HH_API_USER_AGENT-}
+      HH_API_USER_TOKENS_ACCESS_TOKEN: ${HH_API_USER_TOKENS_ACCESS_TOKEN-}
+      HH_API_USER_TOKENS_REFRESH_TOKEN: ${HH_API_USER_TOKENS_REFRESH_TOKEN-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY-}
+      AI_ANALYSIS_PROXY_USERNAME: ${AI_ANALYSIS_PROXY_USERNAME-}
+      DATABASE_CLICKHOUSE_USERNAME: ${DATABASE_CLICKHOUSE_USERNAME-}
+      DATABASE_POSTGRESQL_USERNAME: ${DATABASE_POSTGRESQL_USERNAME-}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD-}
+      PASSWORD: ${PASSWORD-}
+      HH_CLIENT_SECRET: ${HH_CLIENT_SECRET-}
+      OPENROUTER_API_KEY_ALT_2: ${OPENROUTER_API_KEY_ALT_2-}
+      HR_MANAGER_PASSWORD: ${HR_MANAGER_PASSWORD-}
+      RECRUITER_PASSWORD: ${RECRUITER_PASSWORD-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD-}
+      PASS: ${PASS-}
+      SERVICES_GATEWAY_HOST: ${SERVICES_GATEWAY_HOST-}
+      AI_ANALYSIS_PROXY_HOST: ${AI_ANALYSIS_PROXY_HOST-}
+      AI_ANALYSIS_PROXY_PORT: ${AI_ANALYSIS_PROXY_PORT-}
+      AI_ANALYSIS_PROXY_PASSWORD: ${AI_ANALYSIS_PROXY_PASSWORD-}
+      DATABASE_POSTGRESQL_PASSWORD: ${DATABASE_POSTGRESQL_PASSWORD-}
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER-}
+      USER_AGENT: ${USER_AGENT-}
+    deploy:
+      resources:
+        limits:
+          memory: 3G
+          cpus: '3.0'
+        reservations:
+          memory: 1G
+          cpus: '1.0'
+    volumes:
+    - ./config:/app/config
+    - ./logs:/app/logs
+    - ./data:/app/data
+    command: python ai_analysis/main.py
+    depends_on:
+    - config
+    networks:
+    - recruitment_workflow-network
+  database:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+    - 8006:8006
+    environment:
+      DOCKER_ENV: 'true'
+      HH_API_CLIENT_ID: ${HH_API_CLIENT_ID-}
+      HH_API_CLIENT_SECRET: ${HH_API_CLIENT_SECRET-}
+      HH_API_USER_AGENT: ${HH_API_USER_AGENT-}
+      HH_API_USER_TOKENS_ACCESS_TOKEN: ${HH_API_USER_TOKENS_ACCESS_TOKEN-}
+      HH_API_USER_TOKENS_REFRESH_TOKEN: ${HH_API_USER_TOKENS_REFRESH_TOKEN-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY-}
+      AI_ANALYSIS_PROXY_USERNAME: ${AI_ANALYSIS_PROXY_USERNAME-}
+      DATABASE_CLICKHOUSE_USERNAME: ${DATABASE_CLICKHOUSE_USERNAME-}
+      DATABASE_POSTGRESQL_USERNAME: ${DATABASE_POSTGRESQL_USERNAME-}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD-}
+      PASSWORD: ${PASSWORD-}
+      HH_CLIENT_SECRET: ${HH_CLIENT_SECRET-}
+      OPENROUTER_API_KEY_ALT_2: ${OPENROUTER_API_KEY_ALT_2-}
+      HR_MANAGER_PASSWORD: ${HR_MANAGER_PASSWORD-}
+      RECRUITER_PASSWORD: ${RECRUITER_PASSWORD-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD-}
+      PASS: ${PASS-}
+      SERVICES_GATEWAY_HOST: ${SERVICES_GATEWAY_HOST-}
+      AI_ANALYSIS_PROXY_HOST: ${AI_ANALYSIS_PROXY_HOST-}
+      AI_ANALYSIS_PROXY_PORT: ${AI_ANALYSIS_PROXY_PORT-}
+      AI_ANALYSIS_PROXY_PASSWORD: ${AI_ANALYSIS_PROXY_PASSWORD-}
+      DATABASE_POSTGRESQL_PASSWORD: ${DATABASE_POSTGRESQL_PASSWORD-}
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER-}
+      USER_AGENT: ${USER_AGENT-}
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '2.0'
+        reservations:
+          memory: 1G
+          cpus: '1.0'
+    volumes:
+    - ./config:/app/config
+    - ./logs:/app/logs
+    - ./data:/app/data
+    command: python database/main.py
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+    networks:
+    - recruitment_workflow-network
+  vacancy_builder:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+    - 8008:8008
+    environment:
+      DOCKER_ENV: 'true'
+      HH_API_CLIENT_ID: ${HH_API_CLIENT_ID-}
+      HH_API_CLIENT_SECRET: ${HH_API_CLIENT_SECRET-}
+      HH_API_USER_AGENT: ${HH_API_USER_AGENT-}
+      HH_API_USER_TOKENS_ACCESS_TOKEN: ${HH_API_USER_TOKENS_ACCESS_TOKEN-}
+      HH_API_USER_TOKENS_REFRESH_TOKEN: ${HH_API_USER_TOKENS_REFRESH_TOKEN-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY-}
+      AI_ANALYSIS_PROXY_USERNAME: ${AI_ANALYSIS_PROXY_USERNAME-}
+      DATABASE_CLICKHOUSE_USERNAME: ${DATABASE_CLICKHOUSE_USERNAME-}
+      DATABASE_POSTGRESQL_USERNAME: ${DATABASE_POSTGRESQL_USERNAME-}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD-}
+      PASSWORD: ${PASSWORD-}
+      HH_CLIENT_SECRET: ${HH_CLIENT_SECRET-}
+      OPENROUTER_API_KEY_ALT_2: ${OPENROUTER_API_KEY_ALT_2-}
+      HR_MANAGER_PASSWORD: ${HR_MANAGER_PASSWORD-}
+      RECRUITER_PASSWORD: ${RECRUITER_PASSWORD-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD-}
+      PASS: ${PASS-}
+      SERVICES_GATEWAY_HOST: ${SERVICES_GATEWAY_HOST-}
+      AI_ANALYSIS_PROXY_HOST: ${AI_ANALYSIS_PROXY_HOST-}
+      AI_ANALYSIS_PROXY_PORT: ${AI_ANALYSIS_PROXY_PORT-}
+      AI_ANALYSIS_PROXY_PASSWORD: ${AI_ANALYSIS_PROXY_PASSWORD-}
+      DATABASE_POSTGRESQL_PASSWORD: ${DATABASE_POSTGRESQL_PASSWORD-}
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER-}
+      USER_AGENT: ${USER_AGENT-}
+    volumes:
+    - ./config:/app/config
+    - ./logs:/app/logs
+    command: python vacancy_builder/main.py
+    depends_on:
+    - hh_api
+    - config
+    networks:
+    - recruitment_workflow-network
+  master_agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+    - 8020:8020
+    environment:
+      DOCKER_ENV: 'true'
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      HH_API_CLIENT_ID: ${HH_API_CLIENT_ID-}
+      HH_API_CLIENT_SECRET: ${HH_API_CLIENT_SECRET-}
+      HH_API_USER_AGENT: ${HH_API_USER_AGENT-}
+      HH_API_USER_TOKENS_ACCESS_TOKEN: ${HH_API_USER_TOKENS_ACCESS_TOKEN-}
+      HH_API_USER_TOKENS_REFRESH_TOKEN: ${HH_API_USER_TOKENS_REFRESH_TOKEN-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY-}
+      AI_ANALYSIS_PROXY_USERNAME: ${AI_ANALYSIS_PROXY_USERNAME-}
+      DATABASE_CLICKHOUSE_USERNAME: ${DATABASE_CLICKHOUSE_USERNAME-}
+      DATABASE_POSTGRESQL_USERNAME: ${DATABASE_POSTGRESQL_USERNAME-}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD-}
+      PASSWORD: ${PASSWORD-}
+      HH_CLIENT_SECRET: ${HH_CLIENT_SECRET-}
+      OPENROUTER_API_KEY_ALT_2: ${OPENROUTER_API_KEY_ALT_2-}
+      HR_MANAGER_PASSWORD: ${HR_MANAGER_PASSWORD-}
+      RECRUITER_PASSWORD: ${RECRUITER_PASSWORD-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD-}
+      PASS: ${PASS-}
+      SERVICES_GATEWAY_HOST: ${SERVICES_GATEWAY_HOST-}
+      AI_ANALYSIS_PROXY_HOST: ${AI_ANALYSIS_PROXY_HOST-}
+      AI_ANALYSIS_PROXY_PORT: ${AI_ANALYSIS_PROXY_PORT-}
+      AI_ANALYSIS_PROXY_PASSWORD: ${AI_ANALYSIS_PROXY_PASSWORD-}
+      DATABASE_POSTGRESQL_PASSWORD: ${DATABASE_POSTGRESQL_PASSWORD-}
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER-}
+      USER_AGENT: ${USER_AGENT-}
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '2.0'
+        reservations:
+          memory: 1G
+          cpus: '1.0'
+    volumes:
+    - ./master_agent:/app/master_agent
+    - ./shared:/app/shared
+    - ./config:/app/config
+    - ./logs:/app/logs
+    - ./data:/app/data
+    command: python master_agent/main.py
+    depends_on:
+    - recruitment_runtime
+    - ai_analysis
+    - gateway
+    - database
+    networks:
+    - recruitment_workflow-network
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.1
+    container_name: recruitment_workflow-clickhouse
+    ports:
+    - 8123:8123
+    - 9000:9000
+    environment:
+    - CLICKHOUSE_DB=recruitment_workflow
+    - CLICKHOUSE_USER=${CLICKHOUSE_USER:?Set CLICKHOUSE_USER in private environment}
+    - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD:?Set CLICKHOUSE_PASSWORD in private
+      environment}
+    - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
+    volumes:
+    - clickhouse_data:/var/lib/clickhouse
+    - ./config/clickhouse/init_schema.sql:/docker-entrypoint-initdb.d/init_schema.sql
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    healthcheck:
+      test:
+      - CMD
+      - clickhouse-client
+      - --query
+      - SELECT 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+    - recruitment_workflow-network
+networks:
+  recruitment_workflow-network:
+    driver: bridge
+volumes:
+  logs: null
+  clickhouse_data: null
