@@ -15,7 +15,7 @@ plotly==6.2.0
 
 # Конфигурация и логирование
 pyyaml==6.0.2
-python-dotenv==1.0.1
+python-dotenv==1.2.2
 
 # Дополнительные утилиты
 python-multipart==0.0.20
