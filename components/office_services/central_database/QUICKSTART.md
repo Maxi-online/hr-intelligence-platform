@@ -16,7 +16,7 @@ mysql -u root -p < complete_schema.sql
 
 
 
-# PostgreSQL (if necessary)
+# PostgreSQL (If necessary)
 
 psql -U postgres -f complete_schema_postgres.sql
 
@@ -178,7 +178,7 @@ INSERT INTO agents (
 
 ) VALUES (
 
-    UUID(), automatic UUID generation
+    UUID(), -- Automatic generation UUID
 
     '@menu.ai',
 
@@ -188,7 +188,7 @@ INSERT INTO agents (
 
     'Restaurant Menu Expert',
 
-    'Expert on the menu of AI best-tech restaurants,'
+    'Expert on the menu of restaurants with advanced techniques AI',
 
     '@demo_organization_menuaibot',
 
@@ -220,9 +220,9 @@ INSERT INTO agent_prompts (
 
     'menu_agent_001',
 
-    'You're @menu.ai -- restaurant menu expert...'
+    'You @menu.ai - Restaurant menu expert...',
 
-    'A friendly, professional, creative',
+    'Friendly, professional, creative',
 
     '1.0.0',
 
@@ -314,7 +314,7 @@ INSERT INTO core_memory (
 
     'response_language',
 
-    'Always answer in Russian',
+    'Always answer in Russian.',
 
     1,
 
@@ -338,7 +338,7 @@ INSERT INTO core_memory (
 
 ```sql
 
--- Remove is_current flag from the old version
+-- Remove the flag is_current From the old version
 
 UPDATE agent_prompts 
 
@@ -362,9 +362,9 @@ INSERT INTO agent_prompts (
 
     'supervisor_001',
 
-    'Newly improved prop...'
+    'New Enhanced Prompte...',
 
-    'The professional manager',
+    'Professional Manager',
 
     '2.0.0',
 
@@ -778,7 +778,7 @@ CREATE TABLE chat_history_archive LIKE chat_history;
 
 
 
-'Remove old records
+-- Move old records
 
 INSERT INTO chat_history_archive
 
@@ -788,7 +788,7 @@ WHERE timestamp < NOW() - INTERVAL 30 DAY;
 
 
 
--- Remove from the main table
+-- Remove from Main Table
 
 DELETE FROM chat_history
 
@@ -852,7 +852,7 @@ class AgentDatabase:
 
     def get_agent_config(self, agent_id: str) -> Dict[str, Any]:
 
-        "To get the agent's full configuration."
+        """Receive full agent configuration"""
 
         query = """
 
@@ -890,7 +890,7 @@ class AgentDatabase:
 
     def get_agent_tools(self, agent_id: str) -> list:
 
-        "Get Agent's Tools."
+        """Get Agents Tools"""
 
         query = """
 
@@ -922,7 +922,7 @@ class AgentDatabase:
 
     def get_core_memory(self, agent_id: str) -> list:
 
-        """Recovering the core memory of the agent"""
+        """Get core Agent memory"""
 
         query = """
 
@@ -1018,7 +1018,7 @@ print(tools)
 
 
 
-# Get the memory
+# Get a memory
 
 memory = db.get_core_memory('supervisor_001')
 
