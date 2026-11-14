@@ -71,7 +71,7 @@ hh_api:
   user_agent: ${HH_API_USER_AGENT}
   user_tokens:
     access_token: ${HH_API_USER_TOKENS_ACCESS_TOKEN}
-    expires_at: 1755513085.2608142
+    expires_at: 0
     refresh_token: ${HH_API_USER_TOKENS_REFRESH_TOKEN}
 logging:
   file: logs/app.log
