@@ -1,56 +1,59 @@
-# 🚀 Quick Start - CandidateRanking
+# Candidate Ranking: quickstart
 
-CandidateRanking builds the top of candidates by referring to the hh.ru vacation: downloads responses, draws a summary, makes a multi-agent AI analysis and rank.
+For a credential-free introduction, use the [root README](../../README.md) and
+offline demo. The steps below start the connected candidate-ranking component;
+they require your own employer authorization and provider/database configuration.
 
-## (1) Training
-```bash
-cp config/settings.yaml.template config/settings.yaml
-# Insert keys to config/settings.yaml:
-# - ai_analysis.openai_api_key
-# - hh_api.client_id / client_secret (OAuth employer)
-# - hh_api.user_tokens.access_token / refresh_token (If you already have)
+## Prepare and start
+
+Run from `components/candidate_ranking` in an existing checkout:
+
+```powershell
+Copy-Item config/settings.example.yaml config/settings.yaml
+Copy-Item .env.example .env
 ```
 
-## (2) Launch (Docker Compose)
-```bash
-docker-compose up -d --build
+Populate the private values described in [ENVIRONMENT_VARIABLES.md](ENVIRONMENT_VARIABLES.md)
+and [OAUTH_SETUP.md](OAUTH_SETUP.md). Initialize these files only once so an
+existing deployment's values are not overwritten.
+
+```powershell
+docker compose config --quiet
+docker compose up -d --build
+docker compose ps
 ```
 
-## (3) Verification
-- Frontend: http://localhost:8501
-- Gateway API: http://localhost:8088/docs
+Open `http://localhost:8501`. Use a vacancy belonging to, or accessible to, the
+authorized employer account. The frontend retrieves responses, loads resumes,
+invokes analysis, and presents ranked candidates. Open
+`http://localhost:8088/docs` for the gateway's current request schema.
 
-## (4) Receive a TAP for a vacancy
-1. Open Frontend
-2. Insert `https://hh.ru/vacancy/<id>` mode link
-3. Press "Construct a TOP for Responses"
+## Gateway request
 
-Alternative via API (through Gateway):
-```bash
-curl -X POST http://localhost:8088/vacancy/top \
-  -H 'Content-Type: application/json' \
-  -d '{"vacancy_url":"https://hh.ru/vacancy/123456789","limit":10}'
+This operator-driven example asks for a real vacancy URL instead of embedding
+a fabricated customer vacancy ID:
+
+```powershell
+$vacancyUrl = Read-Host 'Vacancy URL accessible to the authorized employer'
+$requestBody = @{ vacancy_url = $vacancyUrl; limit = 10 } | ConvertTo-Json
+Invoke-RestMethod -Method Post -Uri 'http://localhost:8088/vacancy/top' -ContentType 'application/json' -Body $requestBody
 ```
 
-## Composition of services and ports
-- frontend: 8501
-- gateway: 8088
-- search: 8001
-- ranking: 8002
-- hh_api: 8003
-- ai_analysis: 8005
-- clickhouse: 8123 (http), 9000 (native)
+## Service addresses
 
-## Thickness HH.ru
-- The list of answers uses the “employee talks” (`/employer_negotiations`), requires the OAuth employer and rights.
-- At 401/403 - check `client_id/client_secret` and issue office rights.
-- At 429, reruns are delayed, wait for the limit window.
+| Service | Port |
+| --- | --- |
+| Frontend | 8501 |
+| Gateway | 8088 |
+| Search | 8001 |
+| Ranking | 8002 |
+| HH API adapter | 8003 |
+| Analysis | 8005 |
+| ClickHouse HTTP / native | 8123 / 9000 |
 
-## Thickness AI
-- OpenAI key is taken from `config/settings.yaml` (or `OPENAI_API_KEY`).
-- The analysis goes through `/multi-agent/batch`.
+Employer response retrieval uses employer negotiations and requires the account's
+permissions. On 401/403, review the OAuth session; on 429, wait for the provider's
+rate-limit window. Analysis settings reference `OPENAI_API_KEY`; the multi-agent
+batch endpoint is `/multi-agent/batch` on the analysis service.
 
-## Update
-```bash
-docker-compose down && git pull && docker-compose up -d --build
-```
+See [INSTALL.md](INSTALL.md) for local services, logs and update procedures.
