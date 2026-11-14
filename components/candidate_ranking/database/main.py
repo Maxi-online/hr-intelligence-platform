@@ -1,47 +1,47 @@
 """
 Candidate Analysis - Database Service
 
-Высокопроизводительный сервис для работы с ClickHouse базой данных.
+High-end service for the Clickhouse database.
 
-Этот модуль обеспечивает:
-- Интеграцию с ClickHouse для колоночного хранения данных
-- Автоматическую инициализацию схемы БД при запуске
-- CRUD операции для кандидатов и результатов анализа
-- Аналитические запросы для дашбордов и отчётов
-- Кэширование результатов поиска и AI анализа
+The module provides:
+- Integration with Clickhouse for column storage
+- Automatic initialization of the BD scheme at launch
+- CRUD Operations for Candidates and Analysis
+- Analytical queries for dashboards and reports
+- Cashing of search results and AI analysis
 
 Core Features:
-- ClickHouse Integration: Высокопроизводительная колоночная БД
-- Auto Schema Init: Автоматическое создание таблиц при первом запуске
-- CRUD Operations: Полный набор операций с кандидатами
-- Analytics Support: Агрегированные запросы для аналитики
-- Search Caching: Кэширование поисковых запросов и результатов
+- ClickHouse Integration: High performance column database
+- Auto Schema Init: Automatically creating tables at first launch
+- CRUD Operations: Full range of transactions with candidates
+- Analytics Support: Aggregated Requests for Analysts
+- Search Caching: Cashing search requests and results
 
 Database Schema:
-- candidates: Профили кандидатов с AI анализом
-- search_history: История поисковых запросов
-- ai_analysis_results: Результаты AI анализа для кэширования
-- system_metrics: Метрики производительности системы
+- Candidates: Candidates &apos; profiles with AI analysis
+- search_history: History of search requests
+- ai_analysis_results: AI analysis results for cache
+- system_metrics: System productivity metrics
 
 API Endpoints:
-- POST /candidates: Сохранение кандидата
-- GET /candidates/{id}: Получение кандидата по ID
-- GET /candidates/search: Поиск кандидатов в БД
-- GET /analytics/summary: Аналитические данные
-- GET /health: Проверка состояния БД
+- POST /candidates: Saving candidate
+- GET /candidates/{id}: Obtaining ID candidate
+- GET /candidates/search: Search for database candidates
+- GET /analytics/summary: Analytical data
+- GET / Health: database status check
 
 Performance Features:
-- ClickHouse оптимизированные типы данных
-- Партиционирование по датам для быстрых запросов
-- Индексация по ключевым полям (candidate_id, search_query)
-- Компрессия данных для экономии места
-- Поддержка batch вставок для производительности
+- Clickhouse optimized data types
+- Partying by date for quick requests
+- Indexation for key fields (candidate_id, search_query))
+- Data compression to save space
+- Batch productivity boxes support
 
 Reliability:
-- Автоматическое переподключение при сбоях
-- Graceful handling ошибок соединения
-- Health checks для мониторинга состояния
-- Lifespan management для proper startup/shutdown
+Automatic reconnecting during malfunctions
+- Graceful handling of connection errors
+- Health checks for status monitoring
+- Lifespan management for Proper Startup/Shutdown
 
 Author: Candidate Analysis Team
 Version: 2.0.0 (ClickHouse + Auto Schema)
@@ -59,7 +59,7 @@ from typing import Dict, Any, List, Optional
 import asyncio
 from contextlib import asynccontextmanager
 
-# Добавляем родительскую директорию в путь для импорта shared модулей
+# Add the parent directory to the route to import the used modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from shared.models import (
@@ -68,37 +68,37 @@ from shared.models import (
 )
 from shared.utils import setup_logging, load_config
 
-# Настройка логирования
+# Logging settings
 logger = setup_logging("database-service")
 
-# Автоматическая инициализация базы данных при запуске
+# Automatic initialization of the database at the start
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Управление жизненным циклом приложения с автоматической инициализацией БД"""
-    logger.info("🚀 Запуск Database Service с автоматической инициализацией...")
+    'Management of the application life cycle with automatic initialization of BD'
+    logger.info('🚀 Starting Database Service with Automatic Initialization...')
     
-    # Инициализация при запуске
+    # Initialize at startup
     try:
         global db_manager
         db_manager = DatabaseManager()
-        logger.info("✅ База данных инициализирована автоматически при запуске")
+        logger.info('✅ Database initialized automatically on launch')
     except Exception as e:
-        logger.error(f"❌ Критическая ошибка инициализации базы данных: {e}")
+        logger.error(f"❌ Critical error of database initialization: {e}")
         raise
     
     yield
     
-    # Очистка при завершении
+    # Cleaning at completion
     try:
         if hasattr(db_manager, 'clickhouse_manager'):
             db_manager.clickhouse_manager.close()
-        logger.info("🔄 Database Service завершен")
+        logger.info('🔄 Database Service complete')
     except Exception as e:
-        logger.error(f"❌ Ошибка при завершении: {e}")
+        logger.error(f"❌ Error at completion: {e}")
 
 app = FastAPI(
     title="Database Service",
-    description="Сервис хранения и управления данными кандидатов",
+    description='Data storage and management service for candidates',
     version="1.0.0",
     lifespan=lifespan
 )
@@ -117,72 +117,72 @@ class DatabaseManager:
         self.config = load_config()
         self.db_config = self.config.get("database", {})
         
-        # Используем только ClickHouse!
+        # We'll only use Clickhouse!
         from clickhouse_manager import ClickHouseManager
         self.clickhouse_manager = ClickHouseManager()
-        logger.info("✅ ClickHouse Manager инициализирован")
+        logger.info('✅ ClickHouse Manager initialized')
 
     
     def save_candidate(self, candidate: Candidate, ai_analysis: Optional[AIAnalysisResponse] = None) -> bool:
-        """Сохранение кандидата в базу данных"""
+        'Retaining a candidate to the database'
         try:
-            # Используем только ClickHouse!
+            # We'll only use Clickhouse!
             return self.clickhouse_manager.save_candidate(candidate, ai_analysis)
         except Exception as e:
-            logger.error(f"Ошибка сохранения кандидата {candidate.id}: {e}")
+            logger.error(f"Error of preservation of the candidate {candidate.id}: {e}")
             return False
     
     def get_candidate(self, candidate_id: str) -> Optional[DatabaseCandidate]:
-        """Получение кандидата из базы данных"""
+        'Retrieving a candidate from the database'
         try:
-            # Используем только ClickHouse!
+            # We'll only use Clickhouse!
             return self.clickhouse_manager.get_candidate(candidate_id)
         except Exception as e:
-            logger.error(f"Ошибка получения кандидата {candidate_id}: {e}")
+            logger.error(f"Error of receiving the candidate {candidate_id}: {e}")
             return None
     
     def search_candidates(self, search_params: Dict[str, Any], limit: int = 100) -> List[DatabaseCandidate]:
-        """Поиск кандидатов в базе данных"""
+        'Search for candidates in the database'
         try:
-            # Используем только ClickHouse!
+            # We'll only use Clickhouse!
             return self.clickhouse_manager.search_candidates(search_params, limit)
         except Exception as e:
-            logger.error(f"Ошибка поиска кандидатов: {e}")
+            logger.error(f"Error in search of candidates: {e}")
             return []
     
     def update_search_count(self, candidate_id: str):
-        """Обновление счетчика поисков"""
+        'Update of searcher'
         try:
-            # Используем только ClickHouse!
+            # We'll only use Clickhouse!
             return self.clickhouse_manager.update_search_count(candidate_id)
         except Exception as e:
-            logger.error(f"Ошибка обновления счетчика поисков для {candidate_id}: {e}")
+            logger.error(f"Error in the search calculator update for {candidate_id}: {e}")
     
     def get_top_candidates(self, limit: int = 10) -> List[DatabaseCandidate]:
-        """Получение топ кандидатов по популярности"""
+        'Getting top-up candidates by popularity'
         try:
-            # Используем только ClickHouse!
+            # We'll only use Clickhouse!
             return self.clickhouse_manager.get_top_candidates(limit)
         except Exception as e:
-            logger.error(f"Ошибка получения топ кандидатов: {e}")
+            logger.error(f"Error in getting top candidates: {e}")
             return []
     
     def get_statistics(self) -> Dict[str, Any]:
-        """Получение статистики базы данных"""
+        'Collection of database statistics'
         try:
-            # Используем только ClickHouse!
+            # We'll only use Clickhouse!
             return self.clickhouse_manager.get_statistics()
         except Exception as e:
-            logger.error(f"Ошибка получения статистики: {e}")
+            logger.error(f"Error in obtaining statistics: {e}")
             return {}
 
-# Инициализация db_manager перенесена в lifespan event
-# db_manager будет инициализирован автоматически при запуске приложения
+# db_manager initialization transferred to lifespan event
+# db_manager will be initialized automatically when the application is launched
 db_manager = None
 
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
-    """Проверка здоровья сервиса"""
+    'Service health check'
     return HealthResponse(
         status="healthy",
         timestamp=datetime.now(),
@@ -191,71 +191,71 @@ async def health_check():
 
 @app.post("/candidates")
 async def save_candidate(candidate: Candidate, ai_analysis: Optional[AIAnalysisResponse] = None):
-    """Сохранение кандидата"""
+    'Save the candidate'
     try:
         success = db_manager.save_candidate(candidate, ai_analysis)
         if success:
-            return {"message": "Кандидат успешно сохранен"}
+            return {"message": 'The candidate has been successfully retained'}
         else:
-            raise HTTPException(status_code=500, detail="Ошибка сохранения кандидата")
+            raise HTTPException(status_code=500, detail='Error of preservation of the candidate')
     except Exception as e:
-        logger.error(f"Ошибка сохранения кандидата: {e}")
-        raise HTTPException(status_code=500, detail="Внутренняя ошибка сервера")
+        logger.error(f"Error of preservation of the candidate: {e}")
+        raise HTTPException(status_code=500, detail='The internal server error')
 
 @app.get("/candidates/{candidate_id}")
 async def get_candidate(candidate_id: str):
-    """Получение кандидата по ID"""
+    'ID candidate received'
     try:
         candidate = db_manager.get_candidate(candidate_id)
         if candidate:
             return candidate
         else:
-            raise HTTPException(status_code=404, detail="Кандидат не найден")
+            raise HTTPException(status_code=404, detail='No candidate found')
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Ошибка получения кандидата: {e}")
-        raise HTTPException(status_code=500, detail="Внутренняя ошибка сервера")
+        logger.error(f"Error of receiving the candidate: {e}")
+        raise HTTPException(status_code=500, detail='The internal server error')
 
 @app.post("/candidates/search")
 async def search_candidates(search_params: Dict[str, Any], limit: int = 100):
-    """Поиск кандидатов"""
+    'Search for candidates'
     try:
         candidates = db_manager.search_candidates(search_params, limit)
         return {"candidates": candidates, "total": len(candidates)}
     except Exception as e:
-        logger.error(f"Ошибка поиска кандидатов: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка поиска")
+        logger.error(f"Error in search of candidates: {e}")
+        raise HTTPException(status_code=500, detail='Error of search')
 
 @app.get("/candidates/top/{limit}")
 async def get_top_candidates(limit: int = 10):
-    """Получение топ кандидатов"""
+    'To receive the top of the candidates'
     try:
         candidates = db_manager.get_top_candidates(limit)
         return {"candidates": candidates}
     except Exception as e:
-        logger.error(f"Ошибка получения топ кандидатов: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка получения топ кандидатов")
+        logger.error(f"Error in getting top candidates: {e}")
+        raise HTTPException(status_code=500, detail='Error in getting top candidates')
 
 @app.put("/candidates/{candidate_id}/search")
 async def update_search_count(candidate_id: str):
-    """Обновление счетчика поисков"""
+    'Update of searcher'
     try:
         db_manager.update_search_count(candidate_id)
-        return {"message": "Счетчик поисков обновлен"}
+        return {"message": 'Search counter updated'}
     except Exception as e:
-        logger.error(f"Ошибка обновления счетчика поисков: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка обновления счетчика")
+        logger.error(f"Error of update of the search calculator: {e}")
+        raise HTTPException(status_code=500, detail='Error of update of the calculator')
 
 @app.get("/statistics")
 async def get_statistics():
-    """Получение статистики базы данных"""
+    'Collection of database statistics'
     try:
         stats = db_manager.get_statistics()
         return stats
     except Exception as e:
-        logger.error(f"Ошибка получения статистики: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка получения статистики")
+        logger.error(f"Error in obtaining statistics: {e}")
+        raise HTTPException(status_code=500, detail='Error in obtaining statistics')
 
 if __name__ == "__main__":
     import uvicorn

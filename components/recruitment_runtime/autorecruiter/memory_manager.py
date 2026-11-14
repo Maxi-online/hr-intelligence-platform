@@ -1,11 +1,11 @@
 """
-AutoGPT Memory Manager - Система управления памятью
+AutoGPT Memory Manager - Memory Management System
 
-Реализует долгосрочную и краткосрочную память для AutoGPT агента:
-- Векторный поиск через ChromaDB
-- Эмбеддинги через OpenAI
-- Персистентное хранение контекста
-- Автоматическое забывание старых данных
+Realizes long-term and short-term memory for the AutoGPT agent:
+- Vector search via ChromaDB
+- Embeddings through OpenAI
+- Permeable storage of context
+Automatic oblivion of old data
 
 Author: Candidate Analysis Team
 Version: 1.0.0
@@ -27,25 +27,25 @@ logger = logging.getLogger("memory-manager")
 
 class LongTermMemory:
     """
-    Долгосрочная память с векторным поиском
+    Long-term memory with vector search
     
-    Возможности:
-    - Хранение опыта и знаний
-    - Векторный поиск релевантной информации  
-    - Персистентное хранение
-    - Автоматическая категоризация
+    Opportunities:
+    - Storage of experience and knowledge
+    - Vector search for relevant information  
+    - Permeable storage
+    - Automatic categorization
     """
     
     def __init__(self, persist_directory: str = "autogpt_memory"):
         self.persist_directory = Path(persist_directory)
         self.persist_directory.mkdir(exist_ok=True)
         
-        # Инициализация ChromaDB
+        # Initialization of ChromaDB
         self.client = chromadb.PersistentClient(
             path=str(self.persist_directory)
         )
         
-        # Коллекции для разных типов памяти
+        # Collections for different types of memory
         self.collections = {
             "experiences": self.client.get_or_create_collection("experiences"),
             "lessons": self.client.get_or_create_collection("lessons"),
@@ -53,19 +53,19 @@ class LongTermMemory:
             "knowledge": self.client.get_or_create_collection("knowledge")
         }
         
-        # OpenAI клиент для эмбеддингов (с поддержкой прокси)
+        # OpenAI Embeddings Client (with Proxy Support))
         from shared.utils import load_config
         
         config = load_config()
         ai_config = config.get("ai_analysis", {})
         
-        # Настройка клиента с прокси
+        # Set up a client with a Proxi
         client_params = {
             "api_key": ai_config.get("openai_api_key"),
             "base_url": ai_config.get("base_url", "https://api.openai.com/v1")
         }
         
-        # Добавляем прокси если настроен
+        # Add a proxie if you're in the mood.
         proxy_config = ai_config.get("proxy", {})
         if proxy_config.get("enabled", False):
             import httpx
@@ -79,23 +79,23 @@ class LongTermMemory:
                 proxies=proxy_url,
                 verify=False
             )
-            logger.info(f"🌐 Memory Manager: Настроен прокси для эмбеддингов")
+            logger.info(f"🌐 Memory Manager: Configured proxy for embeddings")
         
         self.embedding_client = openai.AsyncOpenAI(**client_params)
         
-        logger.info("🧠 Долгосрочная память инициализирована")
+        logger.info('🧠 Long-term memory initialized')
     
     async def store(self, content: str, metadata: Dict[str, Any], 
                    collection_name: str = "experiences") -> str:
-        """Сохранение в долгосрочную память"""
+        'Storage in long-term memory'
         try:
-            # Генерируем эмбеддинг
+            # Generating Embedded
             embedding = await self._get_embedding(content)
             
-            # Создаем уникальный ID
+            # Create a unique ID
             memory_id = f"{collection_name}_{datetime.now().timestamp()}"
             
-            # Сохраняем в коллекцию
+            # Saved in collection
             collection = self.collections.get(collection_name, self.collections["experiences"])
             collection.add(
                 documents=[content],
@@ -104,57 +104,57 @@ class LongTermMemory:
                 ids=[memory_id]
             )
             
-            logger.info(f"💾 Сохранено в {collection_name}: {content[:50]}...")
+            logger.info(f"💾 Saved in {collection_name}: {content[:50]}...")
             return memory_id
             
         except Exception as e:
-            logger.error(f"❌ Ошибка сохранения в память: {e}")
+            logger.error(f"❌ Error in memory: {e}")
             return ""
     
     async def search_relevant(self, query: str, limit: int = 5, 
                             collection_name: str = None) -> List[str]:
-        """Поиск релевантной информации"""
+        'Searching for relevant information'
         try:
-            # Генерируем эмбеддинг для запроса
+            # Generate embedings for request
             query_embedding = await self._get_embedding(query)
             
             relevant_memories = []
             
-            # Поиск во всех коллекциях или в указанной
+            # Search in all collections or specified
             collections_to_search = [collection_name] if collection_name else self.collections.keys()
             
             for coll_name in collections_to_search:
                 if coll_name in self.collections:
                     collection = self.collections[coll_name]
                     
-                    # Выполняем векторный поиск
+                    # Perform a vector search.
                     results = collection.query(
                         query_embeddings=[query_embedding],
                         n_results=limit
                     )
                     
-                    # Добавляем найденные документы
+                    # Adding the documents found
                     if results['documents'] and results['documents'][0]:
                         relevant_memories.extend(results['documents'][0])
             
-            logger.info(f"🔍 Найдено {len(relevant_memories)} релевантных воспоминаний")
+            logger.info(f"🔍 Found {len(relevant_memories)} Relevant memories")
             return relevant_memories[:limit]
             
         except Exception as e:
-            logger.error(f"❌ Ошибка поиска в памяти: {e}")
+            logger.error(f"❌ Error in memory search: {e}")
             return []
     
     async def get_recent_experiences(self, hours: int = 24) -> List[str]:
-        """Получение недавнего опыта"""
+        'Recent experience'
         try:
             cutoff_time = datetime.now() - timedelta(hours=hours)
             experiences = []
             
-            # Поиск во всех коллекциях
+            # Search All Collections
             for collection in self.collections.values():
                 try:
-                    # ChromaDB не поддерживает фильтры по времени напрямую
-                    # Получаем все документы и фильтруем
+                    # ChromaDB does not support the filters directly in time
+                    # We get all the documents and filter them.
                     results = collection.get()
                     
                     for i, metadata in enumerate(results['metadatas']):
@@ -165,14 +165,14 @@ class LongTermMemory:
                 except:
                     continue
             
-            return experiences[:10]  # Ограничиваем количество
+            return experiences[:10]  # Limiting quantity
             
         except Exception as e:
-            logger.error(f"❌ Ошибка получения недавнего опыта: {e}")
+            logger.error(f"❌ Error of Recent Experience: {e}")
             return []
     
     async def store_lesson(self, lesson: str, context: Dict[str, Any]) -> str:
-        """Сохранение урока"""
+        'Maintaining the Lesson'
         metadata = {
             **context,
             "type": "lesson",
@@ -181,7 +181,7 @@ class LongTermMemory:
         return await self.store(lesson, metadata, "lessons")
     
     async def store_strategy(self, strategy: str, success_rate: float, context: Dict[str, Any]) -> str:
-        """Сохранение успешной стратегии"""
+        'Maintaining a successful strategy'
         metadata = {
             **context,
             "type": "strategy",
@@ -191,7 +191,7 @@ class LongTermMemory:
         return await self.store(strategy, metadata, "strategies")
     
     async def store_knowledge(self, knowledge: str, source: str, context: Dict[str, Any]) -> str:
-        """Сохранение знаний"""
+        'Save knowledge'
         metadata = {
             **context,
             "type": "knowledge",
@@ -201,19 +201,19 @@ class LongTermMemory:
         return await self.store(knowledge, metadata, "knowledge")
     
     async def _get_embedding(self, text: str) -> List[float]:
-        """Получение эмбеддинга через OpenAI (с поддержкой новых моделей)"""
+        'Obtaining embedding through OpenAI (with the support of new models)'
         try:
-            # Используем новую модель эмбеддингов text-embedding-3-small для лучшей производительности
+            # We use the new text-embedding-3-small embeddings model for better performance
             response = await self.embedding_client.embeddings.create(
                 model="text-embedding-3-small",
                 input=text,
-                dimensions=1536  # Фиксируем размерность для совместимости
+                dimensions=1536  # Set dimension for compatibility
             )
             return response.data[0].embedding
             
         except Exception as e:
-            logger.error(f"❌ Ошибка получения эмбеддинга: {e}")
-            # Fallback на старую модель
+            logger.error(f"❌ Error of Embedding: {e}")
+            # Fallback to the old model
             try:
                 response = await self.embedding_client.embeddings.create(
                     model="text-embedding-ada-002",
@@ -221,11 +221,11 @@ class LongTermMemory:
                 )
                 return response.data[0].embedding
             except:
-                # Возвращаем случайный вектор как последний fallback
+                # Return the random vector as the last fallback.
                 return np.random.random(1536).tolist()
     
     def get_stats(self) -> Dict[str, Any]:
-        """Статистика памяти"""
+        'Statistics of memory'
         stats = {}
         total_memories = 0
         
@@ -243,12 +243,12 @@ class LongTermMemory:
 
 class ShortTermMemory:
     """
-    Краткосрочная память для текущей сессии
+    Short-term memory for current session
     
-    Возможности:
-    - Быстрый доступ к данным сессии
-    - Автоматическая очистка старых данных
-    - Контекстная информация
+    Opportunities:
+    - Rapid access to session data
+    - Automatic clean-up of old data
+    - Context information
     """
     
     def __init__(self, max_size: int = 100, ttl_minutes: int = 60):
@@ -256,52 +256,52 @@ class ShortTermMemory:
         self.ttl = timedelta(minutes=ttl_minutes)
         self.memory = {}  # key -> {data, timestamp}
         
-        logger.info("🧠 Краткосрочная память инициализирована")
+        logger.info('🧠 Short-term memory initialized')
     
     def store(self, key: str, data: Any, metadata: Dict[str, Any] = None) -> None:
-        """Сохранение в краткосрочную память"""
+        'Storage in short-term memory'
         try:
-            # Очищаем старые данные
+            # Cleaning up old data.
             self._cleanup_expired()
             
-            # Если память переполнена, удаляем самые старые
+            # If the memory is overfilled, we remove the oldest
             if len(self.memory) >= self.max_size:
                 oldest_key = min(self.memory.keys(), key=lambda k: self.memory[k]['timestamp'])
                 del self.memory[oldest_key]
             
-            # Сохраняем данные
+            # Save data.
             self.memory[key] = {
                 'data': data,
                 'metadata': metadata or {},
                 'timestamp': datetime.now()
             }
             
-            logger.debug(f"💾 Сохранено в краткосрочную память: {key}")
+            logger.debug(f"💾 Conserved in short-term memory: {key}")
             
         except Exception as e:
-            logger.error(f"❌ Ошибка сохранения в краткосрочную память: {e}")
+            logger.error(f"❌ Error in short-term memory: {e}")
     
     def get(self, key: str) -> Optional[Any]:
-        """Получение из краткосрочной памяти"""
+        'Recovery from short-term memory'
         try:
             if key in self.memory:
                 entry = self.memory[key]
                 
-                # Проверяем не истек ли срок
+                # Checking to see if the deadline is up.
                 if datetime.now() - entry['timestamp'] < self.ttl:
                     return entry['data']
                 else:
-                    # Удаляем истекшую запись
+                    # Delete an expired entry.
                     del self.memory[key]
             
             return None
             
         except Exception as e:
-            logger.error(f"❌ Ошибка получения из краткосрочной памяти: {e}")
+            logger.error(f"❌ Error from short-term memory: {e}")
             return None
     
     def get_all_recent(self, minutes: int = 30) -> Dict[str, Any]:
-        """Получение всех недавних данных"""
+        'Collection of all recent data'
         try:
             cutoff = datetime.now() - timedelta(minutes=minutes)
             recent = {}
@@ -313,17 +313,17 @@ class ShortTermMemory:
             return recent
             
         except Exception as e:
-            logger.error(f"❌ Ошибка получения недавних данных: {e}")
+            logger.error(f"❌ Error in obtaining recent data: {e}")
             return {}
     
     def update_context(self, key: str, new_data: Any) -> None:
-        """Обновление контекста"""
+        'Updating the context'
         if key in self.memory:
             self.memory[key]['data'] = new_data
             self.memory[key]['timestamp'] = datetime.now()
     
     def _cleanup_expired(self) -> None:
-        """Очистка истекших данных"""
+        'Cleaning of expired data'
         try:
             now = datetime.now()
             expired_keys = []
@@ -336,18 +336,18 @@ class ShortTermMemory:
                 del self.memory[key]
             
             if expired_keys:
-                logger.debug(f"🧹 Очищено {len(expired_keys)} истекших записей")
+                logger.debug(f"🧹 Peeled {len(expired_keys)} Lasted records")
                 
         except Exception as e:
-            logger.error(f"❌ Ошибка очистки памяти: {e}")
+            logger.error(f"❌ Error of memory cleaning: {e}")
     
     def clear(self) -> None:
-        """Полная очистка памяти"""
+        'Complete cleaning of memory'
         self.memory.clear()
-        logger.info("🧹 Краткосрочная память очищена")
+        logger.info('🧹 The short-term memory is cleaned')
     
     def get_stats(self) -> Dict[str, Any]:
-        """Статистика краткосрочной памяти"""
+        'Short-term memory statistics'
         try:
             now = datetime.now()
             active_count = 0
@@ -365,28 +365,28 @@ class ShortTermMemory:
             }
             
         except Exception as e:
-            logger.error(f"❌ Ошибка получения статистики: {e}")
+            logger.error(f"❌ Error in obtaining statistics: {e}")
             return {}
 
 
 class MemoryManager:
     """
-    Менеджер памяти - объединяет долгосрочную и краткосрочную память
+    Memory Manager combines long-term and short-term memory
     """
     
     def __init__(self):
         self.long_term = LongTermMemory()
         self.short_term = ShortTermMemory()
         
-        logger.info("🧠 Менеджер памяти инициализирован")
+        logger.info('🧠 Memory Manager Initialized')
     
     async def remember_experience(self, experience: str, context: Dict[str, Any], 
                                  importance: float = 0.5) -> None:
-        """Запоминание опыта с учетом важности"""
-        # Сохраняем в краткосрочную память
+        'Learning from experience in view of the importance of'
+        # Keep in short-term memory
         self.short_term.store(f"exp_{datetime.now().timestamp()}", experience, context)
         
-        # Если достаточно важно, сохраняем в долгосрочную память
+        # If important, keep in long-term memory
         if importance > 0.7:
             await self.long_term.store(experience, {
                 **context,
@@ -395,11 +395,11 @@ class MemoryManager:
             })
     
     async def recall_relevant(self, query: str, limit: int = 5) -> List[str]:
-        """Поиск релевантной информации в обеих типах памяти"""
-        # Ищем в долгосрочной памяти
+        'Search for relevant information in both types of memory'
+        # Looking for long-term memory
         long_term_results = await self.long_term.search_relevant(query, limit)
         
-        # Ищем в краткосрочной памяти
+        # Looking for short-term memory
         short_term_data = self.short_term.get_all_recent()
         short_term_results = []
         
@@ -407,12 +407,12 @@ class MemoryManager:
             if isinstance(data, str) and query.lower() in data.lower():
                 short_term_results.append(data)
         
-        # Объединяем результаты
+        # Uniting results
         all_results = long_term_results + short_term_results[:limit]
         return all_results[:limit]
     
     def get_comprehensive_stats(self) -> Dict[str, Any]:
-        """Общая статистика памяти"""
+        'General memory statistics'
         return {
             "long_term": self.long_term.get_stats(),
             "short_term": self.short_term.get_stats(),

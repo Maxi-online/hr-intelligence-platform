@@ -1,37 +1,37 @@
 """
 Candidate Analysis - AI Analysis Service
 
-Мульти-агентный сервис AI анализа кандидатов с истинно параллельной обработкой.
+AI Multi-Agent Analysis Service for candidates with true parallel processing.
 
-Этот модуль обеспечивает интеллектуальный анализ кандидатов с использованием:
-- GPT-5-nano для быстрого и точного анализа
-- AsyncOpenAI для истинно параллельной обработки
-- Мульти-агентная архитектура с 6 специализированными агентами
-- Мастер-координатор для финального профессионального заключения
+This module provides intellectual analysis of candidates using:
+- GPT-5-nano for rapid and accurate analysis
+- AsyncOpenAI for true parallel processing
+- Multi-agent architecture with 6 specialized agents
+- Master coordinator for the final professional qualification
 
-Основные компоненты:
-- AIAnalyzer: Одиночный анализ кандидатов (legacy)
-- Multi-Agent System: Параллельный анализ через специализированных агентов
-- Master Coordinator: Итоговое заключение и рекомендации
+Main components:
+- AIANALIZER: Lonely Analysis of Candidates (legacy)
+- Multi-Agent System: Parallel Analysis through Specialized Agents
+- Master Coordinate: Outcome and recommendations
 
-Архитектура AI анализа:
+AI Analysis Architecture:
     Multi-Agent Request -> 6 Specialist Agents (Parallel)
                         -> Master Coordinator -> Professional Assessment
                         -> Final Recommendation + Score
 
 Performance Features:
-- Асинхронные вызовы OpenAI API для максимальной скорости
-- Батчевая обработка кандидатов одновременно  
-- Экспоненциальные повторы при ошибках
-- Детальное логирование для диагностики
+- OpenAI API asynchronous calls for maximum speed
+- Batch processing of candidates at the same time  
+- Exponential Repeats in Errors
+- Detailed diagnostic logic
 
 Agents:
-- TechnicalSkillsAgent: Анализ технических навыков
-- ExperienceRelevanceAgent: Оценка релевантности опыта  
-- CulturalFitAgent: Анализ культурного соответствия
-- GrowthPotentialAgent: Оценка потенциала роста
-- ResumeAnalysisAgent: Анализ качества резюме
-- AnomalyDetectionAgent: Выявление несоответствий
+- TechnicalSkillsAgent: Technical Skills Analysis
+- ExperienceRelevanceAgent: Assessing the relevance of experience  
+CulturalFitAgent: Cultural Conformity Analysis
+- GrowthPotentialAgent: Assessing Growth Potential
+- ResumeAnalysisAgent: Quality Analysis of Summary
+- AnomalyDetectionAgent: Identification of inconsistencies
 
 Author: Candidate Analysis Team
 Version: 3.0.0 (AsyncOpenAI + True Parallelism)
@@ -50,7 +50,7 @@ import asyncio
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 
-# Добавляем родительскую директорию в путь для импорта shared модулей
+# Add the parent directory to the route to import the used modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from shared.models import (
@@ -60,12 +60,12 @@ from shared.models import (
 )
 from shared.utils import setup_logging, load_config
 
-# Настройка логирования
+# Logging settings
 logger = setup_logging("ai-analysis-service")
 
 app = FastAPI(
     title="AI Analysis Service",
-    description="Сервис AI-анализа навыков кандидатов с использованием GPT-5-nano",
+    description='AI Analysis of Candidates &apos; Skills using GPT-5-nano',
     version="1.0.0"
 )
 
@@ -83,19 +83,19 @@ class AIAnalyzer:
         self.config = load_config()
         self.ai_config = self.config.get("ai_analysis", {})
         
-        # Инициализация OpenAI с современным клиентом - приоритет конфигурации!
+        # Initialization of OpenAI with a modern client - configuration priority!
         api_key = self.ai_config.get("openai_api_key") or os.getenv("OPENAI_API_KEY") 
         if not api_key:
-            logger.warning("OPENAI_API_KEY не установлен")
+            logger.warning('OPENAI_API_KEY not installed')
         else:
-            logger.info(f"Используем OpenAI ключ: {api_key[:20]}...")
+            logger.info(f"Use OpenAI key: {api_key[:20]}...")
         
-        # Настройка HTTP прокси из конфигурации
+        # Settings HTTP Proxi from configuration
         proxy_config = self.ai_config.get("proxy", {})
         proxy_enabled = proxy_config.get("enabled", False)
         
         if proxy_enabled:
-            # Получаем настройки прокси из конфигурации или переменных окружения
+            # We're going to get proxie settings from configuration or variable environments
             proxy_host = os.getenv("PROXY_HOST") or proxy_config.get("host", "")
             proxy_port = os.getenv("PROXY_PORT") or proxy_config.get("port", "")
             proxy_username = os.getenv("PROXY_USERNAME") or proxy_config.get("username", "")
@@ -103,49 +103,49 @@ class AIAnalyzer:
             proxy_protocol = os.getenv("PROXY_PROTOCOL") or proxy_config.get("protocol", "http")
             
             if proxy_host and proxy_port:
-                # Формируем URL прокси
+                # Form an uRL proxie
                 if proxy_username and proxy_password:
                     proxy_url = f"{proxy_protocol}://{proxy_username}:{proxy_password}@{proxy_host}:{proxy_port}"
                 else:
                     proxy_url = f"{proxy_protocol}://{proxy_host}:{proxy_port}"
                 
-                # Создаем httpx клиент с прокси
+                # Create httpx client with proxie
                 http_client = httpx.Client(
                     proxy=proxy_url
                 )
                 
-                logger.info(f"OpenAI клиент инициализирован с HTTP прокси: {proxy_host}:{proxy_port}")
+                logger.info(f"OpenAI client initialized with HTTP Proxi: {proxy_host}:{proxy_port}")
             else:
-                # Если настройки прокси неполные, используем обычный клиент
+                # If Proxi settings are incomplete, the normal customer is used
                 http_client = httpx.Client()
-                logger.warning("Прокси включен, но настройки неполные. Используется прямое соединение.")
+                logger.warning('Proxi is on, but the settings are incomplete. Direct connection used.')
         else:
-            # Обычный httpx клиент без прокси
+            # Normal httpx client without proxie
             http_client = httpx.Client()
-            logger.info("OpenAI клиент инициализирован без прокси")
+            logger.info('OpenAI client initialized without proxi')
         
-        # Инициализация OpenRouter клиента
+        # OpenRouter Client Initialization
         base_url = self.ai_config.get("base_url", "https://openrouter.ai/api/v1")
         
-        # Проверяем используем ли OpenRouter
+        # Check if OpenRouter is used
         if "openrouter.ai" in base_url:
-            # OpenRouter режим
+            # OpenRouter Mode
             openrouter_key = self.ai_config.get("openrouter_api_key")
             if not openrouter_key:
-                raise ValueError("Для OpenRouter требуется openrouter_api_key в конфигурации")
+                raise ValueError('OpenRouter requires openrouter_api_key in configuration')
             
-            # Создаем клиент без прокси для OpenRouter
+            # Create a client without a proxie for OpenRouter
             self.client = OpenAI(
                 api_key=openrouter_key,
                 base_url=base_url
             )
-            logger.info(f"🔄 OpenRouter клиент инициализирован: {base_url}")
+            logger.info(f"🔄 OpenRouter client initialized: {base_url}")
             
-            # Настройки для OpenRouter
+            # OpenRouter settings
             self.site_url = self.ai_config.get("site_url", "")
             self.site_name = self.ai_config.get("site_name", "CandidateRanking")
         else:
-            # Старый OpenAI режим
+            # Old OpenAI Mode
             self.client = OpenAI(
                 api_key=api_key,
                 http_client=http_client,
@@ -153,35 +153,35 @@ class AIAnalyzer:
             )
             self.site_url = ""
             self.site_name = ""
-            logger.info("OpenAI клиент инициализирован")
+            logger.info('OpenAI client initialized')
         
         self.model = self.ai_config.get("model", "gpt-5-mini")
-        self.max_completion_tokens = self.ai_config.get("max_completion_tokens", 4000)  # GPT-5 параметр
+        self.max_completion_tokens = self.ai_config.get("max_completion_tokens", 4000)  # GPT-5 parameter
         self.temperature = self.ai_config.get("temperature", 0.0)
         self.retry_attempts = self.ai_config.get("retry_attempts", 3)
         
-        # Промпты
+        # Prompts
         self.prompts = self.ai_config.get("prompts", {})
     
     def analyze_skills(self, request: AIAnalysisRequest) -> AIAnalysisResponse:
-        """Анализ навыков кандидата с помощью GPT-5-nano с учетом весов ранжирования"""
+        'Analysis of the candidate &apos; s skills using GPT-5-nano based on ranking weights'
         start_time = time.time()
         
         try:
-            # Извлекаем дополнительные данные из candidate_data
+            # We extract additional data from candidate_data
             candidate_data = request.candidate_data or {}
-            candidate_title = candidate_data.get("title", "Не указано")
+            candidate_title = candidate_data.get("title", 'Not specified')
             last_work = candidate_data.get("last_work", {})
-            last_work_position = last_work.get("position", "Не указано") if last_work else "Не указано"
-            last_work_company = last_work.get("name", "Не указано") if last_work else "Не указано"
+            last_work_position = last_work.get("position", 'Not specified') if last_work else 'Not specified'
+            last_work_company = last_work.get("name", 'Not specified') if last_work else 'Not specified'
             experience_data = candidate_data.get("experience", {})
             total_experience_months = experience_data.get("months", 0) if experience_data else 0
             
-            # Формирование промпта для анализа навыков
+            # Formation of a skills analysis prompt
             skill_prompt = self.prompts.get("skill_analysis", "").format(
                 job_title=request.search_query,
                 skills=", ".join(request.skills),
-                experience=request.experience_description or "Не указано",
+                experience=request.experience_description or 'Not specified',
                 search_query=request.search_query,
                 candidate_title=candidate_title,
                 last_work_position=last_work_position,
@@ -189,16 +189,16 @@ class AIAnalyzer:
                 total_experience_months=total_experience_months
             )
             
-            # Вызов GPT-5-nano для анализа навыков
+            # GPT-5-nano for skills analysis
             skill_analysis = self._call_gpt4(skill_prompt)
             
-            # Парсинг результатов анализа навыков
+            # Parsing the results of the skills analysis
             skill_results = self._parse_skill_analysis(skill_analysis)
             
-            # Получаем веса ранжирования или используем значения по умолчанию
+            # Receive ranking weights or use default values
             weights = request.ranking_weights or RankingWeights()
             
-            # Формирование промпта для общей оценки с весами
+            # Formation of a prompt for total weight rating
             overall_prompt = self.prompts.get("overall_assessment", "").format(
                 job_title=request.search_query,
                 skill_analysis=json.dumps([s.model_dump() for s in skill_results], ensure_ascii=False, default=str),
@@ -215,10 +215,10 @@ class AIAnalyzer:
                 profile_completeness_weight=weights.profile_completeness
             )
             
-            # Вызов GPT-5-nano для общей оценки
+            # GPT-5-nano call for overall assessment
             overall_assessment = self._call_gpt4(overall_prompt)
             
-            # Парсинг общей оценки с новыми полями
+            # Parsing overall rating with new fields
             overall_result = self._parse_overall_assessment(overall_assessment)
             
             processing_time = time.time() - start_time
@@ -237,21 +237,21 @@ class AIAnalyzer:
             )
             
         except Exception as e:
-            logger.error(f"Ошибка анализа навыков для кандидата {request.candidate_id}: {e}")
-            raise HTTPException(status_code=500, detail=f"Ошибка AI-анализа: {str(e)}")
+            logger.error(f"Error: Analysis of Skills for the Candidate {request.candidate_id}: {e}")
+            raise HTTPException(status_code=500, detail=f"Failure in AI analysis: {str(e)}")
     
     def _call_gpt4(self, prompt: str) -> str:
-        """Вызов GPT-5-nano с повторными попытками"""
+        'GPT-5-nano call with repeated attempts'
         for attempt in range(self.retry_attempts):
             try:
-                # Подготавливаем параметры для OpenRouter
+                # Prepare parameters for OpenRouter
                 extra_headers = {}
                 if self.site_url:
                     extra_headers["HTTP-Referer"] = self.site_url
                 if self.site_name:
                     extra_headers["X-Title"] = self.site_name
                 
-                # GPT-5 параметры для анализа навыков
+                # GPT-5 Skills Analysis Options
                 gpt5_params = {}
                 gpt5_features = self.ai_config.get("gpt5_features", {})
                 if gpt5_features:
@@ -263,33 +263,33 @@ class AIAnalyzer:
                 response = self.client.chat.completions.create(
                     model=self.model,
                     messages=[
-                        {"role": "system", "content": "Ты эксперт по оценке навыков кандидатов. Отвечай только в JSON формате."},
+                        {"role": "system", "content": "You're an expert in the assessment of candidates' skills. Answer only in JSON format."},
                         {"role": "user", "content": prompt}
                     ],
-                    max_completion_tokens=self.max_completion_tokens,  # GPT-5 параметр
+                    max_completion_tokens=self.max_completion_tokens,  # GPT-5 parameter
                     temperature=self.temperature,
                     extra_headers=extra_headers if extra_headers else {},
-                    # GPT-5 параметры передаются напрямую
+                    # GPT-5 parameters are transmitted directly
                     verbosity=gpt5_params.get("verbosity", "medium") if gpt5_params else "medium",
                     reasoning_effort=gpt5_params.get("reasoning_effort", "medium") if gpt5_params else "medium"
                 )
                 return response.choices[0].message.content.strip()
                 
             except Exception as e:
-                logger.warning(f"Попытка {attempt + 1} не удалась: {e}")
+                logger.warning(f"Attempted {attempt + 1} failed: {e}")
                 if attempt == self.retry_attempts - 1:
                     raise e
                 time.sleep(1)
     
     def _parse_skill_analysis(self, response: str) -> List[SkillAnalysis]:
-        """Парсинг результатов анализа навыков"""
+        'Parsing the results of the skills analysis'
         try:
-            # Извлекаем JSON из ответа
+            # Extract JSON from the response
             json_start = response.find('[')
             json_end = response.rfind(']') + 1
             
             if json_start == -1 or json_end == 0:
-                raise ValueError("JSON не найден в ответе")
+                raise ValueError('JSON is not found in the answer')
             
             json_str = response[json_start:json_end]
             skills_data = json.loads(json_str)
@@ -309,19 +309,19 @@ class AIAnalyzer:
             return skill_analyses
             
         except Exception as e:
-            logger.error(f"Ошибка парсинга анализа навыков: {e}")
-            logger.error(f"Ответ GPT: {response}")
-            raise ValueError(f"Неверный формат ответа GPT: {e}")
+            logger.error(f"Parsing error analysis of skills: {e}")
+            logger.error(f"GPT's response: {response}")
+            raise ValueError(f"Wrong GPT response format: {e}")
     
     def _parse_overall_assessment(self, response: str) -> Dict[str, Any]:
-        """Парсинг общей оценки с новыми полями для AI ранжирования"""
+        'Parsing overall rating with new fields for AI ranking'
         try:
-            # Извлекаем JSON из ответа
+            # Extract JSON from the response
             json_start = response.find('{')
             json_end = response.rfind('}') + 1
             
             if json_start == -1 or json_end == 0:
-                raise ValueError("JSON не найден в ответе")
+                raise ValueError('JSON is not found in the answer')
             
             json_str = response[json_start:json_end]
             assessment_data = json.loads(json_str)
@@ -337,11 +337,11 @@ class AIAnalyzer:
             }
             
         except Exception as e:
-            logger.error(f"Ошибка парсинга общей оценки: {e}")
-            logger.error(f"Ответ GPT: {response}")
+            logger.error(f"Error of Parsing General Assessment: {e}")
+            logger.error(f"GPT's response: {response}")
             return {
                 "overall_score": 0.0, 
-                "summary": "Ошибка анализа",
+                "summary": 'Error of analysis',
                 "keyword_relevance_score": None,
                 "filter_match_score": None,
                 "recency_score": None,
@@ -350,51 +350,51 @@ class AIAnalyzer:
             }
     
     def batch_analyze(self, requests: List[AIAnalysisRequest]) -> List[AIAnalysisResponse]:
-        """Пакетный анализ нескольких кандидатов"""
+        'Several candidates &apos; package analysis'
         results = []
         for request in requests:
             try:
                 result = self.analyze_skills(request)
                 results.append(result)
             except Exception as e:
-                logger.error(f"Ошибка анализа кандидата {request.candidate_id}: {e}")
-                # Создаем пустой результат в случае ошибки
+                logger.error(f"Error: Analysis of the candidate {request.candidate_id}: {e}")
+                # Create an empty result in case of error
                 results.append(AIAnalysisResponse(
                     candidate_id=request.candidate_id,
                     skill_analysis=[],
                     overall_score=0.0,
-                    analysis_summary="Ошибка анализа",
+                    analysis_summary='Error of analysis',
                     processing_time=0.0
                 ))
         return results
 
-# Инициализация AI анализатора
+# Initialization of AI Analyst
 ai_analyzer = AIAnalyzer()
 
-# Импорт и инициализация мастер-координатора
+# Import and Initialization of Master Coordinator
 try:
-    # Добавляем текущую директорию в путь для локальных импортов
+    # Adding the current directory to local imports
     current_dir = os.path.dirname(os.path.abspath(__file__))
     if current_dir not in sys.path:
-        sys.path.insert(0, current_dir)  # Вставляем в начало для приоритета
+        sys.path.insert(0, current_dir)  # Add to the beginning for priority
     
-    # Пробуем разные варианты импорта
+    # We're going to try different import options.
     try:
         from master_coordinator import MasterCoordinator
     except ImportError:
         from ai_analysis.master_coordinator import MasterCoordinator
     
     master_coordinator = MasterCoordinator()
-    logger.info("🤖 Мастер-координатор мульти-агентной системы инициализирован")
+    logger.info('🤖 Multi-agent system coordinator workshop initialized')
 except Exception as e:
-    logger.error(f"Ошибка инициализации мастер-координатора: {e}")
+    logger.error(f"Error: Initialization of Master Coordinator: {e}")
     import traceback
-    logger.error(f"Полная ошибка: {traceback.format_exc()}")
+    logger.error(f"Full mistake: {traceback.format_exc()}")
     master_coordinator = None
 
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
-    """Проверка здоровья сервиса"""
+    'Service health check'
     return HealthResponse(
         status="healthy",
         timestamp=datetime.now(),
@@ -403,27 +403,27 @@ async def health_check():
 
 @app.post("/analyze", response_model=AIAnalysisResponse)
 async def analyze_candidate(request: AIAnalysisRequest):
-    """Анализ навыков одного кандидата"""
+    'Analysis of one candidate &apos; s skills'
     try:
         return ai_analyzer.analyze_skills(request)
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Ошибка анализа кандидата: {e}")
-        raise HTTPException(status_code=500, detail="Внутренняя ошибка сервера")
+        logger.error(f"Error: Analysis of the candidate: {e}")
+        raise HTTPException(status_code=500, detail='The internal server error')
 
 @app.post("/analyze/batch")
 async def analyze_candidates_batch(requests: List[AIAnalysisRequest]):
-    """Пакетный анализ нескольких кандидатов"""
+    'Several candidates &apos; package analysis'
     try:
         return ai_analyzer.batch_analyze(requests)
     except Exception as e:
-        logger.error(f"Ошибка пакетного анализа: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка пакетного анализа")
+        logger.error(f"Error in package analysis: {e}")
+        raise HTTPException(status_code=500, detail='Error in package analysis')
 
 @app.get("/config")
 async def get_ai_config():
-    """Получение конфигурации AI-анализа"""
+    'AI analysis configuration acquisition'
     try:
         return {
             "model": ai_analyzer.model,
@@ -432,48 +432,48 @@ async def get_ai_config():
             "retry_attempts": ai_analyzer.retry_attempts
         }
     except Exception as e:
-        logger.error(f"Ошибка получения конфигурации: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка получения конфигурации")
+        logger.error(f"Error of Configuration: {e}")
+        raise HTTPException(status_code=500, detail='Error of Configuration')
 
 @app.post("/settings/auth")
 async def update_auth_settings(auth_settings: dict):
-    """Обновление настроек аутентификации"""
+    'Update of authentication settings'
     try:
-        # Обновляем настройки OpenAI
+        # Update OpenAI settings
         if "openai_api_key" in auth_settings:
             ai_analyzer.client = OpenAI(api_key=auth_settings["openai_api_key"])
-            logger.info("OpenAI API ключ обновлен")
+            logger.info('OpenAI API key updated')
         
-        # Модель фиксированная (gpt-5-nano), не изменяется
+        # Fixed model (gpt-5-nano), unchanged
         return {
             "status": "success",
-            "message": "Настройки AI Analysis обновлены",
-            "model": ai_analyzer.model,  # Всегда gpt-5-nano
+            "message": 'The AI Analysis settings have been updated',
+            "model": ai_analyzer.model,  # Always gpt-5-nano
             "api_key_set": bool(ai_analyzer.client.api_key if hasattr(ai_analyzer.client, 'api_key') else False)
         }
     except Exception as e:
-        logger.error(f"Ошибка обновления настроек AI Analysis: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка обновления настроек AI Analysis")
+        logger.error(f"Error: Update of the AI Analysis Settings: {e}")
+        raise HTTPException(status_code=500, detail='Error: Update of the AI Analysis Settings')
 
 # ================================
-# МУЛЬТИ-АГЕНТНАЯ СИСТЕМА ENDPOINTS
+# ENDPOINTS MULTI-AGENCY SYSTEM
 # ================================
 
 @app.post("/multi-agent/analyze", response_model=MultiAgentAnalysisResponse)
 async def analyze_candidate_multi_agent(request: MultiAgentAnalysisRequest):
-    """Мульти-агентный анализ кандидата"""
+    'Multi-agent analysis of the candidate'
     try:
         if not master_coordinator:
-            raise HTTPException(status_code=503, detail="Мастер-координатор недоступен")
+            raise HTTPException(status_code=503, detail='Master Coordinator not available')
         
-        logger.info(f"🤖 Запуск мульти-агентного анализа для кандидата {request.candidate_id}")
+        logger.info(f"🤖 Launch multi-agent analysis for candidate {request.candidate_id}")
         
-        # ОТЛАДКА: ПРОВЕРЯЕМ ЧТО ПЕРЕДАЕТСЯ В CANDIDATE_DATA
+        # FLAMMING: VERIFICATION OF WHAT IS TO BE TRANSFERED IN CANDIDATE_DATA
         candidate_data_size = len(str(request.candidate_data))
-        candidate_data_keys = list(request.candidate_data.keys()) if isinstance(request.candidate_data, dict) else "НЕ СЛОВАРЬ"
-        logger.debug(f"🔍 ОТЛАДКА candidate_data для {request.candidate_id}: размер={candidate_data_size}, ключи={candidate_data_keys}")
+        candidate_data_keys = list(request.candidate_data.keys()) if isinstance(request.candidate_data, dict) else 'Not a word.'
+        logger.debug(f"🔍 candidate_data for {request.candidate_id}: size={candidate_data_size}, keys={candidate_data_keys}")
         
-        # ДЕТАЛЬНАЯ ОТЛАДКА ТИПОВ ПРОБЛЕМАТИЧНЫХ ПОЛЕЙ
+        # A child's role in the model of problem fields
         if isinstance(request.candidate_data, dict):
             experience = request.candidate_data.get('experience')
             education = request.candidate_data.get('education') 
@@ -481,33 +481,33 @@ async def analyze_candidate_multi_agent(request: MultiAgentAnalysisRequest):
             skills = request.candidate_data.get('skills')
             skill_set = request.candidate_data.get('skill_set')
             
-            logger.error(f"🔍 ТИПЫ ДАННЫХ:")
-            logger.error(f"   experience: {type(experience)} = {experience if experience is None else (f'список из {len(experience)} элементов' if isinstance(experience, list) else 'не список')}")
-            logger.error(f"   education: {type(education)} = {education if education is None else (f'список из {len(education)} элементов' if isinstance(education, list) else 'не список')}")
-            logger.error(f"   language: {type(language)} = {language if language is None else (f'список из {len(language)} элементов' if isinstance(language, list) else 'не список')}")
-            logger.error(f"   skills: {type(skills)} = {skills if skills is None else (f'список из {len(skills)} элементов' if isinstance(skills, list) else 'не список')}")
-            logger.error(f"   skill_set: {type(skill_set)} = {skill_set if skill_set is None else (f'список из {len(skill_set)} элементов' if isinstance(skill_set, list) else 'не список')}")
+            logger.error(f"🔍 TYPES OF DATA:")
+            logger.error(f"   experience: {type(experience)} = {experience if experience is None else (f'List from {len(experience)} elements' if isinstance(experience, list) else 'Not List')}")
+            logger.error(f"   education: {type(education)} = {education if education is None else (f'List from {len(education)} elements' if isinstance(education, list) else 'Not List')}")
+            logger.error(f"   language: {type(language)} = {language if language is None else (f'List from {len(language)} elements' if isinstance(language, list) else 'Not List')}")
+            logger.error(f"   skills: {type(skills)} = {skills if skills is None else (f'List from {len(skills)} elements' if isinstance(skills, list) else 'Not List')}")
+            logger.error(f"   skill_set: {type(skill_set)} = {skill_set if skill_set is None else (f'List from {len(skill_set)} elements' if isinstance(skill_set, list) else 'Not List')}")
         
-        # ТЕПЕРЬ ВЫЗОВ АСИНХРОННЫЙ!
+        # This is the call of the asynchronous!
         result = await master_coordinator.analyze_candidate(request)
         
-        logger.info(f"✅ Мульти-агентный анализ завершен для кандидата {request.candidate_id}. " + 
-                   f"Итоговая оценка: {result.master_report.overall_score:.1f}%")
+        logger.info(f"✅ Multi-agent analysis completed for candidate {request.candidate_id}. " + 
+                   f"Overall assessment: {result.master_report.overall_score:.1f}%")
         
         return result
         
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Ошибка мульти-агентного анализа кандидата {request.candidate_id}: {e}")
-        raise HTTPException(status_code=500, detail=f"Ошибка мульти-агентного анализа: {str(e)}")
+        logger.error(f"Error: Multi-agent analysis of the candidate {request.candidate_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Multi-Agent Analysis Error: {str(e)}")
 
 @app.get("/multi-agent/agents")
 async def get_available_agents():
-    """Получение списка доступных агентов"""
+    'Getting a list of available agents'
     try:
         if not master_coordinator:
-            raise HTTPException(status_code=503, detail="Мастер-координатор недоступен")
+            raise HTTPException(status_code=503, detail='Master Coordinator not available')
         
         return {
             "available_agents": master_coordinator.get_available_agents(),
@@ -515,12 +515,12 @@ async def get_available_agents():
             "total_agents": len(master_coordinator.agents)
         }
     except Exception as e:
-        logger.error(f"Ошибка получения списка агентов: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка получения списка агентов")
+        logger.error(f"Error in obtaining a list of agents: {e}")
+        raise HTTPException(status_code=500, detail='Error in obtaining a list of agents')
 
 @app.get("/multi-agent/health")
 async def multi_agent_health_check():
-    """Проверка здоровья мульти-агентной системы"""
+    'Multi-agent system health check'
     try:
         health_status = {
             "master_coordinator": master_coordinator is not None,
@@ -535,7 +535,7 @@ async def multi_agent_health_check():
         return health_status
         
     except Exception as e:
-        logger.error(f"Ошибка проверки здоровья мульти-агентной системы: {e}")
+        logger.error(f"Mistakes in the Multi-Agent System Health Inspection: {e}")
         return {
             "status": "error",
             "error": str(e),
@@ -545,50 +545,50 @@ async def multi_agent_health_check():
 @app.post("/multi-agent/batch", response_model=List[MultiAgentAnalysisResponse])
 async def analyze_candidates_batch_multi_agent(requests: List[MultiAgentAnalysisRequest]):
     """
-    Батчевый мульти-агентный анализ кандидатов с истинно параллельной обработкой.
+    Batch multi-agent analysis of candidates with true parallel processing.
     
-    Ключевой API endpoint для массового анализа кандидатов с максимальной производительностью.
-    Реализует двухэтапную параллельную архитектуру для оптимальной скорости обработки.
+    Key API endpoint for mass analysis of candidates with maximum productivity.
+    Implements a two-stage parallel architecture for optimal processing speed.
     
     Algorithm (True Parallelism):
-        Stage 1: Запуск ВСЕХ агентов для ВСЕХ кандидатов одновременно
-                 6 agents × N candidates = массивный параллелизм
-        Stage 2: Запуск ВСЕХ мастер-координаторов одновременно 
-                 N master coordinators работают параллельно
+        Step 1: Launching of all agents for all candidates simultaneously
+                 6 agents × N candidates = massive parallelism
+        Stage 2: Launching of all Master Coordinators simultaneously 
+                 N Master co-ordinates are running in parallel
     
     Args:
-        requests (List[MultiAgentAnalysisRequest]): Список до 10 кандидатов для анализа
+        (ListiAgentAnalysisRequest): List of up to 10 candidates for analysis
         
     Returns:
-        List[MultiAgentAnalysisResponse]: Результаты анализа каждого кандидата
+        List [multiAgentAnalysisResponse]: Results of analysis of each candidate
         
     Request Model Fields:
-        - candidate_id: Уникальный ID кандидата  
-        - candidate_data: Полные данные резюме из HH API
-        - position_requirements: Требования к позиции
-        - position_type: Тип позиции (technical/management/creative)
-        - active_agents: Список активных агентов для анализа
-        - search_query: Поисковый запрос для контекста
-        - search_filters: Фильтры поиска
+        - candidate_id: Unique ID candidate  
+        - candidate_data: Complete summary data from HH API
+        - position_requirements: Position requirements
+        - position_type: Type of entry (technical/management/creative))
+        - active_agents: List of active agents for analysis
+        - search_query: Search for context
+        - search_filters: Search Filters
         
     Response Model Fields:
-        - candidate_id: ID кандидата
-        - master_report: Финальное заключение мастер-координатора
-        - agent_reports: Детальные отчёты каждого агента
-        - active_agents: Список использованных агентов
-        - total_processing_time: Время обработки
+        - candidate_id: ID candidate
+        - master_report: Master Coordinator &apos; s Final Conclusion
+        - agent_reports: Detailed reports of each agent
+        - active_agents: List of agents used
+        - total_processing_time: Processing time
         
     Performance Characteristics:
-        - Максимум 10 кандидатов за запрос для стабильности
-        - AsyncOpenAI для истинно асинхронных вызовов GPT-5-nano
-        - Время обработки ~20-25 секунд для 10 кандидатов (вместо 200+ секвенциально)
-        - Graceful error handling - ошибки одного кандидата не влияют на других
-        - Детальное логирование прогресса для мониторинга
+        - A maximum of 10 candidates for a request for stability
+        - AsyncOpenAI for genuine asynchronous GPT-5-nano calls
+        - Processing time ~20-25 seconds for 10 candidates (instead of 200+sequential))
+        - Graceful error handling: the mistakes of one candidate do not affect others
+        - Detailed logic of progress for monitoring
         
     Error Handling:
-        - 503: Мастер-координатор недоступен
-        - 400: Превышен лимит кандидатов (>10)
-        - Отдельные ошибки кандидатов не прерывают обработку других
+        - 503: Master Coordinator not available
+        - 400: No candidate limit exceeded (>10)
+        - Individual errors of candidates do not interrupt the processing of others
         
     Example Usage:
         POST /multi-agent/batch
@@ -596,7 +596,7 @@ async def analyze_candidates_batch_multi_agent(requests: List[MultiAgentAnalysis
             {
                 "candidate_id": "12345",
                 "candidate_data": {...},
-                "position_requirements": "Python разработчик",
+                "position_requirements": "Python Developer",
                 "position_type": "technical",
                 "active_agents": ["technical_skills", "experience_relevance"]
             }
@@ -604,18 +604,18 @@ async def analyze_candidates_batch_multi_agent(requests: List[MultiAgentAnalysis
     """
     try:
         if not master_coordinator:
-            raise HTTPException(status_code=503, detail="Мастер-координатор недоступен")
+            raise HTTPException(status_code=503, detail='Master Coordinator not available')
         
-        # Ограничиваем до 10 кандидатов для безопасности
+        # Limiting to 10 candidates for security
         if len(requests) > 10:
-            raise HTTPException(status_code=400, detail="Максимум 10 кандидатов за раз")
+            raise HTTPException(status_code=400, detail='A maximum of 10 candidates at a time')
         
-        logger.info(f"🚀 Запуск ИСТИННО ПАРАЛЛЕЛЬНОГО мульти-агентного анализа для {len(requests)} кандидатов")
+        logger.info(f"🚀 Launching of the SECRET PARALLEL Multi-Agent Analysis for {len(requests)} Candidates")
         
-        # ЭТАП 1: Собираем все agent_reports для всех кандидатов ПАРАЛЛЕЛЬНО
+        # PHASE 1: Collect all agent_reports for all candidates
         agent_tasks = []
         for request in requests:
-            # Запускаем анализ агентов БЕЗ мастер-координатора
+            # We're starting agent analysis without a master coordinator.
             active_agents = master_coordinator._get_active_agents(request.position_type, request.active_agents)
             task = master_coordinator._run_agents_analysis(
                 active_agents, request.candidate_data, request.position_requirements, 
@@ -623,54 +623,54 @@ async def analyze_candidates_batch_multi_agent(requests: List[MultiAgentAnalysis
             )
             agent_tasks.append((task, request, active_agents))
         
-        # Получаем все результаты агентов ПАРАЛЛЕЛЬНО
+        # Get all the results from PARALLOLONO agents.
         agent_results = await asyncio.gather(*[task for task, _, _ in agent_tasks], return_exceptions=True)
         
-        # ЭТАП 2: Запускаем все мастер-анализы ПАРАЛЛЕЛЬНО
+        # PHASE 2: Start all master analyses of the PARALLLO
         master_tasks = []
         valid_candidates = []
         
         for i, (agent_result, request, active_agents) in enumerate(zip(agent_results, [t[1] for t in agent_tasks], [t[2] for t in agent_tasks])):
             if isinstance(agent_result, Exception):
-                logger.error(f"❌ Ошибка агентов для кандидата {request.candidate_id}: {agent_result}")
+                logger.error(f"❌ Mistakes of agents for candidates {request.candidate_id}: {agent_result}")
                 continue
                 
-            # Создаем задачу мастер-анализа
+            # Create a master analysis task
             master_task = master_coordinator._generate_master_report(agent_result, request)
             master_tasks.append(master_task)
             valid_candidates.append((request, agent_result, active_agents))
         
-        logger.info(f"⚡ Запускаем {len(master_tasks)} мастер-анализов ПАРАЛЛЕЛЬНО")
+        logger.info(f"⚡ Launch {len(master_tasks)} PARALLOLONO'S SCIENTIFIC EXPERIENCE")
         
-        # Выполняем все мастер-анализы ОДНОВРЕМЕННО
+        # Perform all the labs.
         master_results = await asyncio.gather(*master_tasks, return_exceptions=True)
         
-        # ЭТАП 3: Собираем финальные результаты
+        # PHASE 3: Collecting Final Results
         processed_results = []
         for i, (master_result, (request, agent_reports, active_agents)) in enumerate(zip(master_results, valid_candidates)):
             if isinstance(master_result, Exception):
-                logger.error(f"❌ Ошибка мастер-анализа кандидата {request.candidate_id}: {master_result}")
+                logger.error(f"Error: ❌ The Master Analysis of the Candidate {request.candidate_id}: {master_result}")
                 continue
             
-            # Формируем финальный ответ
+            # Form the final answer.
             response = MultiAgentAnalysisResponse(
                 candidate_id=request.candidate_id,
                 master_report=master_result,
                 agent_reports=agent_reports,
                 active_agents=active_agents,
-                total_processing_time=0.0  # Подсчитаем отдельно если нужно
+                total_processing_time=0.0  # Do it separately if you need to.
             )
             processed_results.append(response)
-            logger.info(f"✅ Кандидат {response.candidate_id} проанализирован: {response.master_report.overall_score:.1f}%")
+            logger.info(f"✅ Candidature {response.candidate_id} Analysed: {response.master_report.overall_score:.1f}%")
         
-        logger.info(f"🏁 Батчевый анализ завершен: {len(processed_results)}/{len(requests)} успешных")
+        logger.info(f"🏁 Batch analysis completed: {len(processed_results)}/{len(requests)} successful")
         return processed_results
         
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Ошибка батчевого мульти-агентного анализа: {e}")
-        raise HTTPException(status_code=500, detail=f"Ошибка батчевого анализа: {str(e)}")
+        logger.error(f"Errors of Multi-Agent Analysis: {e}")
+        raise HTTPException(status_code=500, detail=f"Errors of Baptist Analysis: {str(e)}")
         
 if __name__ == "__main__":
     import uvicorn

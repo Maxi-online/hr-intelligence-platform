@@ -1,6 +1,6 @@
 """
-ClickHouse Database Manager для Candidate Analysis системы
-Оптимизирован для максимальной производительности аналитических запросов
+ClickHouse Database Manager for Candidate Analysis System
+Optimized to maximize the productivity of analytical queries
 """
 
 import clickhouse_connect
@@ -14,7 +14,7 @@ import logging
 from contextlib import contextmanager
 import time
 
-# Добавляем родительскую директорию в путь для импорта shared модулей
+# Add the parent directory to the route to import the used modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from shared.models import (
@@ -26,13 +26,13 @@ from shared.utils import load_config
 logger = logging.getLogger("clickhouse-manager")
 
 class ClickHouseManager:
-    """Высокопроизводительный менеджер ClickHouse для HR данных"""
+    'High-performance Clickhouse manager for HR data'
     
     def __init__(self):
         self.config = load_config()
         self.ch_config = self.config.get("clickhouse", {})
         
-        # Параметры подключения ClickHouse
+        # ClickHouse connectivity options
         self.host = self.ch_config.get("host", "clickhouse")
         self.port = self.ch_config.get("port", 9000)
         self.http_port = self.ch_config.get("http_port", 8123)
@@ -40,20 +40,20 @@ class ClickHouseManager:
         self.username = self.ch_config.get("username", "hrhelp_user")
         self.password = self.ch_config.get("password", "")
         
-        # Инициализация клиентов
+        # Initialization of customers
         self._init_clients()
         self._init_schema()
         
-        logger.info(f"✅ ClickHouse Manager инициализирован для {self.host}:{self.port}")
+        logger.info(f"✅ ClickHouse Manager initialized for {self.host}:{self.port}")
 
     def _init_clients(self):
-        """Инициализация клиентов ClickHouse"""
+        'Customer Initialization ClickHouse'
         try:
-            # Native TCP client (лучше для bulk операций)
+            # Native TCP client (better for bulk operations)
             self.native_client = ClickHouseClient(
                 host=self.host,
                 port=self.port,
-                database='default',  # Используем базу по умолчанию для инициализации
+                database='default',  # Use the default base for initialization
                 user=self.username,
                 password=self.password,
                 secure=False,
@@ -61,42 +61,42 @@ class ClickHouseManager:
                 settings={
                     'max_memory_usage': '10000000000',  # 10GB
                     'max_threads': '8',
-                    'max_execution_time': '300',  # 5 минут
+                    'max_execution_time': '300',  # 5 minutes
                     'send_timeout': '300',
                     'receive_timeout': '300',
                 }
             )
             
-            # СИСТЕМНОЕ ИСПРАВЛЕНИЕ: HTTP клиент создадим ПОСЛЕ создания базы данных
-            # чтобы избежать ошибки инициализации
+            # SYSTEM CORRECTION: HTTP client will create after database development
+            # To avoid initialization errors
             self.http_client = None
             
-            # Проверка подключения
+            # Checking the connection
             version = self.native_client.execute("SELECT version()")[0][0]
-            logger.info(f"🚀 Подключение к ClickHouse {version} установлено")
+            logger.info(f"🚀 Connecting to ClickHouse {version} Established")
             
         except Exception as e:
-            logger.error(f"❌ Ошибка подключения к ClickHouse: {e}")
+            logger.error(f"❌ Connection error to ClickHouse: {e}")
             raise
 
     def _init_schema(self):
-        """Инициализация схемы базы данных"""
+        'Initialization of a database scheme'
         try:
-            logger.info(f"🏗️ Создание базы данных {self.database}...")
+            logger.info(f"🏗️ Database development {self.database}...")
             self.native_client.execute(f"CREATE DATABASE IF NOT EXISTS {self.database}")
-            logger.info(f"✅ База данных {self.database} создана или уже существует")
+            logger.info(f"✅ Database {self.database} created or already in existence")
             
-            # СИСТЕМНОЕ ИСПРАВЛЕНИЕ: Переподключение к правильной базе данных
+            # SYSTEMIC CORRIGENDUM: Switching to the correct database
             self._reconnect_to_database()
             
-            # Читаем и выполняем SQL из файла схемы
+            # Read and execute SQL from the diagram file
             schema_path = os.path.join("config", "clickhouse", "init_schema.sql")
             if os.path.exists(schema_path):
-                logger.info(f"📄 Выполнение схемы из {schema_path}...")
+                logger.info(f"📄 Implementation of the scheme from {schema_path}...")
                 with open(schema_path, 'r', encoding='utf-8') as f:
                     schema_sql = f.read()
                 
-                # Разбиваем на отдельные запросы и выполняем
+                # Disaggregated by individual requests and executed
                 statements = [stmt.strip() for stmt in schema_sql.split(';') if stmt.strip()]
                 executed_count = 0
                 for statement in statements:
@@ -106,33 +106,33 @@ class ClickHouseManager:
                             executed_count += 1
                         except Exception as e:
                             if "already exists" not in str(e).lower():
-                                logger.warning(f"Предупреждение при выполнении SQL: {e}")
+                                logger.warning(f"SQL warning: {e}")
                 
-                logger.info(f"✅ Схема ClickHouse инициализирована - выполнено {executed_count} запросов")
+                logger.info(f"✅ ClickHouse is initialized - implemented {executed_count} Requests")
             else:
-                logger.warning("⚠️ Файл схемы не найден, создание базовых таблиц...")
+                logger.warning('⚠️ Schematic file not found, basic tables created...')
                 self._create_basic_tables()
                 
         except Exception as e:
-            logger.error(f"❌ Ошибка инициализации схемы: {e}")
+            logger.error(f"❌ Error in initializing the scheme: {e}")
             self._create_basic_tables()
 
     def _reconnect_to_database(self):
-        """Переподключение к целевой базе данных после её создания"""
+        'Reconnecting to a target database after its creation'
         try:
-            logger.info(f"🔄 Переподключение к базе данных {self.database}...")
+            logger.info(f"🔄 Reconnecting to the database {self.database}...")
             
-            # Закрываем старые соединения
+            # Close the old connections.
             if hasattr(self, 'native_client'):
                 self.native_client.disconnect()
             if hasattr(self, 'http_client') and self.http_client:
                 self.http_client.close()
             
-            # Создаем новые соединения к целевой базе данных
+            # Create new links to the target database
             self.native_client = ClickHouseClient(
                 host=self.host,
                 port=self.port,
-                database=self.database,  # Теперь подключаемся к hrhelp
+                database=self.database,  # Now let's connect to hrhelp.
                 user=self.username,
                 password=self.password,
                 secure=False,
@@ -146,11 +146,11 @@ class ClickHouseManager:
                 }
             )
             
-            # СИСТЕМНОЕ ИСПРАВЛЕНИЕ: Теперь создаем HTTP клиент после создания БД
+            # SYSTEM CORRIGENDUM: Now create a HTTP client after the creation of an database
             self.http_client = clickhouse_connect.get_client(
                 host=self.host,
                 port=self.http_port,
-                database=self.database,  # Теперь подключаемся к hrhelp
+                database=self.database,  # Now let's connect to hrhelp.
                 username=self.username,
                 password=self.password,
                 secure=False,
@@ -160,21 +160,21 @@ class ClickHouseManager:
                     'max_execution_time': '300',
                 }
             )
-            logger.info("✅ HTTP клиент ClickHouse создан и подключен к базе данных")
+            logger.info('✅ HTTP Clickhouse client created and connected to the database')
             
-            # Проверяем что переподключение успешно
+            # Check that the reconnect is successful.
             test_query = self.native_client.execute("SELECT 1")[0][0]
             if test_query == 1:
-                logger.info(f"✅ Переподключение к базе {self.database} выполнено успешно")
+                logger.info(f"✅ Base connection {self.database} successful")
             
         except Exception as e:
-            logger.error(f"❌ Ошибка переподключения к базе данных: {e}")
+            logger.error(f"❌ Error of switching to the database: {e}")
             raise
 
     def _create_basic_tables(self):
-        """Создание базовых таблиц если файл схемы недоступен"""
+        'Create basic tables if diagram file is not available'
         try:
-            logger.info("🏗️ Создание базовых таблиц...")
+            logger.info('🏗️ Establishment of baseline tables...')
             
             basic_candidates_table = f"""
             CREATE TABLE IF NOT EXISTS {self.database}.candidates (
@@ -200,36 +200,36 @@ class ClickHouseManager:
             """
             
             self.native_client.execute(basic_candidates_table)
-            logger.info("✅ Базовые таблицы созданы")
+            logger.info('✅ Base tables established')
             
         except Exception as e:
-            logger.error(f"❌ Ошибка создания базовых таблиц: {e}")
+            logger.error(f"❌ Error in creating basic tables: {e}")
             raise
 
     @contextmanager
     def get_connection(self, use_http=False):
-        """Контекстный менеджер для получения соединения"""
+        'Context manager for connection'
         client = self.http_client if use_http else self.native_client
         try:
             yield client
         except Exception as e:
-            logger.error(f"❌ Ошибка выполнения запроса: {e}")
+            logger.error(f"❌ Error in Request: {e}")
             raise
         finally:
-            # ClickHouse клиенты управляют соединениями автоматически
+            # Clickhouse clients control connections automatically
             pass
 
     def save_candidate(self, candidate: Candidate, ai_analysis: Optional[AIAnalysisResponse] = None) -> bool:
         """
-        Сохранение кандидата в ClickHouse с максимальной производительностью
+        Maintaining a candidate on ClickHouse with maximum productivity
         """
         try:
             start_time = time.time()
             
-            # Подготовка данных кандидата
+            # Preparation of the candidate &apos; s data
             candidate_data = self._prepare_candidate_data(candidate, ai_analysis)
             
-            # Используем REPLACE для upsert операции
+            # We're going to use PRELACE for upsert operation.
             with self.get_connection() as client:
                 client.execute(
                     f"""
@@ -242,38 +242,38 @@ class ClickHouseManager:
                     [candidate_data]
                 )
             
-            # Сохранение AI анализа если есть
+            # Save AI analysis if available
             if ai_analysis:
                 self._save_ai_analysis(candidate.id, ai_analysis)
             
             elapsed = time.time() - start_time
-            logger.debug(f"💾 Кандидат {candidate.id} сохранен за {elapsed:.3f}с")
+            logger.debug(f"💾 Candidature {candidate.id} retained for {elapsed:.3f}c")
             return True
             
         except Exception as e:
-            logger.error(f"❌ Ошибка сохранения кандидата {candidate.id}: {e}")
+            logger.error(f"❌ Error of preservation of the candidate {candidate.id}: {e}")
             return False
 
     def _prepare_candidate_data(self, candidate: Candidate, ai_analysis: Optional[AIAnalysisResponse] = None) -> tuple:
-        """Подготовка данных кандидата для вставки в ClickHouse"""
+        'Preparation of the candidate &apos; s data for the ClickHouse'
         
-        # Извлечение данных с обработкой None значений
+        # Data extraction with None values processing
         area_name = candidate.area.get('name', '') if candidate.area else ''
         experience_level = self._extract_experience_level(candidate.experience)
         
-        # Обработка зарплаты
+        # Salary processing
         salary_from = None
         salary_to = None
         if candidate.salary:
             salary_from = candidate.salary.get('from')
             salary_to = candidate.salary.get('to')
         
-        # AI статус
+        # AI Status
         ai_status = 'completed' if ai_analysis else 'pending'
         
         return (
             candidate.id,
-            candidate.id,  # hh_id то же что и id
+            candidate.id,  # hh_id same as id
             candidate.name or '',
             candidate.title or '',
             candidate.age or 0,
@@ -289,21 +289,21 @@ class ClickHouseManager:
         )
 
     def _extract_experience_level(self, experience: Dict[str, Any]) -> str:
-        """Извлечение уровня опыта из объекта experience"""
+        'Extraction of experience from the object experience'
         if not experience:
             return 'unknown'
         
-        # Попытка извлечь из различных полей
+        # Trying to get out of different fields
         if isinstance(experience, dict):
             return experience.get('level', experience.get('experience', 'unknown'))
         return str(experience)
 
     def _save_ai_analysis(self, candidate_id: str, ai_analysis: AIAnalysisResponse):
-        """Сохранение AI анализа в отдельные таблицы"""
+        'Maintenance of AI analysis in selected tables'
         try:
-            # Сохранение общих скоров
+            # Maintaining common speeds
             with self.get_connection() as client:
-                # Основная оценка
+                # Main evaluation
                 client.execute(
                     f"""
                     INSERT INTO {self.database}.ai_candidate_scores 
@@ -314,10 +314,10 @@ class ClickHouseManager:
                     """,
                     [(
                         candidate_id,
-                        "general",  # search_query можно сделать более специфичным
+                        "general",  # search_query can be made more specific
                         ai_analysis.overall_score,
                         ai_analysis.analysis_summary,
-                        int(ai_analysis.processing_time * 1000),  # в миллисекундах
+                        int(ai_analysis.processing_time * 1000),  # in milliseconds
                         ai_analysis.keyword_relevance_score or 0.0,
                         ai_analysis.filter_match_score or 0.0,
                         ai_analysis.recency_score or 0.0,
@@ -327,7 +327,7 @@ class ClickHouseManager:
                     )]
                 )
                 
-                # Анализ навыков
+                # Skills analysis
                 if ai_analysis.skill_analysis:
                     skill_data = []
                     for skill in ai_analysis.skill_analysis:
@@ -353,13 +353,13 @@ class ClickHouseManager:
                             skill_data
                         )
             
-            logger.debug(f"💡 AI анализ для кандидата {candidate_id} сохранен")
+            logger.debug(f"💡 AI Analysis for the candidate {candidate_id} retained")
             
         except Exception as e:
-            logger.error(f"❌ Ошибка сохранения AI анализа: {e}")
+            logger.error(f"❌ Mistake of AI analysis: {e}")
 
     def get_candidate(self, candidate_id: str) -> Optional[DatabaseCandidate]:
-        """Получение кандидата по ID с высокой производительностью"""
+        'High-productivity ID candidate received'
         try:
             with self.get_connection(use_http=True) as client:
                 result = client.query(
@@ -379,17 +379,17 @@ class ClickHouseManager:
             return None
             
         except Exception as e:
-            logger.error(f"❌ Ошибка получения кандидата {candidate_id}: {e}")
+            logger.error(f"❌ Error of receiving the candidate {candidate_id}: {e}")
             return None
 
     def search_candidates(self, search_params: Dict[str, Any], limit: int = 100) -> List[DatabaseCandidate]:
         """
-        Высокопроизводительный поиск кандидатов с использованием ClickHouse оптимизаций
+        High-quality search using ClickHouse Optimization
         """
         try:
             start_time = time.time()
             
-            # Построение WHERE условий
+            # Creating WHERE Conditions
             where_conditions = []
             params = {}
             
@@ -415,7 +415,7 @@ class ClickHouseManager:
                     where_conditions.append("hasAny(skills, %(required_skills)s)")
                     params["required_skills"] = skills
             
-            # Базовый запрос
+            # Basic request
             where_clause = " AND ".join(where_conditions) if where_conditions else "1=1"
             
             query = f"""
@@ -436,21 +436,21 @@ class ClickHouseManager:
                         candidates.append(candidate)
                 
                 elapsed = time.time() - start_time
-                logger.info(f"🔍 Найдено {len(candidates)} кандидатов за {elapsed:.3f}с")
+                logger.info(f"🔍 Found {len(candidates)} candidates for election to the {elapsed:.3f}c")
                 
                 return candidates
                 
         except Exception as e:
-            logger.error(f"❌ Ошибка поиска кандидатов: {e}")
+            logger.error(f"❌ Error in search of candidates: {e}")
             return []
 
     def _row_to_database_candidate(self, row: tuple, column_names: List[str]) -> Optional[DatabaseCandidate]:
-        """Конвертация строки ClickHouse в DatabaseCandidate"""
+        'ClickHouse in DatabaseCandidate'
         try:
-            # Создание словаря из строки
+            # Create a dictionary from a string
             row_dict = dict(zip(column_names, row))
             
-            # Создание объекта Candidate из данных
+            # Create Candidate from Data
             candidate = Candidate(
                 id=row_dict.get('id', ''),
                 name=row_dict.get('name'),
@@ -471,7 +471,7 @@ class ClickHouseManager:
                 score=0.0
             )
             
-            # Создание CandidateProfile
+            # Create Candidate Profile
             profile = CandidateProfile(
                 id=candidate.id,
                 hh_data=candidate,
@@ -481,7 +481,7 @@ class ClickHouseManager:
                 analysis_status=row_dict.get('ai_analysis_status', 'pending')
             )
             
-            # Создание DatabaseCandidate
+            # DatabaseCandidate
             db_candidate = DatabaseCandidate(
                 id=candidate.id,
                 profile=profile,
@@ -494,11 +494,11 @@ class ClickHouseManager:
             return db_candidate
             
         except Exception as e:
-            logger.error(f"❌ Ошибка конвертации строки в DatabaseCandidate: {e}")
+            logger.error(f"❌ Conversion error in DatabaseCandidate: {e}")
             return None
 
     def update_search_count(self, candidate_id: str):
-        """Обновление счетчика поисков (высокопроизводительная операция)"""
+        'Update of search counter (high performance operation))'
         try:
             with self.get_connection() as client:
                 client.execute(
@@ -510,16 +510,16 @@ class ClickHouseManager:
                     {"candidate_id": candidate_id}
                 )
             
-            logger.debug(f"📊 Счетчик поисков для {candidate_id} обновлен")
+            logger.debug(f"📊 Search counter for {candidate_id} updated")
             
         except Exception as e:
-            logger.error(f"❌ Ошибка обновления счетчика поисков: {e}")
+            logger.error(f"❌ Error of update of the search calculator: {e}")
 
     def get_statistics(self) -> Dict[str, Any]:
-        """Получение статистики с использованием аналитической мощи ClickHouse"""
+        "Getting statistics using Clickhouse's analytical power"
         try:
             with self.get_connection(use_http=True) as client:
-                # Простая базовая статистика
+                # Simple basic statistics
                 total_candidates = client.query(f"SELECT count() FROM {self.database}.candidates").result_rows[0][0]
                 
                 analyzed_candidates = 0
@@ -529,7 +529,7 @@ class ClickHouseManager:
                         FROM {self.database}.candidates
                     """).result_rows[0][0]
                 
-                # Безопасный расчет процента
+                # Safe calculation of interest
                 analysis_coverage = 0.0
                 if total_candidates > 0:
                     analysis_coverage = round((analyzed_candidates / total_candidates) * 100, 2)
@@ -541,11 +541,11 @@ class ClickHouseManager:
                     "database_type": "ClickHouse"
                 }
             
-            logger.info("📊 Статистика ClickHouse получена")
+            logger.info('📊 Clickhouse statistics received')
             return stats
             
         except Exception as e:
-            logger.error(f"❌ Ошибка получения статистики: {e}")
+            logger.error(f"❌ Error in obtaining statistics: {e}")
             return {
                 "total_candidates": 0,
                 "analyzed_candidates": 0,
@@ -555,7 +555,7 @@ class ClickHouseManager:
             }
 
     def get_top_candidates(self, limit: int = 10) -> List[DatabaseCandidate]:
-        """Получение топ кандидатов по поисковой активности"""
+        'To receive the top of the search engine candidates'
         try:
             with self.get_connection(use_http=True) as client:
                 result = client.query(
@@ -576,11 +576,11 @@ class ClickHouseManager:
                 return candidates
                 
         except Exception as e:
-            logger.error(f"❌ Ошибка получения топ кандидатов: {e}")
+            logger.error(f"❌ Error in getting top candidates: {e}")
             return []
 
     def health_check(self) -> Dict[str, Any]:
-        """Проверка здоровья ClickHouse соединения"""
+        'ClickHouse Health Check'
         try:
             with self.get_connection(use_http=True) as client:
                 version = client.query("SELECT version()").result_rows[0][0]
@@ -603,12 +603,12 @@ class ClickHouseManager:
             }
 
     def close(self):
-        """Закрытие соединений"""
+        'Closure of compounds'
         try:
             if hasattr(self, 'native_client'):
                 self.native_client.disconnect()
             if hasattr(self, 'http_client'):
                 self.http_client.close()
-            logger.info("🔌 ClickHouse соединения закрыты")
+            logger.info('🔌 Clickhouse connections closed')
         except Exception as e:
-            logger.error(f"❌ Ошибка закрытия соединений: {e}")
+            logger.error(f"❌ Mistake of closing connections: {e}")
