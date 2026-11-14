@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Скрипт для запуска всех микросервисов Candidate Analysis
+Script for all microservices of Candidate Analisis
 """
 
 import subprocess
@@ -11,7 +11,7 @@ import requests
 from pathlib import Path
 
 def check_service_health(url: str, service_name: str) -> bool:
-    """Проверка здоровья сервиса"""
+    'Service health check'
     try:
         response = requests.get(f"{url}/health", timeout=5)
         return response.status_code == 200
@@ -19,11 +19,11 @@ def check_service_health(url: str, service_name: str) -> bool:
         return False
 
 def start_service(service_name: str, command: str, port: int):
-    """Запуск сервиса"""
-    print(f"🚀 Запуск {service_name}...")
+    'Start service'
+    print(f"🚀 Launch {service_name}...")
     
     try:
-        # Запуск процесса
+        # Start the process
         process = subprocess.Popen(
             command.split(),
             stdout=subprocess.PIPE,
@@ -31,29 +31,29 @@ def start_service(service_name: str, command: str, port: int):
             text=True
         )
         
-        # Ожидание запуска
+        # Waiting for launch
         time.sleep(3)
         
-        # Проверка здоровья
+        # Health check
         health_url = f"http://localhost:{port}"
         if check_service_health(health_url, service_name):
-            print(f"✅ {service_name} успешно запущен на порту {port}")
+            print(f"✅ {service_name} successfully launched at the port {port}")
             return process
         else:
-            print(f"❌ {service_name} не отвечает на порту {port}")
+            print(f"❌ {service_name} Doesn't answer the port. {port}")
             process.terminate()
             return None
             
     except Exception as e:
-        print(f"❌ Ошибка запуска {service_name}: {e}")
+        print(f"❌ Error of launch {service_name}: {e}")
         return None
 
 def main():
-    """Основная функция"""
-    print("🎯 Candidate Analysis - Запуск микросервисов")
+    'Core function'
+    print('🎯 Candidate Analysis - Launching microservices')
     print("=" * 50)
     
-    # Проверка наличия файлов
+    # Checking the availability of files
     required_files = [
         "config/main.py",
         "hh_api/main.py", 
@@ -65,16 +65,16 @@ def main():
     
     for file_path in required_files:
         if not os.path.exists(file_path):
-            print(f"❌ Файл {file_path} не найден")
+            print(f"❌ File {file_path} not found")
             sys.exit(1)
     
-    # Создание директории для логов
+    # Creation of a directory for lairs
     os.makedirs("logs", exist_ok=True)
     os.makedirs("data", exist_ok=True)
     
-    print("📁 Директории созданы")
+    print('📁 Directorates established')
     
-    # Определение сервисов для запуска
+    # Definition of start-up services
     services = [
         {
             "name": "Config Service",
@@ -119,30 +119,30 @@ def main():
             "url": "http://localhost:8010"
         },
         {
-            "name": "Master Agent (РЕКС)",
+            "name": 'Master Agency (REX)',
             "command": "python master_agent/main.py",
             "port": 8020,
             "url": "http://localhost:8020"
         },
-        # Frontend удален - используется только API
+        # Frontend deleted - only API used
     ]
     
     processes = []
     
-    # Запуск сервисов
+    # Start Services
     for service in services:
         process = start_service(service["name"], service["command"], service["port"])
         if process:
             processes.append((service["name"], process))
         else:
-            print(f"❌ Не удалось запустить {service['name']}")
-            # Остановка уже запущенных процессов
+            print(f"❌ Unable to start {service['name']}")
+            # Stopping processes already started
             for name, proc in processes:
                 proc.terminate()
             sys.exit(1)
     
-    print("\n🎉 Все сервисы успешно запущены!")
-    print("\n📋 Доступные сервисы:")
+    print('\n🎉 All services successfully run!')
+    print('\n📋 Accessible services:')
     print("- API Gateway: http://localhost:8088")
     print("- API Documentation: http://localhost:8088/docs")
 
@@ -152,24 +152,24 @@ def main():
     print("- AI Analysis Service: http://localhost:8005")
     print("- Database Service: http://localhost:8006")
     print("- Recruitment Runtime: http://localhost:8010")
-    print("- Master Agent (РЕКС): http://localhost:8020")
+    print('- Master Agency (REX): http://localhost:8020')
     
-    print("\n💡 Для остановки всех сервисов нажмите Ctrl+C")
+    print('\n💡 To stop all services click Ctrl+C')
     
     try:
-        # Ожидание завершения
+        # Waiting for completion
         while True:
             time.sleep(1)
-            # Проверка здоровья всех сервисов
+            # Health check of all services
             for service in services:
                 if not check_service_health(service["url"], service["name"]):
-                    print(f"⚠️ {service['name']} не отвечает")
+                    print(f"⚠️ {service['name']} does not answer")
     except KeyboardInterrupt:
-        print("\n🛑 Остановка сервисов...")
+        print('\n🛑 Stopping services...')
         for name, process in processes:
-            print(f"Остановка {name}...")
+            print(f"Stop {name}...")
             process.terminate()
-        print("✅ Все сервисы остановлены")
+        print('✅ All services stopped')
 
 if __name__ == "__main__":
     main()

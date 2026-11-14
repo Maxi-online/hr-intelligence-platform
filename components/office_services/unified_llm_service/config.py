@@ -1,5 +1,5 @@
 """
-Конфигурация для Unified LLM Service микросервиса
+Format for Universal LLM Service Microservice
 """
 
 import json
@@ -39,20 +39,20 @@ def _resolve_settings_env(value):
 logger = logging.getLogger(__name__)
 
 def load_settings():
-    """Загрузка настроек из settings.json"""
+    'Loading settings from settings.json'
     settings_file = "settings.json"
     
     if os.path.exists(settings_file):
         try:
             with open(settings_file, 'r', encoding='utf-8') as f:
                 settings = _resolve_settings_env(json.load(f))
-                logger.info("✅ Настройки загружены из settings.json")
+                logger.info('✅ The settings are loaded from settings.json')
                 return settings
         except Exception as e:
-            logger.error(f"❌ Ошибка загрузки settings.json: {e}")
+            logger.error(f"❌ Download error settings.json: {e}")
     
-    # Fallback на переменные окружения
-    logger.warning("⚠️ settings.json не найден, используем переменные окружения")
+    # Fallback on environment variables
+    logger.warning('⚠️ settings.json not found, use environment variables')
     
     return {
         "openai": {
@@ -73,5 +73,5 @@ def load_settings():
         }
     }
 
-# Загружаем настройки
+# Upload settings
 settings = load_settings()

@@ -1,52 +1,52 @@
-# 🗂️ Workflow Office - Диаграммы Базы Данных
+# 🗂️ Workflow Office - Database Figures
 
 ## 📊 Entity Relationship Diagram (ERD)
 
-### Полная схема базы данных
+### Full database diagram
 
 ```mermaid
 erDiagram
     %% ============================================
-    %% ОСНОВНЫЕ ТАБЛИЦЫ АГЕНТОВ
+    % MAIN AGENCIES TABLES
     %% ============================================
     
     agents {
-        VARCHAR agent_id PK "Уникальный ID агента"
-        VARCHAR agent_name "Отображаемое имя"
-        VARCHAR agent_type "Тип агента"
-        VARCHAR display_name "Человеческое имя"
-        VARCHAR role "Роль агента"
-        TEXT persona "Описание личности"
+        VARCHAR agent_id PK "Unique ID Agent"
+        VARCHAR agent_name "Indicated Name"
+        VARCHAR agent_type Type Agent
+        VARCHAR display_name Human Name
+        VARCHAR roll "The Role of an Agent"
+        TEXT persona "Description of identity"
         VARCHAR telegram_username UK "Telegram username"
         VARCHAR teams_identity UK "Teams identity"
         ENUM status "active/inactive/maintenance"
-        VARCHAR version "Версия конфигурации"
-        BOOLEAN is_active "Активен ли"
+        VARCHAR version of "Clothes version"
+        BOOLEAN is_active "Accident"
         TIMESTAMP created_at
         TIMESTAMP updated_at
-        JSON metadata "Метаданные"
+        JSON Metadata "Metadata"
     }
     
     agent_prompts {
-        VARCHAR prompt_id PK "ID промпта"
-        VARCHAR agent_id FK "ID агента"
-        TEXT system_prompt "Системный промпт"
-        TEXT tone_of_voice "Тон общения"
-        VARCHAR version "Версия промпта"
-        BOOLEAN is_current "Текущая версия"
+        VARCHAR prompt_id PK "ID Prompta"
+        VARCHAR agent_id FK "ID Agent"
+        TEXT system_prompt System Prompt
+        TEXT tone_of_voice Telecommunications Tone
+        VARCHAR version of "The Prompt Version"
+        BOOLEAN is_current Current Version
         TEXT additional_instructions
-        JSON examples "Few-Shot примеры"
+        JSON examples "Few-Shot Examples"
         TIMESTAMP created_at
-        TEXT changelog "Описание изменений"
+        TEXT changelog "Description of Changes"
     }
     
     agent_gpt_settings {
-        VARCHAR setting_id PK "ID настройки"
-        VARCHAR agent_id FK UK "ID агента"
+        VARCHAR setting_id PK "ID setup"
+        VARCHAR agent_id FK UK "ID Agent"
         VARCHAR model "gpt-5-nano/gpt-5"
         ENUM reasoning_effort "minimal/low/medium/high"
-        DECIMAL temperature "Temperature для GPT-4"
-        INTEGER max_tokens "Макс токенов"
+        DECIMAL Timeline "Temperature for GPT-4)
+        INTEGER max_tokens "Max Tokens"
         VARCHAR tool_choice "auto/required/none"
         BOOLEAN parallel_tool_calls
         BOOLEAN prompt_cache_enabled
@@ -56,84 +56,84 @@ erDiagram
     }
     
     agent_tools {
-        VARCHAR tool_id PK "ID инструмента"
-        VARCHAR tool_name UK "Название инструмента"
+        VARCHAR tool_id PK "ID tool"
+        VARCHAR tool_name UK "Name of Instrument"
         ENUM tool_type "function/mcp/api/database"
-        TEXT description "Описание для GPT"
-        VARCHAR category "Категория"
-        JSON parameters "JSON схема параметров"
-        VARCHAR mcp_server_url "URL MCP сервера"
+        TEXT declaration "Description for GPT"
+        VARCHAR category "category"
+        JSON parameters "JSON parameter diagram"
+        VARCHAR mcp_server_url "URL MCP servers"
         VARCHAR api_endpoint "API endpoint"
         BOOLEAN is_active
     }
     
     agent_tools_mapping {
-        VARCHAR mapping_id PK "ID связи"
-        VARCHAR agent_id FK "ID агента"
-        VARCHAR tool_id FK "ID инструмента"
-        BOOLEAN is_enabled "Включен ли"
-        INTEGER priority "Приоритет (0-высший)"
+        VARCHAR mapping_id PK "ID communication"
+        VARCHAR agent_id FK "ID Agent"
+        VARCHAR tool_id FK "ID tool"
+        BOOLEAN is_enabled "Is included"
+        INTEGER priority
         INTEGER rate_limit_per_hour
         JSON custom_params
     }
     
     %% ============================================
-    %% ПАМЯТЬ АГЕНТОВ
+    %% AGENT MEMORY
     %% ============================================
     
     core_memory {
-        VARCHAR memory_id PK "ID записи памяти"
-        VARCHAR agent_id FK "ID агента"
+        VARCHAR memory_id PK ID of memory recording"
+        VARCHAR agent_id FK "ID Agent"
         ENUM memory_type "rule/fact/persona/constraint"
         VARCHAR memory_category
-        VARCHAR memory_key "Ключ памяти"
-        TEXT memory_value "Значение"
-        INTEGER priority "Приоритет 1-10"
-        BOOLEAN is_permanent "Постоянная память"
+        VARCHAR memory_key Memory Key"
+        TEXT memory_value "Purpose"
+        INTEGER priority 1-10
+        BOOLEAN is_permanent Permanent Memory"
         BOOLEAN is_active
         JSON applies_to_context
         JSON tags
     }
     
     operational_memory {
-        VARCHAR operation_id PK "ID операции"
-        VARCHAR agent_id FK "ID агента"
-        VARCHAR session_id "ID сессии"
-        VARCHAR user_id "ID пользователя"
-        VARCHAR task_type "Тип задачи"
-        TEXT task_context "Контекст"
-        TEXT current_focus "Текущий фокус"
+        VARCHAR operation_id PK "ID Operation"
+        VARCHAR agent_id FK "ID Agent"
+        VARCHAR session_id "ID Session"
+        VARCHAR user_id "user ID"
+        VARCHAR task_type "Truck Type"
+        TEXT task_context Context
+        TEXT current_focus Current Focus
         JSON session_data
         TIMESTAMP expires_at "TTL"
         TIMESTAMP created_at
     }
     
     long_term_memory {
-        VARCHAR ltm_id PK "ID записи"
-        VARCHAR agent_id FK "ID агента"
+        VARCHAR ltm_id PK "ID records"
+        VARCHAR agent_id FK "ID Agent"
         ENUM memory_type "learned_pattern/user_preference"
         VARCHAR title
         TEXT content
         JSON context_tags
-        INTEGER usage_count "Количество применений"
-        DECIMAL success_rate "Процент успеха"
+        INTEGER usage_count "Number of applications"
+        DECIMAL success_rate "Purpose of Success"
         TIMESTAMP last_used_at
         BOOLEAN is_active
     }
     
     %% ============================================
-    %% ИСТОРИЯ И ЛОГИРОВАНИЕ
+    % HISTORY AND LOIGRATION
     %% ============================================
     
     chat_history {
-        VARCHAR message_id PK "ID сообщения"
-        VARCHAR agent_id FK "ID агента"
-        VARCHAR session_id "ID сессии"
-        VARCHAR user_id "ID пользователя"
+        VARCHAR message_id PK "ID Message"
+        VARCHAR agent_id FK "ID Agent"
+        VARCHAR session_id "ID Session"
+        VARCHAR user_id "user ID"
         ENUM role "user/assistant/system/tool"
-        TEXT content "Содержимое"
+        TEXT content
         ENUM content_type "text/image/tool_call"
-        JSON tool_calls "Вызовы инструментов"
+        JSON tool_calls Tools Challenges
         ENUM platform "telegram/teams/slack"
         INTEGER tokens_used
         INTEGER response_time_ms
@@ -141,8 +141,8 @@ erDiagram
     }
     
     agent_activity_log {
-        VARCHAR log_id PK "ID лога"
-        VARCHAR agent_id FK "ID агента"
+        VARCHAR log_id PK "ID Loga"
+        VARCHAR agent_id FK "ID Agent"
         ENUM activity_type "message/tool_call/error"
         VARCHAR activity_name
         TEXT description
@@ -154,9 +154,9 @@ erDiagram
     }
     
     agent_version_history {
-        VARCHAR history_id PK "ID истории"
-        VARCHAR agent_id FK "ID агента"
-        VARCHAR version "Версия"
+        VARCHAR history_id PK "ID History"
+        VARCHAR agent_id FK "ID Agent"
+        VARCHAR version "The Version"
         VARCHAR previous_version
         ENUM change_type "prompt/settings/tools"
         TEXT changelog
@@ -168,12 +168,12 @@ erDiagram
     }
     
     %% ============================================
-    %% ПРАВИЛА И КОНФИГУРАЦИИ
+    % RULE AND CONFIGURE
     %% ============================================
     
     agent_rules {
-        VARCHAR rule_id PK "ID правила"
-        VARCHAR agent_id FK "ID агента"
+        VARCHAR rule_id PK "ID Rule"
+        VARCHAR agent_id FK "ID Agent"
         ENUM rule_type "communication/behavior/security"
         VARCHAR rule_name
         TEXT rule_content
@@ -184,9 +184,9 @@ erDiagram
     }
     
     agent_routing_rules {
-        VARCHAR routing_id PK "ID правила"
-        VARCHAR source_agent_id FK "Агент-источник"
-        VARCHAR target_agent_id FK "Агент-получатель"
+        VARCHAR routing_id PK "ID Rule"
+        VARCHAR source_agent_id FK "Agent Source"
+        VARCHAR target_agent_id FK "Recipient Agency"
         ENUM routing_type "delegation/escalation/report"
         TEXT routing_condition
         BOOLEAN is_bidirectional
@@ -195,12 +195,12 @@ erDiagram
     }
     
     %% ============================================
-    %% ОБУЧАЮЩИЕ ДАННЫЕ
+    % LEARNING DATA
     %% ============================================
     
     agent_training_data {
-        VARCHAR training_id PK "ID обучающих данных"
-        VARCHAR agent_id FK "ID агента"
+        VARCHAR training_id PK "ID training data"
+        VARCHAR agent_id FK "ID Agent"
         ENUM data_type "example/knowledge_base/faq"
         VARCHAR category
         VARCHAR title
@@ -213,14 +213,14 @@ erDiagram
     }
     
     agent_knowledge_base {
-        VARCHAR knowledge_id PK "ID знаний"
-        VARCHAR agent_id FK "ID агента (NULL для общих)"
+        VARCHAR knowledge_id PK "ID Knowledge"
+        VARCHAR agent_id FK "ID Agent (NULL for General)"
         VARCHAR title
         TEXT content
         VARCHAR source
         VARCHAR category
         JSON tags
-        JSON embedding_vector "Для RAG"
+        JSON embedding_vector "For RAG"
         INTEGER access_count
         TIMESTAMP last_accessed_at
         BOOLEAN is_active
@@ -228,25 +228,25 @@ erDiagram
     }
     
     %% ============================================
-    %% ОРГАНИЗАЦИЯ И РАЗВЕРТЫВАНИЕ
+    % ORGANIZATION AND DEPLOYMENT
     %% ============================================
     
     organizational_structure {
-        VARCHAR id PK "ID записи"
-        VARCHAR department "Отдел"
-        VARCHAR division "Подразделение"
-        VARCHAR position "Должность"
-        VARCHAR full_name "ФИО"
-        INTEGER hierarchy_level "Уровень иерархии"
-        VARCHAR manager_id FK "ID менеджера"
-        VARCHAR agent_id FK "ID агента"
+        VARCHAR id PK "ID records"
+        VARCHAR department "Section"
+        VARCHAR Division
+        VARCHAR position "Duty"
+        VARCHAR full_name "FIO"
+        INTEGER hierarchy_level "Risk Level"
+        VARCHAR manager_id FK "ID Manager"
+        VARCHAR agent_id FK "ID Agent"
         ENUM employment_type "full_time/ai_agent"
         BOOLEAN is_active
     }
     
     deployed_agents_registry {
-        VARCHAR deployment_id PK "ID развертывания"
-        VARCHAR agent_id FK "ID агента"
+        VARCHAR deployment_id PK "ID deployment"
+        VARCHAR agent_id FK "ID Agent"
         VARCHAR telegram_bot_token
         VARCHAR telegram_username UK
         VARCHAR teams_app_id
@@ -260,15 +260,15 @@ erDiagram
     }
     
     %% ============================================
-    %% МЕТРИКИ
+    % METRIC
     %% ============================================
     
     agent_performance_metrics {
-        VARCHAR metric_id PK "ID метрики"
-        VARCHAR agent_id FK "ID агента"
-        VARCHAR metric_name "Название метрики"
+        VARCHAR metric_id PK "ID metrics"
+        VARCHAR agent_id FK "ID Agent"
+        VARCHAR metric_name "Name of metrics"
         ENUM metric_type "counter/gauge/histogram"
-        DECIMAL metric_value "Значение"
+        DECIMAL metric_value "Purpose"
         ENUM period "minute/hour/day/week/month"
         TIMESTAMP period_start
         TIMESTAMP period_end
@@ -277,73 +277,73 @@ erDiagram
     }
     
     system_metrics {
-        VARCHAR id PK "ID метрики"
+        VARCHAR id PK "ID metrics"
         VARCHAR metric_name
         DECIMAL metric_value
-        VARCHAR agent_id FK "ID агента (опционально)"
+        VARCHAR agent_id FK "ID Agent (Operate)"
         VARCHAR period
         JSON metadata
         TIMESTAMP timestamp
     }
     
     %% ============================================
-    %% СВЯЗИ МЕЖДУ ТАБЛИЦАМИ
+    % LINKS BETWEEN TABLES
     %% ============================================
     
-    %% Агенты -> Промпты
-    agents ||--o{ agent_prompts : "имеет промпты"
+    % Agent -> Prompts
+    agents ♪ ♪ --o{ agent_prompts : "has prompts"
     
-    %% Агенты -> GPT настройки
-    agents ||--|| agent_gpt_settings : "имеет настройки"
+    % Agents -> GPT setup
+    agents ~--~ agent_gpt_settings: "has settings"
     
-    %% Агенты -> Инструменты (через mapping)
-    agents ||--o{ agent_tools_mapping : "использует"
-    agent_tools ||--o{ agent_tools_mapping : "доступен для"
+    % Agent -> Tools (through Mapping)
+    agents ♪ ♪ --o{ agent_tools_mapping :""
+    agent_tools ♪ --o{ agent_tools_mapping : "available for"
     
-    %% Агенты -> Память
-    agents ||--o{ core_memory : "имеет core память"
-    agents ||--o{ operational_memory : "имеет operational память"
-    agents ||--o{ long_term_memory : "имеет long-term память"
+    %% Actors – Memory
+    --o{ core_memory : has core memory"
+    --o{ operational_memory : has operational memory"
+    --o{ long_term_memory : has long-term memory"
     
-    %% Агенты -> История и логи
-    agents ||--o{ chat_history : "имеет историю"
-    agents ||--o{ agent_activity_log : "имеет логи"
-    agents ||--o{ agent_version_history : "имеет версии"
+    % Agent - • History and logs
+    agents ♪ --o{ chat_history : "has history"
+    agents ♪ ♪ --o{ agent_activity_log : "has a log"
+    agents ♪ ♪ --o{ agent_version_history :" has versions"
     
-    %% Агенты -> Правила
-    agents ||--o{ agent_rules : "имеет правила"
-    agents ||--o{ agent_routing_rules : "маршрутизация от"
-    agents ||--o{ agent_routing_rules : "маршрутизация к"
+    % Agents -> Rules
+    agents ♪ ♪ --o{ agent_rules : ♪ has rules ♪"
+    agents ♪ ♪ --o{ agent_routing_rules : "passing from"
+    agents ♪ --o{ agent_routing_rules : "tracking to"
     
-    %% Агенты -> Обучающие данные
-    agents ||--o{ agent_training_data : "имеет обучающие данные"
-    agents ||--o{ agent_knowledge_base : "имеет базу знаний"
+    % Agents -> Training data
+    agents \\--o{ agent_training_data : "is available for reference data"
+    agents \\--o{ agent_knowledge_base : "has a knowledge base"
     
-    %% Агенты -> Организация
-    agents ||--o| organizational_structure : "представлен в"
-    agents ||--o| deployed_agents_registry : "развернут как"
+    % Agency -> Organization
+    agents ||--o| organizational_structure : "submitted in accordance with"
+    agents ♪ ♪ --o♪ deployed_agents_registry Original: ENGLISH"
     
-    %% Агенты -> Метрики
-    agents ||--o{ agent_performance_metrics : "имеет метрики"
-    agents ||--o{ system_metrics : "связан с"
+    % Agent ->Metrics
+    agents ♪ --o{ agent_performance_metrics : "has metrics"
+    agents ||--o{ system_metrics : "related to"
     
-    %% Оргструктура -> сама себя (иерархия)
-    organizational_structure ||--o{ organizational_structure : "подчиняется"
+    % of the organization ->self (hierarchy)
+    organizational_structure ♪ --o{ organizational_structure :" Subjected to"
 ```
 
 ---
 
-## 🎯 Архитектура по группам таблиц
+## 🎯 Architecture by group of tables
 
-### 1. Ядро агента (Agent Core)
+### 1. Agent Core Core)
 
 ```mermaid
 graph TB
     subgraph "Agent Core"
-        A[agents<br/>Базовая информация]
-        P[agent_prompts<br/>Системные промпты]
-        G[agent_gpt_settings<br/>GPT настройки]
-        T[agent_tools_mapping<br/>Инструменты]
+        A[agents<br/> Basic information]
+        P[agent_prompts<br/>Sistial prompts]
+        G[agent_gpt_settings<br/>GPT setup]
+        T[agent_tools_mapping<br/> Tools]
         
         A --> P
         A --> G
@@ -351,7 +351,7 @@ graph TB
     end
     
     subgraph "Tools Catalog"
-        TC[agent_tools<br/>Каталог инструментов]
+        TC[agent_tools<br/> Tools Catalogue]
         TC --> T
     end
     
@@ -362,15 +362,15 @@ graph TB
     style TC fill:#FF9800,color:#fff
 ```
 
-### 2. Память агента (Agent Memory)
+### 2. Memory of the Agent (Memory of the Agent))
 
 ```mermaid
 graph LR
     subgraph "Agent Memory System"
         A[agents]
-        CM[core_memory<br/>Постоянная память<br/>Правила, факты]
-        OM[operational_memory<br/>Оперативная память<br/>Сессии, TTL]
-        LTM[long_term_memory<br/>Долговременная память<br/>Обучение, паттерны]
+        CM[core_memory<br/>Permanent memory<br/>Rules, facts]
+        OM[operational_memory<br/>Operative memory<br/>Sessions, TTL]
+        LTM[long_term_memory<br/>Long-term memory<br/>Training, Pathers]
         
         A --> CM
         A --> OM
@@ -383,15 +383,15 @@ graph LR
     style LTM fill:#673AB7,color:#fff
 ```
 
-### 3. История и логирование (Logging & History)
+### 3. History and Logging)
 
 ```mermaid
 graph TB
     subgraph "Logging System"
         A[agents]
-        CH[chat_history<br/>История сообщений<br/>Диалоги]
-        AL[agent_activity_log<br/>Лог активности<br/>Tool calls, errors]
-        VH[agent_version_history<br/>История версий<br/>Изменения конфигураций]
+        CH[chat_history<br/>History of communications<br/>Dialogues]
+        AL[agent_activity_log<br/>LOEG Activity <br/>Tool Calls, errors]
+        VH[agent_version_history<br/> Version History<br/>]
         
         A --> CH
         A --> AL
@@ -404,7 +404,7 @@ graph TB
     style VH fill:#00BCD4,color:#fff
 ```
 
-### 4. Правила и маршрутизация (Rules & Routing)
+### 4. Rules and router (Rules & Routing))
 
 ```mermaid
 graph TB
@@ -413,8 +413,8 @@ graph TB
         A2[agents]
         A3[agents]
         
-        R[agent_rules<br/>Правила поведения]
-        RR[agent_routing_rules<br/>Правила маршрутизации]
+        R[agent_rules<br/> Conduct rules]
+        RR[agent_routing_rules<br/> Routeing Rules]
         
         A1 --> R
         A1 -->|source| RR
@@ -429,14 +429,14 @@ graph TB
     style RR fill:#FF5722,color:#fff
 ```
 
-### 5. Обучающие данные (Training & Knowledge)
+### 5. Training & Knowledge)
 
 ```mermaid
 graph TB
     subgraph "Training & Knowledge"
         A[agents]
-        TD[agent_training_data<br/>Few-Shot примеры<br/>Сценарии, кейсы]
-        KB[agent_knowledge_base<br/>База знаний RAG<br/>Векторный поиск]
+        TD[agent_training_data<br/>Few-Shot Examples<br/>Scenarios, briefcases]
+        KB[agent_knowledge_base<br/> Knowledge Base RAG<br/>]
         
         A --> TD
         A --> KB
@@ -447,16 +447,16 @@ graph TB
     style KB fill:#FFC107,color:#000
 ```
 
-### 6. Развертывание и метрики (Deployment & Metrics)
+### 6. Deployment and metrics (Deployment & Metrics))
 
 ```mermaid
 graph TB
     subgraph "Deployment & Metrics"
         A[agents]
-        OS[organizational_structure<br/>Оргструктура<br/>Иерархия]
-        DR[deployed_agents_registry<br/>Реестр развертывания<br/>Tokens, статусы]
-        PM[agent_performance_metrics<br/>Метрики производительности]
-        SM[system_metrics<br/>Системные метрики]
+        OS[organizational_structure<br/>Organization<br/>Hierarchy]
+        DR[deployed_agents_registry<br/> Deployment Plan<br/>Tokens, Status]
+        PM[agent_performance_metrics<br/> Productivity metrics]
+        SM[system_metrics<br/> System metrics]
         
         A --> OS
         A --> DR
@@ -473,44 +473,44 @@ graph TB
 
 ---
 
-## 🔄 Жизненный цикл агента
+## 🔄 Agent's Life Cycle
 
 ```mermaid
 flowchart TD
-    Start([Создание агента]) --> Create[Вставка в agents]
+    Start([Establishment of Agent] -> Create [Box to Agents]
     
-    Create --> Config{Конфигурация}
-    Config --> Prompt[Добавление промпта<br/>agent_prompts]
-    Config --> GPT[Настройка GPT<br/>agent_gpt_settings]
-    Config --> Tools[Связь с инструментами<br/>agent_tools_mapping]
-    Config --> Memory[Инициализация памяти<br/>core_memory]
+    Create --> Config {Configuration}
+    Config --> Prompt [Addition propt<br/>agent_prompts]
+    Config --> GPT[Installation GPT<br/>agent_gpt_settings]
+    Config --> Tools [Mechanism link <br/>Zagent_tools_mapping]
+    Config --> Memory[Initiating memory<br/>core_memory]
     
-    Prompt --> Rules[Добавление правил<br/>agent_rules]
+    Prompt --> Rules [Addition of rules <br/>agent_rules]
     GPT --> Rules
     Tools --> Rules
     Memory --> Rules
     
-    Rules --> Routes[Настройка маршрутизации<br/>agent_routing_rules]
+    Rules --> Routes [Construction of router <br/>agent_routing_rules]
     
-    Routes --> Deploy[Развертывание<br/>deployed_agents_registry]
+    Runes --> Deploy [Deploy <br/>deployed_agents_registry]]
     
-    Deploy --> Active{Работа агента}
+    Deploy --> Active {Agent &apos; s work}
     
-    Active --> Chat[Обработка сообщений<br/>chat_history]
-    Active --> Activity[Логирование активности<br/>agent_activity_log]
-    Active --> OpMem[Оперативная память<br/>operational_memory]
-    Active --> Metrics[Сбор метрик<br/>agent_performance_metrics]
+    Active --> Chat [Message Processing <br/>chat_history]
+    Active --> Activity[Logging activity<br/>agent_activity_log]
+    Active --> OpMem[Operational memory<br/>operational_memory]
+    Active -->Metrics[Metric collection<br/>Zagent_performance_metrics]
     
-    Chat --> Learn[Обучение<br/>long_term_memory]
+    Chat --> Learn [Learning <br/>long_term_memory]
     
-    Active --> Update{Обновление?}
-    Update -->|Да| Version[Новая версия<br/>agent_version_history]
+    Active --> Update {Renewed?}
+    Update -->|Yes.| Version[New version<br/>agent_version_history]
     Version --> Config
-    Update -->|Нет| Active
+    Update -->\\\\Active
     
-    Active --> Archive{Архивация?}
-    Archive -->|Да| End([Статус: archived])
-    Archive -->|Нет| Active
+    Active --> Archive {archivation?}
+    Archive --\\\\\Yes\ End([Status: archived]])
+    Archive -- ♪ No ♪ Active ♪
     
     style Start fill:#4CAF50,color:#fff
     style Create fill:#2196F3,color:#fff
@@ -520,7 +520,7 @@ flowchart TD
 
 ---
 
-## 🌊 Поток данных при обработке запроса
+## 🌊 Data flow during request processing
 
 ```mermaid
 sequenceDiagram
@@ -535,31 +535,31 @@ sequenceDiagram
     participant AL as agent_activity_log
     participant PM as agent_performance_metrics
     
-    U->>A: Запрос пользователя
-    A->>P: Загрузка промпта
-    A->>G: Загрузка GPT настроек
-    A->>CM: Загрузка core памяти
-    A->>OM: Загрузка контекста сессии
+    U->A: User &apos; s Request
+    A->P: Loading Prompt
+    A->G: Uploading of GPT settings
+    A->>CM: Loading core memory
+    A->OM: Loading the context of the session
     
-    Note over A,G: Формирование запроса к GPT
+    Note over A,G: Formation of GPT Request
     
-    A->>T: Проверка доступных tools
+    A->T: Checking accessible tools
     
-    Note over A,T: Вызов GPT с промптом,<br/>памятью и инструментами
+    Note over A,T: GPT call with propt,<br/> memory and tools
     
-    T-->>A: Результат tool calls
-    A->>AL: Логирование tool calls
+    T-->A: Outcome tool calls
+    A->AL: Logging tool calls
     
-    A->>CH: Сохранение сообщения
-    A->>OM: Обновление контекста
-    A->>PM: Запись метрик
+    A->CH: Retaining the message
+    A->OM: Updating the context
+    A->PM: Recording of metrics
     
-    A-->>U: Ответ пользователю
+    A-->U: Response to user
 ```
 
 ---
 
-## 📦 Группировка таблиц по назначению
+## 📦 Grouping of tables by purpose
 
 ```mermaid
 mindmap
@@ -594,7 +594,7 @@ mindmap
 
 ---
 
-## 🔗 Связи агентов (маршрутизация)
+## 🔗 Agents &apos; links (tracking))
 
 ```mermaid
 graph TD
@@ -603,12 +603,12 @@ graph TD
         R[Recruiter<br/>@alena.ai]
         SC[Scrinner<br/>@sergei.ai]
         
-        S -->|delegation:<br/>поиск кандидатов| R
-        S -->|delegation:<br/>скрининг| SC
-        R -->|delegation:<br/>детальный скрининг| SC
-        R -->|report:<br/>найденные кандидаты| S
-        SC -->|report:<br/>результаты скрининга| R
-        SC -->|report:<br/>итоговые отчеты| S
+        S -->delegation:<br/> search for candidates ~ R
+        S -->delegation:<br/> screening _ SC
+        R -->delegation:<br/> full-time screenings of SC
+        R -->report:<br/> found candidates
+        SC -->report:<br/> screening results
+        SC -->report:<br/>it reports
     end
     
     style S fill:#4CAF50,color:#fff
@@ -618,59 +618,59 @@ graph TD
 
 ---
 
-## 📊 Статистика таблиц
+## 📊 Table statistics
 
-| Категория | Таблиц | Основное назначение |
+| Category . Tables . . Main purpose |
 |-----------|--------|---------------------|
-| **Agent Core** | 5 | Базовая информация, промпты, настройки, инструменты |
-| **Memory** | 3 | Core, Operational, Long-term память |
-| **Logging** | 3 | История чатов, логи активности, версии |
-| **Rules** | 2 | Правила поведения и маршрутизации |
-| **Training** | 2 | Обучающие данные и база знаний |
-| **Deployment** | 2 | Оргструктура и реестр развертывания |
-| **Metrics** | 2 | Метрики производительности и системные |
-| **ИТОГО** | **19** | Полная экосистема агентов |
+| **Agent Core** ♪ 5 ♪ Basic information, prompts, settings, tools |
+| **Memory*3 core, operational, long-term memory |
+| **Logging** ♪ 3 ♪ Story of chat rooms, activity logs, versions |
+| **Rules** 2 : Rules of conduct and routement |
+*Training** * 2 * Training data and knowledge base *
+| **Deployment** ♪ 2 ♪ Organizational structure and deployment roster |
+| **Metrics** 2 * Performance metrics and systems |
+| **TOTAL***********19****** Full agent ecosystem |
 
 ---
 
-## 🎨 Цветовая легенда
+## 🎨 Color legend
 
-- 🟢 **Зеленый** - Основные таблицы агентов (agents)
-- 🔵 **Синий** - Конфигурация (prompts, settings, tools)
-- 🟣 **Фиолетовый** - Память (core, operational, long-term)
-- 🔷 **Голубой** - Логирование (history, logs, versions)
-- 🔴 **Красный** - Правила (rules, routing)
-- 🟡 **Желтый** - Обучение (training, knowledge)
-- 🟤 **Коричневый** - Развертывание (org, registry)
-- ⚫ **Серый** - Метрики (performance, system)
-
----
-
-## 🚀 Преимущества архитектуры
-
-### ✅ Нормализация
-- Нет дублирования данных
-- Легкое обновление компонентов
-- Целостность через внешние ключи
-
-### ✅ Масштабируемость
-- Независимое хранение компонентов
-- Горизонтальное масштабирование
-- Оптимизированные индексы
-
-### ✅ Гибкость
-- JSON поля для кастомизации
-- Модульная архитектура
-- Версионность конфигураций
-
-### ✅ Производительность
-- Индексы на всех FK и часто используемых полях
-- Представления (views) для частых запросов
-- TTL для автоочистки временных данных
+- 🟢 **Green** - Basic Agent Tables (agents))
+- 🔵 **Blue** - configuration (prompts, settings, tools))
+- 🟣 **Core, operational, long-term memory)
+- 🔷 **Blue** - Logging (history, logs, versions))
+- 🔴 **Red** - Rules)
+- 🟡 **Yellow** - Training (training, knowledge))
+- 🟤 **Brown** - Deployment (org, registration))
+- ⚫ **Grey**-Metrics (performance, system))
 
 ---
 
-**Автор:** Workflow Office Team  
-**Версия:** 2.0.0  
-**Дата:** 2025-10-13
+## 🚀 Benefits of architecture
+
+### ✅ Normalization
+- No duplication of data
+- Easily updated components
+- Integrity through external keys
+
+### ✅ Scale
+- Independent storage of components
+- Horizontal scale
+- Optimized indices
+
+### ✅ Flexible
+- JSON Castomization Fields
+- Modular architecture
+- The configuration version
+
+### ✅ Productivity
+- Indexes on all FK and frequently used fields
+- Submissions (views) for frequent queries
+- TTL for auto-cleaning of temporary data
+
+---
+
+**Audience:** Workflow Office Team  
+** Version:** 2.0.0  
+**Date:** 2025-10-13
 

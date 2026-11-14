@@ -1,6 +1,6 @@
 """
-Unified LLM Service FastAPI приложение
-HTTP API для единого LLM микросервиса
+Universal LLM Service FastAPI application
+HTTP API for a single LLM microservice
 """
 import os
 
@@ -12,7 +12,7 @@ from pydantic import BaseModel
 import uvicorn
 from llm_service import UnifiedLLMService
 
-# Настройка логирования
+# Logging settings
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
@@ -21,27 +21,27 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="Unified LLM Service",
-    description="HTTP API для единого LLM микросервиса GPT-5",
+    description='HTTP API for a single LLM microservice GPT-5',
     version="1.0.0"
 )
 
-# Глобальный экземпляр LLM Service
+# Global copy of LLM Service
 llm_service: UnifiedLLMService = None
 
 @app.on_event("startup")
 async def startup_event():
-    """Инициализация при запуске"""
+    'Initialize at startup'
     global llm_service
-    logger.info("🚀 Запуск Unified LLM Service API...")
+    logger.info('🚀 Run Universal LLM Service API...')
     
-    # Конфигурация OpenAI
+    # OpenAI configuration
     openai_config = {
-        'api_key': 'your-openai-api-key',  # Будет загружаться из настроек
-        'proxy_url': 'http://your-proxy-url:port',  # Будет загружаться из настроек
+        'api_key': 'your-openai-api-key',  # Will be downloaded from settings
+        'proxy_url': 'http://your-proxy-url:port',  # Will be downloaded from settings
         'model': 'gpt-5-mini'
     }
     
-    # Конфигурация базы данных PostgreSQL
+    # PostgreSQL database configuration
     db_config = {
         'host': 'localhost',
         'port': 5432,
@@ -52,15 +52,15 @@ async def startup_event():
     
     llm_service = UnifiedLLMService(openai_config, db_config)
     await llm_service.initialize()
-    logger.info("✅ Unified LLM Service API готова")
+    logger.info('✅ Universal LLM Service API is ready')
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    """Очистка при остановке"""
+    'Cleaning during stoppage'
     global llm_service
     if llm_service:
         await llm_service.cleanup()
-    logger.info("👋 Unified LLM Service API остановлена")
+    logger.info('👋 Universal LLM Service API stopped')
 
 class GenerateRequest(BaseModel):
     agent_id: str
@@ -70,12 +70,12 @@ class GenerateRequest(BaseModel):
 
 @app.get("/")
 async def root():
-    """Информация о сервисе"""
+    'Service information'
     return {
         "service": "Unified LLM Service",
         "version": "1.0.0",
         "status": "active",
-        "description": "Единый LLM микросервис GPT-5 для всех агентов",
+        "description": 'Single LLM Microservice GPT-5 for all agents',
         "architecture": "PostgreSQL + GPT-5 + Agent Configurations"
     }
 
@@ -95,9 +95,9 @@ async def health_check():
 
 @app.post("/generate_response")
 async def generate_response(request: GenerateRequest):
-    """Генерация ответа агента через Unified LLM Service"""
+    'Agent response generation via Universal LLM Service'
     if not llm_service:
-        raise HTTPException(status_code=503, detail="LLM Service не инициализирован")
+        raise HTTPException(status_code=503, detail='LLM Service not initialized')
     
     try:
         response = await llm_service.generate_agent_response(
@@ -114,30 +114,30 @@ async def generate_response(request: GenerateRequest):
             "service": "Unified LLM Service"
         }
     except Exception as e:
-        logger.error(f"❌ Ошибка генерации ответа: {e}")
+        logger.error(f"❌ Error of Generation of Answer: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/agent_status/{agent_id}")
 async def get_agent_status(agent_id: str):
-    """Получение статуса агента"""
+    'Getting Agent Status'
     if not llm_service:
-        raise HTTPException(status_code=503, detail="LLM Service не инициализирован")
+        raise HTTPException(status_code=503, detail='LLM Service not initialized')
     
     try:
         status = await llm_service.get_agent_status(agent_id)
         return {"agent_status": status}
     except Exception as e:
-        logger.error(f"❌ Ошибка получения статуса агента: {e}")
+        logger.error(f"❌ Error in obtaining the status of agent: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/available_agents")
 async def get_available_agents():
-    """Получение списка доступных агентов"""
+    'Getting a list of available agents'
     if not llm_service:
-        raise HTTPException(status_code=503, detail="LLM Service не инициализирован")
+        raise HTTPException(status_code=503, detail='LLM Service not initialized')
     
     try:
-        # Получаем список всех активных агентов из базы данных
+        # Get a list of all active agents from the database.
         cursor = llm_service.db_connection.cursor()
         cursor.execute("""
             SELECT agent_id, agent_name, role, is_active
@@ -163,15 +163,15 @@ async def get_available_agents():
             "total_count": len(agents)
         }
     except Exception as e:
-        logger.error(f"❌ Ошибка получения списка агентов: {e}")
+        logger.error(f"❌ Error in obtaining a list of agents: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
-    logger.info("🚀 Запуск Unified LLM Service FastAPI сервера")
+    logger.info('🚀 Run Universal LLM Service FastAPI server')
     uvicorn.run(
         "app:app",
         host="0.0.0.0",
-        port=8102,  # Unified LLM Service на порту 8102
+        port=8102,  # Universal LLM Service at port 8102
         reload=True,
         log_level="info"
     )
