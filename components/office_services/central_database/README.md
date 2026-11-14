@@ -46,10 +46,10 @@ The following read-only examples describe configuration lookup in the MySQL-orie
 -- Base connection
 mysql -u office_services_user -p office_services_agents
 
-- Checking tables
+-- Audit of tables
 SHOW TABLES;
 
---Search agents
+-- Screen of agents
 SELECT * FROM active_agents_view;
 ```
 
@@ -69,10 +69,10 @@ WHERE a.agent_id = 'supervisor_001';
 ```
 
 ```sql
--- Use of VIEW
+-- Use VIEW
 SELECT * FROM agent_full_config_view WHERE agent_id = 'supervisor_001';
 
--- Detailed Request
+-- Detailed request
 SELECT 
     a.agent_name,
     ap.system_prompt,
@@ -99,7 +99,7 @@ ORDER BY (data_length + index_length) DESC;
 ```
 
 ```sql
--- Number of communications by agent
+-- Agents &apos; messages
 SELECT 
     a.agent_name,
     COUNT(*) as total_messages,
