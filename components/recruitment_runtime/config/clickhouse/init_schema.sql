@@ -1,79 +1,79 @@
--- Схемы таблиц ClickHouse для Candidate Analysis системы
--- Оптимизировано для максимальной производительности аналитических запросов
+-- Clickhouse tables diagrams for Candidate Analysis System
+-- Optimized to maximize the productivity of analytical queries
 
--- Создание базы данных
+-- Database development
 CREATE DATABASE IF NOT EXISTS hrhelp;
 
--- Использование базы данных
+-- Use of the database
 USE hrhelp;
 
 -- ===============================
--- ОСНОВНЫЕ ТАБЛИЦЫ ДЛЯ КАНДИДАТОВ
+-- MAIN TABLES FOR CANDIDATES
 -- ===============================
 
--- Таблица кандидатов (основная аналитическая таблица)
+-- Table of candidates (core analytical table)
 CREATE TABLE IF NOT EXISTS candidates (
-    -- Идентификаторы
+    -- Identifiers
     id String,
     hh_id String,
     
-    -- Основная информация
+    -- Basic information
     name LowCardinality(String),
     title String,
     age UInt8,
     gender LowCardinality(String),
     
-    -- Локация
+    -- Locacy
     area_id UInt32,
     area_name LowCardinality(String),
     area_country LowCardinality(String),
     
-    -- Опыт работы
+    -- Experience
     experience_total_months UInt16,
     experience_level LowCardinality(String), -- noExperience, between1And3, etc.
     
-    -- Зарплатные ожидания
+    -- Expectations for salaries
     salary_from Nullable(UInt32),
     salary_to Nullable(UInt32),
     salary_currency LowCardinality(String),
     
-    -- Навыки (для быстрого поиска)
+    -- Skills (rapid search)
     skills Array(String),
     verified_skills Array(String),
     
-    -- Время
+    -- Time
     updated_at DateTime64(3),
     created_at DateTime64(3) DEFAULT now64(),
     last_searched DateTime64(3),
     
-    -- Метрики
+    -- Meterics
     search_count UInt32 DEFAULT 0,
     ai_analysis_status LowCardinality(String) DEFAULT 'pending', -- pending, analyzing, completed, failed
     
-    -- URL и контакты  
+    -- URL and contacts  
     url String,
     photo_url Nullable(String),
     has_cover_letter Bool DEFAULT false,
     
-    -- Индекс для быстрого поиска
+    -- Rapid search index
     INDEX idx_skills skills TYPE bloom_filter GRANULARITY 1,
     INDEX idx_title title TYPE bloom_filter GRANULARITY 1,
     INDEX idx_area area_name TYPE set(100) GRANULARITY 1
 )
 ENGINE = MergeTree()
--- Партиционирование по месяцам для быстрого доступа к свежим данным
+-- Month-by-month party for quick access to up-to-date data
 PARTITION BY toYYYYMM(created_at)
--- Сортировка для оптимальной производительности поиска
+-- Sorting for optimal search performance
 ORDER BY (area_id, experience_level, created_at, id)
--- TTL для автоматической очистки старых данных (опционально)
+-- TTL for automatic clean-up of old data (optimal))
 -- TTL created_at + INTERVAL 2 YEAR DELETE
 SETTINGS index_granularity = 8192;
 
 -- ===============================
--- AI АНАЛИЗ И РАНЖИРОВАНИЕ
+-- AI ANALYSIS AND RANGERATION
 -- ===============================
 
--- Таблица AI анализа навыков
+-- Table AI Skills Analysis
 CREATE TABLE IF NOT EXISTS ai_skill_analysis (
     candidate_id String,
     skill_name String,
@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS ai_skill_analysis (
     search_query String,
     analysis_timestamp DateTime64(3) DEFAULT now64(),
     
-    -- Дополнительные метрики для ранжирования
+    -- Additional metrics for ranking
     keyword_relevance_score Nullable(Float32),
     filter_match_score Nullable(Float32),
     recency_score Nullable(Float32),
@@ -95,7 +95,7 @@ PARTITION BY toYYYYMM(analysis_timestamp)
 ORDER BY (candidate_id, skill_name, analysis_timestamp)
 SETTINGS index_granularity = 8192;
 
--- Таблица общих AI оценок кандидатов
+-- Table of overall AI evaluations of candidates
 CREATE TABLE IF NOT EXISTS ai_candidate_scores (
     candidate_id String,
     search_query String,
@@ -104,13 +104,13 @@ CREATE TABLE IF NOT EXISTS ai_candidate_scores (
     reasoning Nullable(String),
     processing_time_ms UInt32,
     
-    -- Детализированные скоры
+    -- Detailed Streams
     keyword_relevance_score Float32,
     filter_match_score Float32,
     recency_score Float32,
     profile_completeness_score Float32,
     
-    -- Веса ранжирования
+    -- Weights of ranking
     weight_keyword_relevance Float32 DEFAULT 0.4,
     weight_filter_match Float32 DEFAULT 0.3,
     weight_recency Float32 DEFAULT 0.2,
@@ -124,15 +124,15 @@ ORDER BY (search_query, candidate_id)
 SETTINGS index_granularity = 8192;
 
 -- ===============================
--- ПОИСКОВЫЕ ЗАПРОСЫ И СТАТИСТИКА
+-- PEACEFUL REQUESTS AND STATISTICS
 -- ===============================
 
--- Таблица поисковых запросов для аналитики
+-- Table of search requests for analysts
 CREATE TABLE IF NOT EXISTS search_queries (
     query_id String DEFAULT generateUUIDv4(),
     search_text Nullable(String),
     
-    -- Фильтры поиска
+    -- Search Filters
     area_ids Array(UInt32),
     salary_from Nullable(UInt32),
     salary_to Nullable(UInt32),
@@ -140,17 +140,17 @@ CREATE TABLE IF NOT EXISTS search_queries (
     employment_types Array(String),
     schedule_types Array(String),
     
-    -- Результаты
+    -- Results
     total_results UInt32,
     results_shown UInt32,
     processing_time_ms UInt32,
     
-    -- Пользователь и время
+    -- User and Time
     user_id Nullable(String),
     session_id Nullable(String),
     timestamp DateTime64(3) DEFAULT now64(),
     
-    -- Источник запроса
+    -- Source of request
     source LowCardinality(String) DEFAULT 'web' -- web, api, mobile
 )
 ENGINE = MergeTree()
@@ -159,10 +159,10 @@ ORDER BY (timestamp, query_id)
 SETTINGS index_granularity = 8192;
 
 -- ===============================
--- МЕТРИКИ ПРОИЗВОДИТЕЛЬНОСТИ
+-- METRICS OF PRODUCTION
 -- ===============================
 
--- Таблица метрик системы для мониторинга
+-- Monitoring system metric table
 CREATE TABLE IF NOT EXISTS system_metrics (
     metric_name LowCardinality(String),
     metric_value Float64,
@@ -176,10 +176,10 @@ TTL timestamp + INTERVAL 3 MONTH DELETE
 SETTINGS index_granularity = 8192;
 
 -- ===============================
--- СПРАВОЧНЫЕ ДАННЫЕ (DIMENSIONS)
+-- BACKGROUND DATA (DIMENSIONS)
 -- ===============================
 
--- Справочник областей/регионов
+-- Region/region directory
 CREATE TABLE IF NOT EXISTS dim_areas (
     id UInt32,
     name String,
@@ -192,7 +192,7 @@ ENGINE = MergeTree()
 ORDER BY (id)
 SETTINGS index_granularity = 8192;
 
--- Справочник навыков
+-- Skills guide
 CREATE TABLE IF NOT EXISTS dim_skills (
     skill_name String,
     category LowCardinality(String), -- programming, management, design, etc.
@@ -205,11 +205,11 @@ ORDER BY (skill_name)
 SETTINGS index_granularity = 8192;
 
 -- ===============================
--- МАТЕРИАЛИЗОВАННЫЕ ПРЕДСТАВЛЕНИЯ
+-- MATERIAL SUBMISSIONS
 -- ===============================
--- ВАЖНО: Создаем только ПОСЛЕ создания всех таблиц!
+-- It's only created after all the tables are created!
 
--- Быстрая статистика по навыкам
+-- Rapid statistics on skills
 -- CREATE MATERIALIZED VIEW IF NOT EXISTS mv_skill_stats
 -- ENGINE = SummingMergeTree()
 -- ORDER BY (skill_name, experience_level)
@@ -225,7 +225,7 @@ SETTINGS index_granularity = 8192;
 -- WHERE skill_name != ''
 -- GROUP BY skill_name, experience_level, month_created;
 
--- Статистика по областям
+-- Statistics by area
 -- CREATE MATERIALIZED VIEW IF NOT EXISTS mv_area_stats
 -- ENGINE = SummingMergeTree()
 -- ORDER BY (area_name, experience_level)
@@ -241,20 +241,20 @@ SETTINGS index_granularity = 8192;
 -- GROUP BY area_name, experience_level, month_created;
 
 -- ===============================
--- ИНДЕКСЫ ДЛЯ ОПТИМИЗАЦИИ
+-- INDICES FOR THE OBJECTIVE
 -- ===============================
 
--- Дополнительные индексы будут созданы автоматически на основе запросов
+-- Additional indices will be created automatically on the basis of requests
 
 -- ===============================
--- КОММЕНТАРИИ И ДОКУМЕНТАЦИЯ
+-- COMMENTS AND DOCUMENTATION
 -- ===============================
 
--- Этот файл создает оптимизированную схему для Candidate Analysis системы
--- Основные принципы оптимизации:
--- 1. Колоночное хранение для быстрой аналитики
--- 2. Партиционирование по времени для эффективной очистки
--- 3. LowCardinality для строк с ограниченным набором значений
--- 4. Bloom filter индексы для полнотекстового поиска
--- 5. Материализованные представления для предварительных агрегаций
--- 6. TTL для автоматической очистки старых данных
+-- This file creates an optimized scheme for the Candidate Analysis system
+-- Basic principles of optimization:
+-- 1. Colon storage for rapid analyst
+-- 2. Time-lotting for efficient clean-up
+-- 3. LowCardinality for strings with limited set of values
+-- 4. Bloom filter Indexes for Full Text Search
+-- 5. Materialized submissions for preliminary aggregations
+-- 6. TTL for automatic cleansing of old data

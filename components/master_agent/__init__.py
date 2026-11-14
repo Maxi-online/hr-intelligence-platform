@@ -1,18 +1,18 @@
 """
-Master Agent (РЕКС) - Главный координатор нейросотрудников
+Master Agent (REX) - Chief Coordinator of Neuro Officers
 
-Автономный AI агент который управляет всеми нейросотрудниками организации:
-- Recruitment Runtime (существующий)
-- Active Recruiter (новый)
-- Screener (новый) 
-- Onboarder (новый)
+Autonomous AI agent who manages all the Neuro staff of the organization:
+- Recruitment Runtime (existing)
+- Active Recruiter (new)
+- Screener (new) 
+- Onboarder (new)
 
-Основные возможности:
-- Естественное общение с людьми через Teams/Telegram
-- Понимание контекста организации
-- Автономное планирование и делегирование задач
-- Контроль качества и обучение
-- Многоканальная коммуникация
+Main opportunities:
+- Natural communication with people through Teams/Telegram
+- Understanding the context of the organization
+- Autonomous planning and delegation of tasks
+Quality control and training
+- Multichannel communication
 
 Author: Candidate Analysis Team
 Version: 1.0.0

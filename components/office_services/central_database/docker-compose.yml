@@ -1,11 +1,11 @@
 # ====================================
-# Централизованная база данных агентов
+# Central database of agents
 # ====================================
 version: '3.8'
 
 services:
   # ====================================
-  # PostgreSQL для централизованной базы
+  # PostgreSQL for centralized base
   # ====================================
   central-postgres:
     image: postgres:15

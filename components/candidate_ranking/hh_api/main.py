@@ -1,41 +1,41 @@
 """
 Candidate Analysis - HeadHunter API Integration Service
 
-Сервис интеграции с HeadHunter.ru API для поиска и получения данных кандидатов.
+Integration service with HeadHunter.ru API to search for and obtain candidates.
 
-Этот модуль обеспечивает надёжную интеграцию с внешним API HeadHunter, включая:
-- OAuth 2.0 авторизацию с автоматическим обновлением токенов
-- Устойчивые запросы с exponential backoff при ошибках
-- Правильную обработку rate limiting (429, 503) 
-- Детальную диагностику проблем для мониторинга
-- Получение как базовых, так и детальных данных резюме
+This module provides reliable integration with external API HeadHunter, including:
+- OAuth 2.0 Authorisation with automatic upgrade of currents
+- Sustainable requests with exponential backoff for errors
+- Correct processing of rate limiting (429, 503) 
+- Detailed diagnosis of problems for monitoring
+- Collection of both basic and detailed summary data
 
 Key Features:
-- OAuth 2.0 Flow: Полная поддержка авторизации HeadHunter
-- Smart Retry Logic: Экспоненциальные повторы при 429/503 ошибках
-- Token Management: Автоматическое обновление access_token
-- Error Propagation: Корректная передача HTTP статусов
-- Rate Limit Handling: Умная обработка лимитов API
+- OAuth 2.0 Flow: Full support for the authorization of HeadHunter
+- Smart Retry Logic: Exponential Repeats with 429/503 Errors
+- Token Management: Automatic update of access_token
+- Error Promotion: Correct Transfer of HTTP Statuses
+- Rate Limited Handling: Smart Processing of API Limits
 
 API Endpoints:
-- /search: Поиск кандидатов с фильтрами
-- /resume/{id}: Получение детальных данных резюме
-- /areas: Справочник регионов
-- /oauth/authorize: Авторизация пользователя
-- /oauth/refresh: Обновление access_token
+- /search: Searching for filter candidates
+- /sume/{id}: Obtaining detailed summary data
+- /areas: Regional Directory
+- /oauth/authorize: User authorization
+- /oauth/refresh: Update access_token
 
 Error Handling Strategy:
-- 429 Too Many Requests: Retry с экспоненциальной задержкой
-- 503 Service Unavailable: Retry + флаг rate_limit_exceeded
-- 500 Internal Server Error: Прямая передача ошибки
-- 401/403: Авторизационные ошибки
+- 429 Too Many Requests: Retry with exponential delay
+- 503 Service Unavailable: Retry + flag rate_limit_exceeded
+- 500 Internal Server Error: Direct error transmission
+- 401/403: Authorization errors
 - Network errors: Graceful degradation
 
 Performance & Reliability:
-- Максимум 3 попытки для каждого запроса
-- Jitter в задержках для избежания thundering herd
-- Детальное логирование всех операций
-- Правильная обработка timeouts
+- Maximum 3 attempts for each request
+- Jitter in delays to avoid thundering herd
+- Detailed logic of all operations
+- Correct processing of timeouts
 
 Author: Candidate Analysis Team
 Version: 2.0.0 (Improved Error Handling & Token Management)
@@ -52,18 +52,18 @@ from typing import Dict, Any, List, Optional
 import json
 import time
 
-# Добавляем родительскую директорию в путь для импорта shared модулей
+# Add the parent directory to the route to import the used modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from shared.models import HealthResponse, SearchRequest, Candidate, VacancyTopRequest, VacancyTopResponse
 from shared.utils import setup_logging, HTTPClient, parse_date, parse_salary, calculate_average_salary, load_config
 
-# Настройка логирования
+# Logging settings
 logger = setup_logging("hh-api-service")
 
 app = FastAPI(
     title="HH API Service",
-    description="Сервис интеграции с HeadHunter API",
+    description='HeadHunter API Integration Service',
     version="1.0.0"
 )
 
@@ -78,7 +78,7 @@ app.add_middleware(
 
 class HHAPIClient:
     def __init__(self):
-        # Загружаем конфигурацию из settings.yaml
+        # Load configuration from settings.yaml
         self.config = load_config()
         hh_config = self.config.get("hh_api", {})
         
@@ -86,31 +86,31 @@ class HHAPIClient:
         self.user_agent = hh_config.get("user_agent", "")
         self.http_client = HTTPClient(self.base_url)
         
-        # OAuth credentials из конфигурации
+        # OAuth credentials configuration
         self.client_id = hh_config.get("client_id", "")
         self.client_secret = hh_config.get("client_secret", "")
         
-        # Пользовательские токены из конфигурации  
+        # User currents from configuration  
         user_tokens = hh_config.get("user_tokens", {})
         self.access_token = user_tokens.get("access_token")
         self.refresh_token = user_tokens.get("refresh_token")
         self.token_expires_at = user_tokens.get("expires_at")
     
     def _get_headers(self) -> Dict[str, str]:
-        """Получение заголовков для запросов"""
+        'Collection of headings for queries'
         headers = {
             "User-Agent": self.user_agent,
             "Accept": "application/json"
         }
         
-        # Добавляем токен если есть
+        # Add to the current if you have
         if self.access_token:
             headers["Authorization"] = f"Bearer {self.access_token}"
         
         return headers
     
     def get_authorization_url(self, redirect_uri: str, state: str = None) -> str:
-        """Получение URL для авторизации пользователя"""
+        'Auction of a user &apos; s URL'
         auth_url = "https://hh.ru/oauth/authorize"
         params = {
             "response_type": "code",
@@ -124,7 +124,7 @@ class HHAPIClient:
         return f"{auth_url}?{query_string}"
     
     def get_token_from_code(self, authorization_code: str, redirect_uri: str):
-        """Получение токена доступа через Authorization Code"""
+        'Authorization Code access current'
         try:
             token_url = "https://hh.ru/oauth/token"
             data = {
@@ -146,20 +146,20 @@ class HHAPIClient:
                 self.refresh_token = token_data.get("refresh_token")
                 expires_in = token_data.get("expires_in", 3600)
                 self.token_expires_at = time.time() + expires_in
-                logger.info("Токен доступа получен через authorization code")
+                logger.info('Token is available via authoration code')
                 return token_data
             else:
-                logger.error(f"Ошибка получения токена: {response.status_code} - {response.text}")
-                raise HTTPException(status_code=400, detail=f"Ошибка авторизации: {response.text}")
+                logger.error(f"The error of token: {response.status_code} - {response.text}")
+                raise HTTPException(status_code=400, detail=f"Error of authorization: {response.text}")
                     
         except Exception as e:
-            logger.error(f"Ошибка при запросе токена: {e}")
-            raise HTTPException(status_code=500, detail="Ошибка аутентификации")
+            logger.error(f"Error when requesting a token: {e}")
+            raise HTTPException(status_code=500, detail='Error of authentication')
     
     def refresh_access_token(self):
-        """Обновление токена доступа через refresh token"""
+        'Update of access current via refresh token'
         if not self.refresh_token:
-            raise HTTPException(status_code=401, detail="Нет refresh token для обновления")
+            raise HTTPException(status_code=401, detail='No refresh token to update')
             
         try:
             token_url = "https://hh.ru/oauth/token"
@@ -180,20 +180,20 @@ class HHAPIClient:
                     self.refresh_token = token_data.get("refresh_token")
                 expires_in = token_data.get("expires_in", 3600)
                 self.token_expires_at = time.time() + expires_in
-                logger.info("Токен обновлен успешно")
+                logger.info('Token has been successfully updated')
                 return token_data
             else:
-                logger.error(f"Ошибка обновления токена: {response.status_code} - {response.text}")
-                raise HTTPException(status_code=401, detail="Ошибка обновления токена")
+                logger.error(f"Errors in the update of the token: {response.status_code} - {response.text}")
+                raise HTTPException(status_code=401, detail='Errors in the update of the token')
                     
         except Exception as e:
-            logger.error(f"Ошибка при обновлении токена: {e}")
-            raise HTTPException(status_code=500, detail="Ошибка аутентификации")
+            logger.error(f"Error when updating the token: {e}")
+            raise HTTPException(status_code=500, detail='Error of authentication')
     
     def _force_refresh_token(self):
-        """Принудительное обновление токена (игнорирует срок действия)"""
+        'Coercive updating of the current (exceeds the validity period))'
         if not self.refresh_token:
-            raise Exception("Нет refresh token для принудительного обновления")
+            raise Exception('No refresh token for forced updating')
             
         try:
             token_url = "https://hh.ru/oauth/token"
@@ -218,26 +218,26 @@ class HHAPIClient:
                 self.token_expires_at = time.time() + expires_in
                 
                 new_token = self.access_token[:20] + "..." if self.access_token else "None"
-                logger.info(f"🔄 Токен принудительно обновлен: {old_token} → {new_token}")
+                logger.info(f"🔄 Token has been forcibly updated: {old_token} → {new_token}")
                 return token_data
             elif response.status_code == 400:
                 error_data = response.json()
                 if error_data.get("error") == "invalid_grant" and "not expired" in error_data.get("error_description", ""):
-                    logger.warning("⚠️ HH API не разрешает обновление токена (еще не истек)")
-                    raise Exception("Токен еще действителен, HH API блокирует обновление")
+                    logger.warning('⚠️ HH API does not allow the current to be updated (not yet due))')
+                    raise Exception('The token is still valid, HH API is blocking the update.')
                 else:
-                    logger.error(f"❌ Ошибка обновления токена: {response.status_code} - {response.text}")
-                    raise Exception(f"Ошибка HH API: {response.text}")
+                    logger.error(f"❌ Errors in the update of the token: {response.status_code} - {response.text}")
+                    raise Exception(f"Error: The HH API: {response.text}")
             else:
-                logger.error(f"❌ Неожиданный статус при обновлении токена: {response.status_code}")
+                logger.error(f"❌ Unexpected status when updating the current: {response.status_code}")
                 raise Exception(f"HTTP {response.status_code}: {response.text}")
                 
         except Exception as e:
-            logger.error(f"❌ Принудительное обновление токена не удалось: {e}")
+            logger.error(f"❌ The forced updating of the current was not possible: {e}")
             raise
     
     def get_application_token(self):
-        """Получение токена приложения через Client Credentials Grant"""
+        'Acquire application current via Clive Credentials Grant'
         try:
             token_url = "https://hh.ru/oauth/token"
             data = {
@@ -254,103 +254,103 @@ class HHAPIClient:
             if response.status_code == 200:
                 token_data = response.json()
                 self.access_token = token_data.get("access_token")
-                # Для client_credentials обычно нет refresh_token
+                # client_credentials is usually not refresh_token
                 self.refresh_token = None
                 expires_in = token_data.get("expires_in", 3600)
                 self.token_expires_at = time.time() + expires_in
-                logger.info("Токен приложения получен успешно через Client Credentials Grant")
+                logger.info('The application tone is successfully obtained via Ccent Credentials Grant')
                 return token_data
             else:
-                logger.error(f"Ошибка получения токена приложения: {response.status_code} - {response.text}")
-                # Если Client Credentials не поддерживается, выбрасываем исключение о необходимости пользовательской авторизации
+                logger.error(f"Error in obtaining the application token: {response.status_code} - {response.text}")
+                # If Ccent Credentials is not supported, remove the exception to the need for user authorization
                 if response.status_code == 400:
-                    raise HTTPException(status_code=401, detail="Требуется авторизация пользователя для доступа к резюме.")
-                raise HTTPException(status_code=500, detail=f"Ошибка получения токена приложения: {response.text}")
+                    raise HTTPException(status_code=401, detail='User authorization required for access to abstracts.')
+                raise HTTPException(status_code=500, detail=f"Error in obtaining the application token: {response.text}")
                     
         except HTTPException:
             raise
         except Exception as e:
-            logger.error(f"Ошибка при запросе токена приложения: {e}")
-            raise HTTPException(status_code=500, detail="Ошибка аутентификации приложения")
+            logger.error(f"Error when requesting an application token: {e}")
+            raise HTTPException(status_code=500, detail='Error of application authentication')
     
     def _ensure_token(self):
-        """Проверка токена доступа"""
+        'Test of access current'
         if not self.access_token:
-            # Пытаемся получить токен приложения с помощью Client Credentials Grant
-            logger.info("Получаем токен приложения через Client Credentials Grant...")
+            # Trying to get an application current using Client Credentials Grant
+            logger.info('Get an application current via Ccent Credentials Grant...')
             self.get_application_token()
             return
         
-        # Проверяем, не истек ли токен
-        if self.token_expires_at and time.time() >= self.token_expires_at - 300:  # 5 минут буфера
+        # Check to see if the current's up.
+        if self.token_expires_at and time.time() >= self.token_expires_at - 300:  # 5 minutes buffer.
             if self.refresh_token:
-                logger.info("Токен истекает, обновляем...")
+                logger.info("Token's running out, updating...")
                 self.refresh_access_token()
             else:
-                # Если refresh токена нет, пытаемся получить новый токен приложения
-                logger.info("Токен истек, получаем новый токен приложения...")
+                # If there's no current, we're trying to get a new application current
+                logger.info("Token's out, we're getting a new application current...")
                 self.get_application_token()
     
     def _make_authenticated_request(self, endpoint: str, params: Optional[Dict] = None) -> Dict[str, Any]:
-        """Выполнение аутентифицированного запроса"""
-        # Для публичных эндпоинтов не нужен токен
+        'Implementation of the authentic request'
+        # Public endpoints don't need a token.
         public_endpoints = ["/areas", "/professional_roles", "/languages"]
         
         if endpoint in public_endpoints:
-            # Публичные эндпоинты работают без токена
+            # Public endpoints are running without a current.
             try:
-                logger.info(f"Выполняем публичный запрос к {endpoint} с параметрами: {params}")
+                logger.info(f"We're executing a public request to {endpoint} with parameters: {params}")
                 response = self.http_client.get(endpoint, headers=self._get_headers(), params=params)
-                logger.info(f"Получен ответ от {endpoint}: статус {response.status_code}")
+                logger.info(f"Response received from {endpoint}:: Status {response.status_code}")
                 
                 if response.status_code == 200:
                     return response.json()
                 elif response.status_code == 429:
-                    logger.error(f"🚫 Превышен лимит запросов для публичного endpoint {endpoint}")
-                    raise HTTPException(status_code=429, detail="Превышен лимит запросов к HH API. Попробуйте позже.")
+                    logger.error(f"🚫 Exceeded request limit for public endpoint {endpoint}")
+                    raise HTTPException(status_code=429, detail='Exceeded HH API request limit. Try later.')
                 else:
-                    logger.error(f"⚠️ HH API ошибка {response.status_code} для {endpoint}: {response.text}")
-                    raise HTTPException(status_code=response.status_code, detail=f"Ошибка HH API: {response.text}")
+                    logger.error(f"⚠️ HH API error {response.status_code} for {endpoint}: {response.text}")
+                    raise HTTPException(status_code=response.status_code, detail=f"Error: The HH API: {response.text}")
                     
             except HTTPException:
                 raise
             except Exception as e:
-                logger.error(f"❌ Сетевая ошибка публичного запроса к {endpoint}: {e}")
-                raise HTTPException(status_code=503, detail=f"Сетевая ошибка при обращении к HH API: {e}")
+                logger.error(f"❌ Network error of public request {endpoint}: {e}")
+                raise HTTPException(status_code=503, detail=f"Network errors when contacting HH API: {e}")
         
-        # Для остальных эндпоинтов нужен токен
-        # Проверяем/получаем токен
+        # For the rest of the endpoints, you need a token.
+        # Checking/receiveing currents
         if not self.access_token or (self.token_expires_at and time.time() > self.token_expires_at):
             self._ensure_token()
         
-        # Retry логика для 429 ошибок
+        # Retry logic for 429 errors
         max_retries = 3
         base_delay = 1.0
         
         for attempt in range(max_retries):
             try:
-                logger.info(f"Выполняем аутентифицированный запрос к {endpoint} с параметрами: {params} (попытка {attempt + 1})")
+                logger.info(f"We are in the process of completing an authentic request for {endpoint} with parameters: {params} (attempted) {attempt + 1})")
                 
-                # Используем requests напрямую, чтобы контролировать обработку ошибок
+                # We use requests directly to control error processing
                 url = f"{self.base_url}{endpoint}"
                 response = requests.get(url, headers=self._get_headers(), params=params)
-                logger.info(f"Получен ответ от {endpoint}: статус {response.status_code}")
+                logger.info(f"Response received from {endpoint}:: Status {response.status_code}")
                 
                 if response.status_code == 200:
                     return response.json()
                 elif response.status_code == 429:
                     if attempt < max_retries - 1:
-                        # При первой 429 ошибке пытаемся принудительно обновить токен
-                        logger.warning(f"🔍 DEBUG: 429 ошибка для {endpoint}, attempt={attempt}, refresh_token={bool(self.refresh_token)}")
+                        # In the first 429 errors, we try to forced to update the token
+                        logger.warning(f"🔍 429 errors for {endpoint}, attempt={attempt}, refresh_token={bool(self.refresh_token)}")
                         
                         if attempt == 0 and self.refresh_token:
                             try:
-                                logger.warning(f"🔄 Попытка принудительного обновления токена из-за 429 для {endpoint}")
+                                logger.warning(f"🔄 Attempted forcible renewal of the current due to 429 {endpoint}")
                                 self._force_refresh_token()
-                                logger.info(f"✅ Токен обновлен, повторяем запрос к {endpoint}")
+                                logger.info(f"✅ Token updated, repeat request to {endpoint}")
                                 continue
                             except Exception as refresh_error:
-                                logger.warning(f"⚠️ Не удалось обновить токен: {refresh_error}")
+                                logger.warning(f"⚠️ Unable to update the current: {refresh_error}")
                         
                         import random
                         retry_after = response.headers.get("Retry-After")
@@ -361,51 +361,51 @@ class HHAPIClient:
                                 delay = base_delay * (2 ** attempt) + random.uniform(0.1, 0.5)
                         else:
                             delay = base_delay * (2 ** attempt) + random.uniform(0.1, 0.5)
-                        logger.warning(f"🚫 HH API лимит для {endpoint} (429), retry через {delay:.1f}s")
+                        logger.warning(f"🚫 HH API limit for {endpoint} (429), retrie through {delay:.1f}s")
                         time.sleep(delay)
                         continue
                     else:
-                        logger.error(f"💥 Превышен лимит запросов HH API для {endpoint} после {max_retries} попыток")
-                        raise HTTPException(status_code=429, detail="Превышен лимит запросов к HH API. Попробуйте позже.")
+                        logger.error(f"💥 Exceeded HH API request limit for {endpoint} after {max_retries} attempts")
+                        raise HTTPException(status_code=429, detail='Exceeded HH API request limit. Try later.')
                 elif response.status_code == 401:
-                    logger.error(f"🔐 Ошибка авторизации HH API для {endpoint}")
-                    raise HTTPException(status_code=401, detail="Ошибка авторизации HH API. Проверьте токен доступа работодателя (OAuth).")
+                    logger.error(f"🔐 HH API authorization errors for {endpoint}")
+                    raise HTTPException(status_code=401, detail="Error of authorization of HH API. Check your employer's access current (OAuth)).")
                 elif response.status_code == 403:
-                    logger.error(f"🚫 Доступ запрещен HH API для {endpoint}")
-                    raise HTTPException(status_code=403, detail="Доступ запрещен. Недостаточно прав (требуются права работодателя для переговоров/откликов).")
+                    logger.error(f"🚫 Access prohibited HH API for {endpoint}")
+                    raise HTTPException(status_code=403, detail='Access prohibited. Insufficient rights (employer &apos; s rights required for negotiation/response)).')
                 elif response.status_code == 404:
-                    logger.error(f"📭 Ресурс не найден HH API для {endpoint}")
-                    raise HTTPException(status_code=404, detail="Запрашиваемый ресурс не найден.")
+                    logger.error(f"📭 Resource not found HH API for {endpoint}")
+                    raise HTTPException(status_code=404, detail='The requested resource has not been found.')
                 else:
-                    logger.error(f"⚠️ HH API ошибка {response.status_code} для {endpoint}: {response.text}")
-                    raise HTTPException(status_code=response.status_code, detail=f"Ошибка HH API: {response.text}")
+                    logger.error(f"⚠️ HH API error {response.status_code} for {endpoint}: {response.text}")
+                    raise HTTPException(status_code=response.status_code, detail=f"Error: The HH API: {response.text}")
                     
             except HTTPException:
-                # Проксируем HTTP ошибки как есть
+                # HTTP errors as they are
                 raise
             except Exception as e:
                 if attempt < max_retries - 1:
                     delay = base_delay * (2 ** attempt)
-                    logger.warning(f"🔄 Сетевая ошибка для {endpoint}, retry через {delay}s: {e}")
+                    logger.warning(f"🔄 Network error for {endpoint}, retrie through {delay}s: {e}")
                     time.sleep(delay)
                     continue
                 else:
-                    logger.error(f"❌ Критическая сетевая ошибка для {endpoint}: {e}")
-                    raise HTTPException(status_code=503, detail=f"Сетевая ошибка при обращении к HH API: {e}")
+                    logger.error(f"❌ Critical network error for {endpoint}: {e}")
+                    raise HTTPException(status_code=503, detail=f"Network errors when contacting HH API: {e}")
     
     def get_areas(self) -> List[Dict[str, Any]]:
-        """Получение списка регионов"""
+        'Retrieving the list of regions'
         try:
             response = self._make_authenticated_request("/areas")
             return response
         except Exception as e:
-            logger.error(f"Ошибка получения списка регионов: {e}")
-            raise HTTPException(status_code=500, detail="Ошибка получения списка регионов")
+            logger.error(f"Error in obtaining a list of regions: {e}")
+            raise HTTPException(status_code=500, detail='Error in obtaining a list of regions')
 
-    # ===== НОВОЕ: Получение откликов на вакансию по ссылке =====
+    # ===== New: Reactions to vacancies by reference =====
     def _extract_vacancy_id(self, vacancy_url: str) -> Optional[str]:
         try:
-            # Простейший парсер ID: ожидаем /vacancy/<id>
+            # Simplest parser ID: expected /vacancy/<id>
             import re
             match = re.search(r"vacancy/(\d+)", vacancy_url)
             return match.group(1) if match else None
@@ -413,10 +413,10 @@ class HHAPIClient:
             return None
 
     def get_vacancy_details(self, vacancy_url: str) -> Dict[str, Any]:
-        """Получение подробностей вакансии по ссылке (публичный эндпоинт вакансий)."""
+        'Retrieving details of vacancy by reference (public endpoint of vacancies)).'
         vacancy_id = self._extract_vacancy_id(vacancy_url)
         if not vacancy_id:
-            raise HTTPException(status_code=400, detail="Некорректная ссылка на вакансию")
+            raise HTTPException(status_code=400, detail='Uncorrect reference to vacancy')
         try:
             url = f"{self.base_url}/vacancies/{vacancy_id}"
             response = requests.get(url, headers=self._get_headers())
@@ -425,34 +425,34 @@ class HHAPIClient:
                 data["vacancy_id"] = vacancy_id
                 return data
             else:
-                logger.error(f"Ошибка получения вакансии: {response.status_code} - {response.text}")
-                raise HTTPException(status_code=response.status_code, detail="Ошибка получения вакансии")
+                logger.error(f"Error in getting a vacation: {response.status_code} - {response.text}")
+                raise HTTPException(status_code=response.status_code, detail='Error in getting a vacation')
         except HTTPException:
             raise
         except Exception as e:
-            logger.error(f"Ошибка получения вакансии {vacancy_id}: {e}")
-            raise HTTPException(status_code=500, detail="Ошибка получения вакансии")
+            logger.error(f"Error in getting a vacation {vacancy_id}: {e}")
+            raise HTTPException(status_code=500, detail='Error in getting a vacation')
 
     def get_vacancy_responses(self, vacancy_url: str, per_page: int = 50, max_pages: int = 20) -> Dict[str, Any]:
-        """Получение откликов (переписок) на вакансию. Требуется OAuth работодателя и права переговоров.
+        """Receivables (census) for vacancies. OAuth employer and negotiation rights required.
 
-        Реализовано через negotiations/response: GET /negotiations/response?vacancy_id=<id>
-        Возвращает унифицированный список с resume_id для дальнейшего получения резюме.
+        Implemented through negotiations/response: GET /negotiations/response?vacancy_id=<id>
+        Returns the unified list with resume_id for further receipt of the executive summary.
         """
         vacancy_id = self._extract_vacancy_id(vacancy_url)
         if not vacancy_id:
-            raise HTTPException(status_code=400, detail="Некорректная ссылка на вакансию")
+            raise HTTPException(status_code=400, detail='Uncorrect reference to vacancy')
 
         try:
             collected: List[Dict[str, Any]] = []
             page = 0
             while page < max_pages:
                 params = {"vacancy_id": vacancy_id, "page": page, "per_page": per_page}
-                # Используем правильный эндпоинт для получения откликов
+                # Use the right endpoint to get feedback.
                 data = self._make_authenticated_request("/negotiations/response", params=params)
                 items = data.get("items", []) if isinstance(data, dict) else []
                 
-                logger.info(f"Получено {len(items)} откликов на странице {page}")
+                logger.info(f"Received {len(items)} Page responses {page}")
                 
                 for it in items:
                     resume_obj = it.get("resume") if isinstance(it, dict) else None
@@ -460,12 +460,12 @@ class HHAPIClient:
                     if isinstance(resume_obj, dict):
                         resume_id = resume_obj.get("id")
                     if not resume_id:
-                        # fallback: иногда в item могут быть поля links
+                        # fallback: Sometimes there may be fields of linex in it.
                         links = it.get("links", []) if isinstance(it, dict) else []
                         for l in links:
                             if isinstance(l, dict) and l.get("rel") == "resume":
                                 href = l.get("href", "")
-                                # ожидаем /resumes/<id>
+                                # Expected / resumes/<id>
                                 import re
                                 m = re.search(r"resumes/(\w+)", href)
                                 if m:
@@ -478,127 +478,127 @@ class HHAPIClient:
                 page += 1
                 if pages_total is not None and page >= pages_total:
                     break
-                if not items:  # Если пустая страница - прекращаем
+                if not items:  # If it's an empty page, let's stop.
                     break
 
-            logger.info(f"Всего собрано {len(collected)} откликов с resume_id для вакансии {vacancy_id}")
+            logger.info(f"Total collected {len(collected)} resume_id responses for vacancy {vacancy_id}")
             return {"vacancy_id": vacancy_id, "items": collected, "total": len(collected)}
         except HTTPException:
             raise
         except Exception as e:
-            logger.error(f"Ошибка получения откликов на вакансию {vacancy_id}: {e}")
-            raise HTTPException(status_code=500, detail="Ошибка получения откликов на вакансию")
+            logger.error(f"Error in receiving vacation answers {vacancy_id}: {e}")
+            raise HTTPException(status_code=500, detail='Error in receiving vacation answers')
     
     def get_professional_roles(self) -> Dict[str, Any]:
-        """Получение списка профессиональных ролей"""
+        'Getting a list of professional roles'
         try:
             response = self._make_authenticated_request("/professional_roles")
             return response
         except Exception as e:
-            logger.error(f"Ошибка получения профессиональных ролей: {e}")
-            raise HTTPException(status_code=500, detail="Ошибка получения профессиональных ролей")
+            logger.error(f"Error in obtaining professional roles: {e}")
+            raise HTTPException(status_code=500, detail='Error in obtaining professional roles')
     
     def get_languages(self) -> List[Dict[str, Any]]:
-        """Получение списка языков (публичный эндпоинт)"""
+        'Collection of the list of languages (public endpoint)'
         try:
             response = self._make_authenticated_request("/languages")
             return response
         except Exception as e:
-            logger.error(f"Ошибка получения списка языков: {e}")
-            # Fallback к базовому списку языков если API недоступен
+            logger.error(f"Error in obtaining a language list: {e}")
+            # Fallback to the basic list of languages if API is not available
             return [
-                {"id": "1", "name": "Русский"},
-                {"id": "2", "name": "Английский"},
-                {"id": "3", "name": "Немецкий"},
-                {"id": "4", "name": "Французский"},
-                {"id": "5", "name": "Испанский"},
-                {"id": "6", "name": "Китайский"},
-                {"id": "7", "name": "Японский"},
-                {"id": "8", "name": "Корейский"},
-                {"id": "9", "name": "Итальянский"},
-                {"id": "10", "name": "Португальский"}
+                {"id": "1", "name": 'Russian'},
+                {"id": "2", "name": 'English'},
+                {"id": "3", "name": 'German'},
+                {"id": "4", "name": 'French'},
+                {"id": "5", "name": 'Spanish'},
+                {"id": "6", "name": 'Chinese'},
+                {"id": "7", "name": 'Japanese'},
+                {"id": "8", "name": 'Korean'},
+                {"id": "9", "name": 'Italian'},
+                {"id": "10", "name": 'Portuguese'}
             ]
     
     def get_dictionaries(self) -> Dict[str, Any]:
-        """Получение всех доступных справочников"""
+        'Collection of all available handbooks'
         try:
-            # Объединяем несколько анонимных эндпоинтов
+            # Unite several anonymous endpoints.
             result = {}
             
-            # Языки
+            # Languages
             try:
                 languages_response = self._make_authenticated_request("/languages")
                 result["language"] = languages_response
             except:
                 result["language"] = [
-                    {"id": "1", "name": "Русский"},
-                    {"id": "2", "name": "Английский"},
-                    {"id": "3", "name": "Немецкий"},
-                    {"id": "4", "name": "Французский"},
-                    {"id": "5", "name": "Испанский"}
+                    {"id": "1", "name": 'Russian'},
+                    {"id": "2", "name": 'English'},
+                    {"id": "3", "name": 'German'},
+                    {"id": "4", "name": 'French'},
+                    {"id": "5", "name": 'Spanish'}
                 ]
             
-            # Опыт работы - захардкоженные значения (соответствуют HH API)
+            # Work experience - back-cut values (corresponding to HH API))
             result["experience"] = [
-                {"id": "noExperience", "name": "Нет опыта"},
-                {"id": "between1And3", "name": "От 1 года до 3 лет"},
-                {"id": "between3And6", "name": "От 3 до 6 лет"},
-                {"id": "moreThan6", "name": "Более 6 лет"}
+                {"id": "noExperience", "name": 'No experience'},
+                {"id": "between1And3", "name": '1 to 3 years'},
+                {"id": "between3And6", "name": '3 to 6 years'},
+                {"id": "moreThan6", "name": 'Over 6 years'}
             ]
             
-            # Тип занятости
+            # Type of employment
             result["employment"] = [
-                {"id": "full", "name": "Полная занятость"},
-                {"id": "part", "name": "Частичная занятость"},
-                {"id": "project", "name": "Проектная работа"},
-                {"id": "volunteer", "name": "Волонтерство"},
-                {"id": "probation", "name": "Стажировка"}
+                {"id": "full", "name": 'Full employment'},
+                {"id": "part", "name": 'Part-time employment'},
+                {"id": "project", "name": 'Project work'},
+                {"id": "volunteer", "name": 'Volunteering'},
+                {"id": "probation", "name": 'Internship'}
             ]
             
-            # График работы
+            # Time schedule
             result["schedule"] = [
-                {"id": "fullDay", "name": "Полный день"},
-                {"id": "shift", "name": "Сменный график"},
-                {"id": "flexible", "name": "Гибкий график"},
-                {"id": "remote", "name": "Удаленная работа"},
-                {"id": "flyInFlyOut", "name": "Вахтовый метод"}
+                {"id": "fullDay", "name": 'Full day'},
+                {"id": "shift", "name": 'Replacement schedule'},
+                {"id": "flexible", "name": 'Flexible schedule'},
+                {"id": "remote", "name": 'Remote work'},
+                {"id": "flyInFlyOut", "name": 'Watch method'}
             ]
             
-            # Уровни языков
+            # Language levels
             result["language_level"] = [
-                {"id": "a1", "name": "A1 — Начальный"},
-                {"id": "a2", "name": "A2 — Элементарный"},
-                {"id": "b1", "name": "B1 — Средний"},
-                {"id": "b2", "name": "B2 — Средне-продвинутый"},
-                {"id": "c1", "name": "C1 — Продвинутый"},
-                {"id": "c2", "name": "C2 — Профессиональный"},
-                {"id": "native", "name": "Родной"}
+                {"id": "a1", "name": 'A1 — Primary'},
+                {"id": "a2", "name": 'A2 - Elementary'},
+                {"id": "b1", "name": 'B1 - Medium'},
+                {"id": "b2", "name": 'B2 — Medium advanced'},
+                {"id": "c1", "name": 'C1 - Advanced'},
+                {"id": "c2", "name": 'C2 - Professional'},
+                {"id": "native", "name": 'Honey.'}
             ]
             
             return result
             
         except Exception as e:
-            logger.error(f"Ошибка получения справочников: {e}")
-            raise HTTPException(status_code=500, detail="Ошибка получения справочников")
+            logger.error(f"Error in receiving guidelines: {e}")
+            raise HTTPException(status_code=500, detail='Error in receiving guidelines')
     
     def search_resumes(self, search_request: SearchRequest) -> Dict[str, Any]:
-        """Поиск резюме кандидатов"""
+        'Searching for shortlists of candidates'
         try:
-            # Формирование параметров запроса для резюме
+            # Formation of the request parameters for the executive summary
             params = {
                 "per_page": search_request.per_page,
-                "page": search_request.page - 1  # HH API использует 0-based индексацию
+                "page": search_request.page - 1  # HH API uses 0-based indexation
             }
             
             if search_request.text:
                 params["text"] = search_request.text
             
-            # Для резюме поддерживается search_field
+            # search_field maintained for summary
             if search_request.search_field:
                 params["search_field"] = search_request.search_field.value
             
             if search_request.area:
-                # Для резюме area должен быть одним значением
+                # For summary area must be one value
                 if isinstance(search_request.area, list):
                     params["area"] = search_request.area[0] if search_request.area else None
                 else:
@@ -611,11 +611,11 @@ class HHAPIClient:
                 params["experience"] = search_request.experience.value
             
             if search_request.employment:
-                # HH API ожидает строку, а не список
+                # HH API is waiting for the line, not the list.
                 params["employment"] = search_request.employment[0].value if search_request.employment else None
             
             if search_request.schedule:
-                # HH API ожидает строку, а не список
+                # HH API is waiting for the line, not the list.
                 params["schedule"] = search_request.schedule[0].value if search_request.schedule else None
             
             if search_request.professional_role:
@@ -634,48 +634,48 @@ class HHAPIClient:
                 params["gender"] = search_request.gender.value
             
             if search_request.language:
-                # Преобразование языков в формат HH API
+                # Conversion of languages to HH API format
                 language_params = []
                 for lang_req in search_request.language:
                     language_params.append(f"{lang_req.language_id}.{lang_req.level.value}")
                 params["language"] = language_params
             
-            # Удаляем None значения
+            # Remove None values
             params = {k: v for k, v in params.items() if v is not None}
             
-            # Добавляем детальное логирование
-            logger.info(f"Параметры запроса к HH API (резюме): {params}")
+            # Add detailed logic
+            logger.info(f"HH API request parameters (summary): {params}")
             
-            # Используем эндпоинт резюме
+            # We're gonna use the endpoint of the resume.
             response = self._make_authenticated_request("/resumes", params=params)
             
-            # Логируем ответ
-            logger.info(f"Получен ответ от HH API (вакансии): {response}")
+            # Logging the answer
+            logger.info(f"Response received from HH API: {response}")
             
             return response
         except HTTPException:
-            # Проксируем HTTP ошибки как есть (включая 401 Unauthorized) 
+            # HTTP errors (including 401 Unauthorized)) 
             raise
         except Exception as e:
-            logger.error(f"Неожиданная ошибка поиска: {e}")
-            raise HTTPException(status_code=500, detail="Внутренняя ошибка поиска резюме")
+            logger.error(f"Unexpected Search Error: {e}")
+            raise HTTPException(status_code=500, detail='Internal Error Search Resume')
     
     def get_resume_details(self, resume_id: str) -> Dict[str, Any]:
-        """Получение детальной информации о резюме"""
+        'Obtaining details of the executive summary'
         try:
             response = self._make_authenticated_request(f"/resumes/{resume_id}")
             return response
         except HTTPException:
-            # Проксируем HTTP ошибки как есть (включая 401 Unauthorized)
+            # HTTP errors (including 401 Unauthorized))
             raise
         except Exception as e:
-            logger.error(f"Неожиданная ошибка получения деталей резюме: {e}")
-            raise HTTPException(status_code=500, detail="Внутренняя ошибка получения деталей резюме")
+            logger.error(f"An unexpected mistake in getting the details of the summary: {e}")
+            raise HTTPException(status_code=500, detail='Internal error of receiving details of the summary')
     
     def _parse_candidate(self, resume_data: Dict[str, Any]) -> Candidate:
-        """Парсинг данных кандидата из ответа HH API (резюме)"""
+        'Parsing the candidate from HH API &apos; s response (summary)'
         try:
-            # Извлечение основной информации из резюме
+            # Extraction of basic information from the summary
             resume_id = resume_data.get("id", "")
             title = resume_data.get("title", "")
             area = resume_data.get("area", {})
@@ -683,15 +683,15 @@ class HHAPIClient:
             salary_data = resume_data.get("salary")
             updated_at = parse_date(resume_data.get("updated_at", ""))
             
-            # Извлечение информации о кандидате
-            name = "Кандидат"  # HH API скрывает ФИО для анонимности
+            # Information about the candidate
+            name = 'Candidature'  # HH API hides FIO for anonymity
             age = resume_data.get("age")
             
-            # Извлечение навыков из резюме
+            # Improving skills from the summary
             skills = []
             verified_skills = []
             
-            # Навыки могут быть в разных полях
+            # Skills can be found in different fields
             if "skill_set" in resume_data:
                 skills = resume_data["skill_set"]
             
@@ -700,7 +700,7 @@ class HHAPIClient:
                 if isinstance(key_skills, list):
                     skills.extend([skill.get("name", "") for skill in key_skills if isinstance(skill, dict)])
             
-            # Извлечение информации о последнем месте работы
+            # Information about the last workplace
             last_work = {}
             if "experience" in resume_data and resume_data["experience"]:
                 last_exp = resume_data["experience"][0] if isinstance(resume_data["experience"], list) else {}
@@ -710,20 +710,20 @@ class HHAPIClient:
                     "description": last_exp.get("description", "")
                 }
             
-            # Парсинг зарплаты
+            # Wage parsing
             salary = None
             if salary_data:
                 salary = parse_salary(salary_data)
             
-            # Формирование URL резюме
+            # Synopsis development
             resume_url = f"https://hh.ru/resume/{resume_id}"
             
-            # Извлечение фотографии кандидата
+            # Photo of the candidate
             photo_url = None
             if "photo" in resume_data and resume_data["photo"]:
                 photo_url = resume_data["photo"].get("medium", resume_data["photo"].get("small"))
             
-            # Проверка наличия сопроводительного письма
+            # Verification of the presence of the letter of transmittal
             has_cover_letter = resume_data.get("has_cover_letter", False)
             
             return Candidate(
@@ -744,15 +744,15 @@ class HHAPIClient:
             )
             
         except Exception as e:
-            logger.error(f"Ошибка парсинга резюме: {e}")
+            logger.error(f"Error of parsing summary: {e}")
             raise
 
-# Инициализация клиента HH API
+# Customer Initialization HH API
 hh_client = HHAPIClient()
 
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
-    """Проверка здоровья сервиса"""
+    'Service health check'
     return HealthResponse(
         status="healthy",
         timestamp=datetime.now(),
@@ -761,53 +761,53 @@ async def health_check():
 
 @app.get("/areas")
 async def get_areas():
-    """Получение списка регионов"""
+    'Retrieving the list of regions'
     try:
         areas = hh_client.get_areas()
         return {"areas": areas}
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Ошибка получения регионов: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка получения регионов")
+        logger.error(f"Errors in obtaining regions: {e}")
+        raise HTTPException(status_code=500, detail='Errors in obtaining regions')
 
 @app.get("/professional-roles")
 async def get_professional_roles():
-    """Получение списка профессиональных ролей"""
+    'Getting a list of professional roles'
     try:
         roles = hh_client.get_professional_roles()
         return {"professional_roles": roles}
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Ошибка получения профессиональных ролей: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка получения профессиональных ролей")
+        logger.error(f"Error in obtaining professional roles: {e}")
+        raise HTTPException(status_code=500, detail='Error in obtaining professional roles')
 
 @app.get("/languages")
 async def get_languages():
-    """Получение списка языков"""
+    'Getting a list of languages'
     try:
         languages = hh_client.get_languages()
         return {"languages": languages}
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Ошибка получения языков: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка получения языков")
+        logger.error(f"Error of language: {e}")
+        raise HTTPException(status_code=500, detail='Error of language')
 
 @app.get("/dictionaries")
 async def get_dictionaries():
-    """Получение всех справочников"""
+    'Collection of all handbooks'
     try:
         dictionaries = hh_client.get_dictionaries()
         return {"dictionaries": dictionaries}
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Ошибка получения справочников: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка получения справочников")
+        logger.error(f"Error in receiving guidelines: {e}")
+        raise HTTPException(status_code=500, detail='Error in receiving guidelines')
 
-# ===== НОВОЕ: HTTP endpoint для откликов по ссылке на вакансию =====
+# ===== NEW: HTTPendpoint for feedback on the vacancy reference =====
 @app.post("/vacancy/details", response_model=Dict[str, Any])
 async def get_vacancy_details_endpoint(payload: VacancyTopRequest):
     try:
@@ -816,8 +816,8 @@ async def get_vacancy_details_endpoint(payload: VacancyTopRequest):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Ошибка обработки запроса вакансии: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка получения вакансии")
+        logger.error(f"Error in processing the job request: {e}")
+        raise HTTPException(status_code=500, detail='Error in getting a vacation')
 
 @app.post("/vacancy/responses", response_model=Dict[str, Any])
 async def get_vacancy_responses_endpoint(payload: VacancyTopRequest):
@@ -827,30 +827,30 @@ async def get_vacancy_responses_endpoint(payload: VacancyTopRequest):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Ошибка обработки запроса откликов: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка получения откликов")
+        logger.error(f"Error in response request processing: {e}")
+        raise HTTPException(status_code=500, detail='Error in receiving answers')
 
 def create_search_request(
-    text: Optional[str] = Query(None, description="Ключевые слова для поиска"),
-    search_field: Optional[str] = Query("everywhere", description="Область поиска"), 
-    area: Optional[List[int]] = Query(None, description="ID регионов"),
-    salary: Optional[int] = Query(None, description="Максимальная зарплата"),
-    experience: Optional[str] = Query(None, description="Опыт работы"),
-    employment: Optional[List[str]] = Query(None, description="Тип занятости"),
-    schedule: Optional[List[str]] = Query(None, description="График работы"),
-    professional_role: Optional[List[str]] = Query(None, description="Профессиональные роли"),
-    period: Optional[int] = Query(None, description="Период обновления в днях"),
-    age_from: Optional[int] = Query(None, description="Возраст от"),
-    age_to: Optional[int] = Query(None, description="Возраст до"), 
-    gender: Optional[str] = Query(None, description="Пол"),
-    language_id: Optional[str] = Query(None, description="ID языка"),
-    language_level: Optional[str] = Query(None, description="Минимальный уровень языка"),
-    page: int = Query(1, description="Номер страницы"),
-    per_page: int = Query(20, description="Количество на странице")
+    text: Optional[str] = Query(None, description='Keywords for Search'),
+    search_field: Optional[str] = Query("everywhere", description='Search Area'), 
+    area: Optional[List[int]] = Query(None, description='ID of the regions'),
+    salary: Optional[int] = Query(None, description='Maximum wage'),
+    experience: Optional[str] = Query(None, description='Experience'),
+    employment: Optional[List[str]] = Query(None, description='Type of employment'),
+    schedule: Optional[List[str]] = Query(None, description='Time schedule'),
+    professional_role: Optional[List[str]] = Query(None, description='Professional roles'),
+    period: Optional[int] = Query(None, description='Days update period'),
+    age_from: Optional[int] = Query(None, description='Age from'),
+    age_to: Optional[int] = Query(None, description='Age before'), 
+    gender: Optional[str] = Query(None, description='Gender'),
+    language_id: Optional[str] = Query(None, description='ID Language'),
+    language_level: Optional[str] = Query(None, description='Minimum language level'),
+    page: int = Query(1, description='Page number'),
+    per_page: int = Query(20, description='Number on page')
 ) -> SearchRequest:
-    """Создание SearchRequest из query параметров"""
+    'Create SearchRequest from Query Options'
     
-    # Обработка языковых требований
+    # Processing of language requirements
     language_requirements = None
     if language_id and language_level:
         from shared.models import LanguageRequirement, LanguageLevel
@@ -860,7 +860,7 @@ def create_search_request(
                 level=LanguageLevel(language_level)
             )]
         except ValueError:
-            # Если неверный уровень языка, игнорируем
+            # If the language is wrong, ignore it.
             language_requirements = None
     
     return SearchRequest(
@@ -883,22 +883,22 @@ def create_search_request(
 
 @app.get("/search")
 async def search_resumes(search_request: SearchRequest = Depends(create_search_request)):
-    """Поиск резюме через GET запрос"""
+    'Search resume via GET Request'
     try:
-        # Выполнение поиска вакансий
+        # Conduct of vacancy searches
         search_results = hh_client.search_resumes(search_request)
         
-        # Парсинг результатов
+        # Parsing results
         candidates = []
         for item in search_results.get("items", []):
             try:
                 candidate = hh_client._parse_candidate(item)
                 candidates.append(candidate)
             except Exception as e:
-                logger.warning(f"Ошибка парсинга вакансии: {e}")
+                logger.warning(f"Errors of Parking Vacation: {e}")
                 continue
         
-        # Формирование ответа
+        # Formation of the response
         total_count = search_results.get("found", 0)
         pages = search_results.get("pages", 0)
         
@@ -910,38 +910,38 @@ async def search_resumes(search_request: SearchRequest = Depends(create_search_r
         }
         
     except HTTPException as he:
-        # Проксируем HTTP ошибки как есть (включая 401 Unauthorized)
-        logger.error(f"HTTP ошибка при поиске: {he.status_code} - {he.detail}")
+        # HTTP errors (including 401 Unauthorized))
+        logger.error(f"HTTP error in search: {he.status_code} - {he.detail}")
         raise he
     except Exception as e:
-        logger.error(f"Неожиданная ошибка поиска: {e}")
-        raise HTTPException(status_code=500, detail="Внутренняя ошибка сервиса поиска")
+        logger.error(f"Unexpected Search Error: {e}")
+        raise HTTPException(status_code=500, detail='Internal Search Service Error')
 
 @app.get("/resume/{resume_id}")
 async def get_resume_details(resume_id: str):
-    """Получение детальной информации о резюме"""
+    'Obtaining details of the executive summary'
     try:
         resume_data = hh_client.get_resume_details(resume_id)
         return {"resume": resume_data}
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Ошибка получения деталей резюме: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка получения деталей резюме")
+        logger.error(f"Error in obtaining details: {e}")
+        raise HTTPException(status_code=500, detail='Error in obtaining details')
 
 @app.get("/oauth/authorize-url")
 async def get_authorize_url(redirect_uri: str, state: str = None):
-    """Получение URL для авторизации пользователя в HH.ru"""
+    'Obtaining URL to authorise user in HH.ru'
     try:
         auth_url = hh_client.get_authorization_url(redirect_uri, state)
         return {"authorization_url": auth_url}
     except Exception as e:
-        logger.error(f"Ошибка формирования URL авторизации: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка формирования URL авторизации")
+        logger.error(f"Error in forming the authorization URL: {e}")
+        raise HTTPException(status_code=500, detail='Error in forming the authorization URL')
 
 @app.post("/oauth/token")
 async def exchange_code_for_token(code: str, redirect_uri: str):
-    """Обмен authorization code на access token"""
+    'Exchange of authoration code on access token'
     try:
         token_data = hh_client.get_token_from_code(code, redirect_uri)
         return {
@@ -953,12 +953,12 @@ async def exchange_code_for_token(code: str, redirect_uri: str):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Ошибка обмена кода на токен: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка получения токена")
+        logger.error(f"Error in exchanging code to token: {e}")
+        raise HTTPException(status_code=500, detail='The error of token')
 
 @app.post("/oauth/refresh")
 async def refresh_token():
-    """Обновление access token через refresh token"""
+    'Update access token via refresh token'
     try:
         token_data = hh_client.refresh_access_token()
         return {
@@ -970,14 +970,14 @@ async def refresh_token():
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Ошибка обновления токена: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка обновления токена")
+        logger.error(f"Errors in the update of the token: {e}")
+        raise HTTPException(status_code=500, detail='Errors in the update of the token')
 
 @app.post("/settings/auth")
 async def update_auth_settings(auth_settings: dict):
-    """Обновление настроек аутентификации"""
+    'Update of authentication settings'
     try:
-        # Обновляем настройки клиента HH API
+        # Update HH API client settings
         if "hh_client_id" in auth_settings:
             hh_client.client_id = auth_settings["hh_client_id"]
         
@@ -987,16 +987,16 @@ async def update_auth_settings(auth_settings: dict):
         if "hh_user_agent" in auth_settings:
             hh_client.user_agent = auth_settings["hh_user_agent"]
         
-        logger.info("Настройки HH API обновлены")
+        logger.info('HH API settings updated')
         return {
             "status": "success", 
-            "message": "Настройки HH API обновлены",
+            "message": 'HH API settings updated',
             "client_id": hh_client.client_id[:10] + "..." if hh_client.client_id else None,
             "user_agent": hh_client.user_agent
         }
     except Exception as e:
-        logger.error(f"Ошибка обновления настроек HH API: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка обновления настроек HH API")
+        logger.error(f"Error: Update of HH API Settings: {e}")
+        raise HTTPException(status_code=500, detail='Error: Update of HH API Settings')
 
 if __name__ == "__main__":
     import uvicorn
