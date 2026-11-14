@@ -33,18 +33,18 @@ A centralized database for storing **all AI agents configurations**, their promp
 ### 1. `agents` - Basic Table of Agents
 **Destination:** Storage of basic information on each agent
 
-| Fields . Type . Description |
+| Field | Type | Description |
 |------|-----|----------|
-| `agent_id` | VARCHAR(255) PK | UniqueID agent(e.g.:`supervisor_001`) |
-| `agent_name` | VARCHAR(255) | Identified Name(e.g.:`@boss.ai`) |
-| `agent_type & ♪ VARCHAR(100) ♪ Type of Agent (supervisor, recruiter, scrinner, menu) |
-| `display_name & ♪ VARCHAR(255) ♪ Human name (e.g. "Alena Sergeyev"") |
-| `(Supervisor, Active Recruiter)) |
-| `persona & . . . TEXT . . short description of the identity |
+| `agent_id` | VARCHAR(255) PK | Unique ID agent (e.g: `supervisor_001`) |
+| `agent_name` | VARCHAR(255) | Identified Name (e.g: `@boss.ai`) |
+| `agent_type` | VARCHAR(100) | Type of agent (supervisor, recruiter, scrinner, menu) |
+| `display_name` | VARCHAR(255) | Human name (e.g: "Alain Sergeyeva") |
+| `role` | VARCHAR(255) | Role (Supervisor, Active Recruiter) |
+| `persona` | TEXT | Brief description of the identity |
 | `telegram_username` | VARCHAR(255) | Telegram username |
 | `teams_identity` | VARCHAR(255) | Microsoft Teams identity |
 | `status` | ENUM | active, inactive, maintenance, archived |
-| `version & ♪ VARCHAR(50) ♪ configuration version |
+| `version` | VARCHAR(50) | The configuration version |
 
 **Indexes:**
 - PRIMARY KEY: `agent_id`
@@ -56,15 +56,15 @@ A centralized database for storing **all AI agents configurations**, their promp
 ### 2. `agent_prompts` - Prompts of agents
 **Destination:** Storage of system prompts with versionarity
 
-| Fields . Type . Description |
+| Field | Type | Description |
 |------|-----|----------|
-| `prompt_id & ♪ VARCHAR(255) PK ♪ Unique ID Prompt |
-| `agent_id & \ VARCHAR(255) FK \ ID agent |
-| `system_prompt & \TEXT \ Basic System Prompte |
-* `tone_of_voice` * TEXT * Tone and style of communication *
-| `version & ♪ VARCHAR(50) ♪ Prompt version |
-| `is_current & ♪ BOOLEAN ♪ Current version |
-| `examples & ♪ JSON ♪ Examples of dialogs (Few-Shot)) |
+| `prompt_id` | VARCHAR(255) PK | Unique ID Prompta |
+| `agent_id` | VARCHAR(255) FK | ID agent |
+| `system_prompt` | TEXT | Main System Prompte |
+| `tone_of_voice` | TEXT | Tone and style of communication |
+| `version` | VARCHAR(50) | Prompt version |
+| `is_current` | BOOLEAN | Current version |
+| `examples` | JSON | Examples of dialogues (Few-Shot) |
 
 ** Specialities:**
 - ✅ **Versonicity** - you can keep the history of all prompts
@@ -76,17 +76,17 @@ A centralized database for storing **all AI agents configurations**, their promp
 ### 3. `agent_gpt_settings` - GPT settings
 **Purpose:** Model GPT configuration for each agent
 
-| Fields . Type . Description |
+| Field | Type | Description |
 |------|-----|----------|
-| `setting_id & ♪ VARCHAR(255) PK ♪ Unique ID setup |
-| `agent_id & \ VARCHAR(255) FK \ ID agent |
-| `model & ♪ VARCHAR(100) ♪ (gpt-5-nano, gpt-5, gpt-4.1)) |
+| `setting_id` | VARCHAR(255) PK | Unique ID Settings |
+| `agent_id` | VARCHAR(255) FK | ID agent |
+| `model` | VARCHAR(100) | Model (gpt-5-nano, gpt-5, gpt-4.1) |
 | `reasoning_effort` | ENUM | minimal, low, medium, high (GPT-5) |
-| `Timerature & ♪ DECIMAL(3.2) ♪ Temperature for GPT-4 |
-| `max_tokens & ~ INTEGER ~ Max. currents in response |
+| `temperature` | DECIMAL(3,2) | Temperature for GPT-4 |
+| `max_tokens` | INTEGER | Max tokens in response |
 | `tool_choice` | VARCHAR(50) | auto, required, none |
-| `parallel_tool_calls & ♪ BOOLEAN ♪ Parallel calls |
-| `prompt_cache_enabled & ♪ BOOLEAN ♪ Prompta Cashing Original Air Date on October 24, 2013 |
+| `parallel_tool_calls` | BOOLEAN | Parallel challenges |
+| `prompt_cache_enabled` | BOOLEAN | Kashing Prompt |
 
 **Notes:**
 - 🆕 **GPT-5** uses `reasoning_effort` instead of `temperature`
@@ -98,15 +98,15 @@ A centralized database for storing **all AI agents configurations**, their promp
 ### 4. `agent_tools` - Tools (Tools)
 ** Designation:** Catalogue of all available tools
 
-| Fields . Type . Description |
+| Field | Type | Description |
 |------|-----|----------|
-| `tool_id & ♪ VARCHAR(255) PK ♪ Unique ID tool |
-| `tool_name & ♪ VARCHAR(255) ♪ Name (search_resumes)) |
+| `tool_id` | VARCHAR(255) PK | Unique ID instrument |
+| `tool_name` | VARCHAR(255) | Name (search_resumes) |
 | `tool_type` | ENUM | function, mcp, api, database |
-| `Description & ♪ TEXT ♪ Description for GPT |
-| `Parameters & ~ JSON ~ JSONE parameter diagram |
-| `mcp_server_url & ♪ VARCHAR(500) ♪ URL MCP server |
-| `api_endpoint & ♪ VARCHAR(500) ♪ Endpoint External API |
+| `description` | TEXT | Description for GPT |
+| `parameters` | JSON | JSON parameter diagram |
+| `mcp_server_url` | VARCHAR(500) | URL MCP servers |
+| `api_endpoint` | VARCHAR(500) | Endpoint External API |
 
 ** Supported types:**
 - 🔧 **function** - normal Python functions
@@ -119,14 +119,14 @@ A centralized database for storing **all AI agents configurations**, their promp
 ### 5. `agent_tools_mapping` - Contact of agents with instruments
 **Purpose: ** What tools are available to each agent
 
-| Fields . Type . Description |
+| Field | Type | Description |
 |------|-----|----------|
-| `mapping_id & ♪ VARCHAR(255) PK ♪ Unique ID communication |
-| `agent_id & \ VARCHAR(255) FK \ ID agent |
-| `tool_id & \ VARCHAR(255) FK \ ID tool |
-| `is_enabled' ♪ BOOLEAN ♪ Is the tool included |
-| `priority & ~ INTEGER ~ priority (0 = highest priority)) |
-| `custom_params & ♪ JSON ♪ Cast-in Options |
+| `mapping_id` | VARCHAR(255) PK | Unique ID Communications |
+| `agent_id` | VARCHAR(255) FK | ID agent |
+| `tool_id` | VARCHAR(255) FK | ID instrument |
+| `is_enabled` | BOOLEAN | Do you have a tool on |
+| `priority` | INTEGER | Priority (0 - Higher) |
+| `custom_params` | JSON | Casto parameters |
 
 ---
 
@@ -135,23 +135,23 @@ A centralized database for storing **all AI agents configurations**, their promp
 ### `core_memory` - Core memory
 ** Designation:** Critical rules and facts of the agent
 
-| Fields . Type . Description |
+| Field | Type | Description |
 |------|-----|----------|
-| `memory_id`♰ VARCHAR(255) PK♰ ID memory recording |
-| `agent_id & \ VARCHAR(255) FK \ ID agent |
+| `memory_id` | VARCHAR(255) PK | ID Memory records |
+| `agent_id` | VARCHAR(255) FK | ID agent |
 | `memory_type` | ENUM | rule, fact, persona, constraint |
-| `memory_key & ♪ VARCHAR(255) ♪ key (response_language)) |
-| `memory_value & \TEXT \ \ \ |
-| `priority & ~ INTERGER ~ Priority (1-10)) |
-| `is_permanent`♰ BOOLEAN♰ Permanent memory |
+| `memory_key` | VARCHAR(255) | Key (response_language) |
+| `memory_value` | TEXT | Value |
+| `priority` | INTEGER | Priority (1-10) |
+| `is_permanent` | BOOLEAN | Permanent memory |
 
 **Examples of core memory:**
 ```sql
 -- Language of replies
-('mem_001, `supervisor_001', 'rule', 'response_language' and 'Always answer Russian', 1, TRUE)
+('mem_001', 'supervisor_001', 'rule', 'response_language', 'Always answer Russian', 1, TRUE)
 
 -- Communication style
-('mem_002, `recruiter_001', 'persona', 'communication_style, 'friendly, professional', 2, TRUE)
+('mem_002', 'recruiter_001', 'persona', 'communication_style', 'Friendly, professional', 2, TRUE)
 
 -- Limitations
 ('mem_003', 'scrinner_001', 'constraint', 'max_candidates_per_session', '10', 3, FALSE)
@@ -162,15 +162,15 @@ A centralized database for storing **all AI agents configurations**, their promp
 ### `operational_memory` - Operating memory
 ** Designation: ** Context of current tasks and sessions
 
-| Fields . Type . Description |
+| Field | Type | Description |
 |------|-----|----------|
-| `operation_id & \ VARCHAR(255) PK \ ID operation |
-| `agent_id & \ VARCHAR(255) FK \ ID agent |
-| `session_id & \ VARCHAR(255) \ID session |
-| `user_id & ♪ VARCHAR(255) ♪ user ID |
-| `task_context & ~ TEXT ♪ The context of the task |
-| `current_focus & \TEXT \ Current Focus |
-| `expires_at & ~ TIMESTAMP ~ Expiration Time (TTL)) |
+| `operation_id` | VARCHAR(255) PK | ID Operations |
+| `agent_id` | VARCHAR(255) FK | ID agent |
+| `session_id` | VARCHAR(255) | ID session |
+| `user_id` | VARCHAR(255) | ID User |
+| `task_context` | TEXT | Context of the task |
+| `current_focus` | TEXT | Current Focus |
+| `expires_at` | TIMESTAMP | Expiry date (TTL) |
 
 ** Specialities:**
 - ⏰ **TTL** - Automatic removal after expiry
@@ -182,15 +182,15 @@ A centralized database for storing **all AI agents configurations**, their promp
 ### `long_term_memory` - Long-term memory
 ** Designation:** Training and adaptation of the agent
 
-| Fields . Type . Description |
+| Field | Type | Description |
 |------|-----|----------|
-| `ltm_id & \ VARCHAR(255) PK \ ID records |
-| `agent_id & \ VARCHAR(255) FK \ ID agent |
+| `ltm_id` | VARCHAR(255) PK | ID Records |
+| `agent_id` | VARCHAR(255) FK | ID agent |
 | `memory_type` | ENUM | learned_pattern, user_preference, success_case |
-| `Title & ♪ VARCHAR(500) ♪ Heading |
-| `Content & . . . TEXT .  |
-| `usage_count & ~ INTEGER ~ Amount of use |
-| `success_rate & ♪ DECIMAL(5.2) ♪ Percentage of success |
+| `title` | VARCHAR(500) | Heading |
+| `content` | TEXT | Content |
+| `usage_count` | INTEGER | Number of applications |
+| `success_rate` | DECIMAL(5,2) | Percentage of success |
 
 ** Examples:**
 - 📈 **Learned Patterns** - identified behavioral patterns
@@ -205,43 +205,43 @@ A centralized database for storing **all AI agents configurations**, their promp
 ### 9. `chat_history` - chat history
 ** Designation:** Full history of all messages
 
-| Fields . Type . Description |
+| Field | Type | Description |
 |------|-----|----------|
-| `message_id & \ VARCHAR(255) PK \ ID message |
-| `agent_id & \ VARCHAR(255) FK \ ID agent |
-| `session_id & \ VARCHAR(255) \ID session |
+| `message_id` | VARCHAR(255) PK | ID Communications |
+| `agent_id` | VARCHAR(255) FK | ID agent |
+| `session_id` | VARCHAR(255) | ID session |
 | `role` | ENUM | user, assistant, system, tool |
-| `Content & . . . TEXT .  |
-| `tool_calls' ♪ JSON ♪ Tool Challenges |
+| `content` | TEXT | Content |
+| `tool_calls` | JSON | Challenges to tools |
 | `platform` | ENUM | telegram, teams, slack, web |
-| `tokens_used & ♪ INTEGER ♪ Use of currents |
+| `tokens_used` | INTEGER | Token use |
 
 ---
 
 ### 10. `agent_activity_log` - Activity Log
 ** Designation:** Detailed logic of all actions
 
-| Fields . Type . Description |
+| Field | Type | Description |
 |------|-----|----------|
-| `log_id & \ VARCHAR(255) PK \ ID log |
-| `agent_id & \ VARCHAR(255) FK \ ID agent |
+| `log_id` | VARCHAR(255) PK | ID Loga |
+| `agent_id` | VARCHAR(255) FK | ID agent |
 | `activity_type` | ENUM | message, tool_call, error, startup |
 | `status` | ENUM | success, failure, partial |
-* `duration_ms` * INTERGER * Duration in ms
+| `duration_ms` | INTEGER | Length in ms |
 
 ---
 
 ### 11. `agent_version_history` - Version History
 ** Designation:** Tracking all configuration changes
 
-| Fields . Type . Description |
+| Field | Type | Description |
 |------|-----|----------|
-| `history_id & \ VARCHAR(255) PK \ ID records |
-| `agent_id & \ VARCHAR(255) FK \ ID agent |
-| `version & ♪ VARCHAR(50) ♪ Version |
+| `history_id` | VARCHAR(255) PK | ID Records |
+| `agent_id` | VARCHAR(255) FK | ID agent |
+| `version` | VARCHAR(50) | Version |
 | `change_type` | ENUM | prompt, settings, tools, full_config |
-| `config_snapshot_before' ♪ JSON ♪ Snapshot to |
-| `config_snapshot_after' ♪ JSON ♪ Snapshot after |
+| `config_snapshot_before` | JSON | Snapshot before |
+| `config_snapshot_after` | JSON | Snapshot after |
 
 ---
 
@@ -250,24 +250,24 @@ A centralized database for storing **all AI agents configurations**, their promp
 ### 12. `agent_rules` - Rules of conduct
 ** Designation: ** Rules to be followed by the agent
 
-| Fields . Type . Description |
+| Field | Type | Description |
 |------|-----|----------|
-| `rule_id & \ VARCHAR(255) PK \ ID rules |
-| `agent_id & \ VARCHAR(255) FK \ ID agent |
+| `rule_id` | VARCHAR(255) PK | ID Rules |
+| `agent_id` | VARCHAR(255) FK | ID agent |
 | `rule_type` | ENUM | communication, behavior, security |
-| `rule_content & ~ TEXT ~ The contents of the regulation |
-* `priority` * INTERGER * Priority *
+| `rule_content` | TEXT | Content of the rule |
+| `priority` | INTEGER | Priority |
 
 ---
 
 ### 13. `agent_routing_rules` - Routine rules
 ** Designation:** How agents interact with each other
 
-| Fields . Type . Description |
+| Field | Type | Description |
 |------|-----|----------|
-| `routing_id & \ VARCHAR(255) PK \ ID rules |
-| `source_agent_id & ♪ VARCHAR(255) FK ♪ Agent Source |
-| `target_agent_id & ♪ VARCHAR(255) FK ♪ |
+| `routing_id` | VARCHAR(255) PK | ID Rules |
+| `source_agent_id` | VARCHAR(255) FK | Agent Source |
+| `target_agent_id` | VARCHAR(255) FK | Recipient Agent |
 | `routing_type` | ENUM | delegation, escalation, collaboration |
 
 ** Example:**
@@ -284,26 +284,26 @@ scrinner_001 → supervisor_001 (report)
 ### 14. `agent_training_data` - Training data
 ** Designation:**Few-Shot examples, scripts, briefcases
 
-| Fields . Type . Description |
+| Field | Type | Description |
 |------|-----|----------|
-| `training_id & \ VARCHAR(255) PK \ ID data |
-| `agent_id & \ VARCHAR(255) FK \ ID agent |
+| `training_id` | VARCHAR(255) PK | ID Data |
+| `agent_id` | VARCHAR(255) FK | ID agent |
 | `data_type` | ENUM | example, knowledge_base, faq, scenario |
-| `input_example & \TEXT \ Example of entry |
-| `output_example & \TEXT \ Example of Exit |
+| `input_example` | TEXT | Example of entry |
+| `output_example` | TEXT | Example of exit |
 
 ---
 
 ### 15. `agent_knowledge_base` - Knowledge base (RAG)
 ** Designation:** Semantic search and RAG
 
-| Fields . Type . Description |
+| Field | Type | Description |
 |------|-----|----------|
-| `knowledge_id & \ VARCHAR(255) PK \ ID of knowledge |
-| `agent_id & \ VARCHAR(255) FK \ ID agent (NULL for general) |
-| `Content & . . . TEXT .  |
-| `embedding_vector & ♪ JSON ♪ Vector representation |
-* `access_count` * INTERGER * Number of hits *
+| `knowledge_id` | VARCHAR(255) PK | ID knowledge |
+| `agent_id` | VARCHAR(255) FK | ID agent (NULL for general) |
+| `content` | TEXT | Content |
+| `embedding_vector` | JSON | Vector view |
+| `access_count` | INTEGER | Number of requests |
 
 ---
 
@@ -312,27 +312,27 @@ scrinner_001 → supervisor_001 (report)
 ### 16. `organizational_structure` - Structure
 ** Designation:** Hierarchy of company and AI agents
 
-| Fields . Type . Description |
+| Field | Type | Description |
 |------|-----|----------|
-| `id` ~ VARCHAR(255) PK ~ ID records |
-| `(HR, IT, Finance)) |
-| `Position & ♪ VARCHAR(255) ♪ Position |
-| `full_name & ♪ VARCHAR(255) ♪ FIO |
-| `hierarchy_level & ~ INTEGER ~ Level (1-top)) |
-| `agent_id & \ VARCHAR(255) FK \ ID agent (if AI) |
+| `id` | VARCHAR(255) PK | ID Records |
+| `department` | VARCHAR(255) | Division (HR, IT, Finance) |
+| `position` | VARCHAR(255) | Post |
+| `full_name` | VARCHAR(255) | FIO |
+| `hierarchy_level` | INTEGER | Level (1 - Top) |
+| `agent_id` | VARCHAR(255) FK | ID agent (If AI) |
 
 ---
 
 ### 17. `deployed_agents_registry` - Deployment register
 ** Designation: ** Information on deployed agents
 
-| Fields . Type . Description |
+| Field | Type | Description |
 |------|-----|----------|
-| `deployment_id & \ VARCHAR(255) PK \ ID deployment |
-| `agent_id & \ VARCHAR(255) FK \ ID agent |
-| `telegram_bot_token & \ VARCHAR(500) \Telegram current |
+| `deployment_id` | VARCHAR(255) PK | ID deployment |
+| `agent_id` | VARCHAR(255) FK | ID agent |
+| `telegram_bot_token` | VARCHAR(500) | Telegram current |
 | `deployment_status` | ENUM | deployed, stopped, maintenance |
-| `last_health_check & ~ TIMESTAMP ~ Receivable Check |
+| `last_health_check` | TIMESTAMP | Last check |
 
 ---
 
@@ -341,12 +341,12 @@ scrinner_001 → supervisor_001 (report)
 ### 18. `agent_performance_metrics` - Productivity metrics
 ** Designation:** Detailed agent performance metrics
 
-| Fields . Type . Description |
+| Field | Type | Description |
 |------|-----|----------|
-| `metric_id & ♪ VARCHAR(255) PK ♪ ID metrics |
-| `agent_id & \ VARCHAR(255) FK \ ID agent |
-| `metric_name & ♪ VARCHAR(255) ♪ The name of the metrics |
-| `metric_value & ♪ DECIMAL(20.6) ♪ |
+| `metric_id` | VARCHAR(255) PK | ID metrics |
+| `agent_id` | VARCHAR(255) FK | ID agent |
+| `metric_name` | VARCHAR(255) | The name of the metrics |
+| `metric_value` | DECIMAL(20,6) | Value |
 | `period` | ENUM | minute, hour, day, week, month |
 
 ** Examples of metrics:**
@@ -361,12 +361,12 @@ scrinner_001 → supervisor_001 (report)
 ### 19. `system_metrics` - System metrics
 ** Designation:** Common metrics of the system
 
-| Fields . Type . Description |
+| Field | Type | Description |
 |------|-----|----------|
-| `id` ~ VARCHAR(255) PK ~ ID metrics |
-| `metric_name & ♪ VARCHAR(255) ♪ Name |
-| `metric_value & ♪ DECIMAL(20.6) ♪ |
-| `agent_id & \ VARCHAR(255) FK \ ID agent (optimal)) |
+| `id` | VARCHAR(255) PK | ID metrics |
+| `metric_name` | VARCHAR(255) | Name |
+| `metric_value` | DECIMAL(20,6) | Value |
+| `agent_id` | VARCHAR(255) FK | ID agent (optional) |
 
 ---
 

@@ -1,6 +1,6 @@
 ╔═══════════════════════════════════════════════════════════════════════════════════════╗
 
-║                    WORKFLOW OFFICE - DATABASE STRUCTURE                     ║
+║                       WORKFLOW OFFICE - AGENT DATABASE STRUCTURE                       ║
 
 ║                                    Version 2.0.0                                      ║
 
@@ -12,7 +12,7 @@
 
 ┌─────────────────────────────────────────────────────────────────────────────────────┐
 
-│                            🎯 MAIN TABLES OF AGENCIES                              │
+│                                🎯 CORE AGENT TABLES                                 │
 
 └─────────────────────────────────────────────────────────────────────────────────────┘
 
@@ -20,9 +20,9 @@
 
                                     ┌─────────────────┐
 
-                                    │     Main table
+                                    │     agents      │◄──── Main table
 
-                                    │  (19 fields)     │
+                                    │ (19 fields)     │
 
                                     │─────────────────│
 
@@ -54,9 +54,9 @@
 
          │ agent_prompts   │       │ agent_gpt_      │       │ agent_tools_     │
 
-         │ (13 fields)          │
+         │ (13 fields)     │       │ settings        │       │ mapping          │
 
-         │─────────────────│       │ (20+fields) 10 fields)       │
+         │─────────────────│       │ (20+ fields)    │       │ (10 fields)      │
 
          │ PK: prompt_id   │       │─────────────────│       │──────────────────│
 
@@ -86,7 +86,7 @@
 
                                                                │  agent_tools    │
 
-                                                               │  (12 fields)     │
+                                                               │ (12 fields)     │
 
                                                                │─────────────────│
 
@@ -112,7 +112,7 @@
 
 ┌─────────────────────────────────────────────────────────────────────────────────────┐
 
-│                              🧠 Memory of Agents                              │
+│                               🧠 AGENT MEMORY SYSTEM                                │
 
 └─────────────────────────────────────────────────────────────────────────────────────┘
 
@@ -134,9 +134,9 @@
 
          │  core_memory    │       │ operational_    │       │ long_term_       │
 
-         │  (13 fields)           │
+         │ (13 fields)     │       │ memory          │       │ memory           │
 
-         │─────────────────│       │ (11 fields) ♪ (13 fields)       │
+         │─────────────────│       │ (11 fields)     │       │ (13 fields)      │
 
          │ PK: memory_id   │       │─────────────────│       │──────────────────│
 
@@ -168,7 +168,7 @@
 
          └─────────────────┘                                 └──────────────────┘
 
-         (Permanent Memory (Education of the Agent))
+         (Persistent memory)                                 (Agent learning)
 
 
 
@@ -176,7 +176,7 @@
 
 ┌─────────────────────────────────────────────────────────────────────────────────────┐
 
-│                         📜 BACKGROUND AND EFFECTIVENESS                         │
+│                           📜 HISTORY AND ACTIVITY LOGGING                           │
 
 └─────────────────────────────────────────────────────────────────────────────────────┘
 
@@ -198,9 +198,9 @@
 
          │  chat_history   │       │ agent_activity_ │       │ agent_version_   │
 
-         │  (14 fields)          │
+         │ (14 fields)     │       │ log             │       │ history          │
 
-         │─────────────────│       │ (11 fields) (12 fields))       │
+         │─────────────────│       │ (11 fields)     │       │ (12 fields)      │
 
          │ PK: message_id  │       │─────────────────│       │──────────────────│
 
@@ -232,7 +232,7 @@
 
          │ response_time_ms│       └─────────────────┘       └──────────────────┘
 
-         └─────────────────┘       (Detailed audit) (Versionality)
+         └─────────────────┘       (Detailed audit)         (Version history)
 
 
 
@@ -240,7 +240,7 @@
 
 ┌─────────────────────────────────────────────────────────────────────────────────────┐
 
-│                          ⚙️ RULES AND MARCHROITIZATION OF AGENCIES                         │
+│                              ⚙️ AGENT RULES AND ROUTING                             │
 
 └─────────────────────────────────────────────────────────────────────────────────────┘
 
@@ -262,9 +262,9 @@
 
          │  agent_rules    │                                  │ agent_routing_  │
 
-         │  (12 fields)           │
+         │ (12 fields)     │                                  │ rules           │
 
-         │─────────────────│                                  │ (11 fields)      │
+         │─────────────────│                                  │ (11 fields)     │
 
          │ PK: rule_id     │                                  │─────────────────│
 
@@ -298,15 +298,15 @@
 
          └─────────────────┘                                  │ is_bidirectional│
 
-         (Rules of conduct)        │
+         (Behavior rules)                                  │ priority        │
 
                                                               └─────────────────┘
 
-                                                              (Marshruths between agents)
+                                                              (Routes between agents)
 
 
 
-         EXAMPLES OF MARSHROITIZATION:
+         ROUTING EXAMPLE:
 
          
 
@@ -334,7 +334,7 @@
 
 ┌─────────────────────────────────────────────────────────────────────────────────────┐
 
-│                       📚 DATA AND KNOWLEDGE BASES                             │
+│                         📚 TRAINING DATA AND KNOWLEDGE BASE                         │
 
 └─────────────────────────────────────────────────────────────────────────────────────┘
 
@@ -358,7 +358,7 @@
 
          │ data            │                                  │ base            │
 
-         │ (13 fields) (16 fields)      │
+         │ (13 fields)     │                                  │ (16 fields)     │
 
          │─────────────────│                                  │─────────────────│
 
@@ -368,7 +368,7 @@
 
          │                 │                                  │    (NULL for    │
 
-         │ data_type: general)      │
+         │ data_type:      │                                  │     shared)     │
 
          │  - example      │                                  │                 │
 
@@ -412,7 +412,7 @@
 
 ┌─────────────────────────────────────────────────────────────────────────────────────┐
 
-│                    🏢 ORGANIZATIONAL STRUCTURE AND DEPLOYMENT                     │
+│                           🏢 ORGANIZATION AND DEPLOYMENT                            │
 
 └─────────────────────────────────────────────────────────────────────────────────────┘
 
@@ -436,7 +436,7 @@
 
          │ structure       │                                  │ registry        │
 
-         │ (13 fields) ♪ (15 fields)      │
+         │ (13 fields)     │                                  │ (15 fields)     │
 
          │─────────────────│                                  │─────────────────│
 
@@ -500,7 +500,7 @@
 
                                                │               (Status monitoring)
 
-                                    Managerial hierarchy
+                                    Management hierarchy
 
 
 
@@ -508,7 +508,7 @@
 
 ┌─────────────────────────────────────────────────────────────────────────────────────┐
 
-│                            📈 METRICS AND ANALYSIS                                   │
+│                              📈 METRICS AND ANALYTICS                               │
 
 └─────────────────────────────────────────────────────────────────────────────────────┘
 
@@ -530,11 +530,11 @@
 
          │ agent_          │                                  │ system_metrics  │
 
-         │ performance_ * (8 fields))       │
+         │ performance_    │                                  │ (8 fields)      │
 
          │ metrics         │                                  │─────────────────│
 
-         │ (12 fields) . . . PK: id          │
+         │ (12 fields)     │                                  │ PK: id          │
 
          │─────────────────│                                  │ FK: agent_id    │
 
@@ -554,7 +554,7 @@
 
          │  - histogram    │                                  └─────────────────┘
 
-         │  - rate \(system metrics))
+         │  - rate         │                                  (System metrics)
 
          │                 │
 
@@ -586,7 +586,7 @@
 
          └─────────────────┘
 
-         (Metrics by agents)
+         (Per-agent metrics)
 
 
 
@@ -594,7 +594,7 @@
 
 ┌─────────────────────────────────────────────────────────────────────────────────────┐
 
-│                          📊 SUMMARY TABLE OF ALL TABLES                             │
+│                                  📊 TABLE SUMMARY                                   │
 
 └─────────────────────────────────────────────────────────────────────────────────────┘
 
@@ -602,47 +602,47 @@
 
 ┌────┬─────────────────────────────────┬──────────┬───────────────────────────────────┐
 
-│ №  │ Table . Fields . Designation                        │
+│ №  │ Table                           │ Columns  │ Purpose                           │
 
 ├────┼─────────────────────────────────┼──────────┼───────────────────────────────────┤
 
-│ Basic information on agents    │
+│ 1  │ agents                          │ 19       │ Agent metadata                    │
 
-│ 2 x agent_prompts 13 \ System prompts with versionarity │
+│ 2  │ agent_prompts                   │ 13       │ Versioned system prompts          │
 
-│ 3 x agent_gpt_settings 20+ * GPT-5/GPT-4 settings             │
+│ 3  │ agent_gpt_settings              │ 20+      │ GPT-5/GPT-4 settings              │
 
-│ 4 x agent_tools 12 \ Tools Catalogue              │
+│ 4  │ agent_tools                     │ 12       │ Tool catalogue                    │
 
-│ 5 ♪ agent_tools_mapping 10 ♪ Agent-tool relationship ♪     │
+│ 5  │ agent_tools_mapping             │ 10       │ Agent-to-tool mappings            │
 
-│ 6 │ core_memory │ 13 │ Permanent memory of the agent          │
+│ 6  │ core_memory                     │ 13       │ Persistent agent memory           │
 
-│ 7 │ operational_memory │ 11 │ Operational memory of sessions         │
+│ 7  │ operational_memory              │ 11       │ Session working memory            │
 
-│ 8 │ long_term_memory │ 13 │ Long-term memory, training   │
+│ 8  │ long_term_memory                │ 13       │ Long-term memory and learning     │
 
-│ 9 ♪ chat_history 14 ♪ The History of All Messages            │
+│ 9  │ chat_history                    │ 14       │ Message history                   │
 
-│ 10 agent_activity_log 11 \Log of Activism            │
+│ 10 │ agent_activity_log              │ 11       │ Agent activity log                │
 
-│ 11 x agent_version_history 12 ~ History of configuration versions       │
+│ 11 │ agent_version_history           │ 12       │ Configuration version history     │
 
-│ 12 agent_rules 12 Rules of conduct of agents         │
+│ 12 │ agent_rules                     │ 12       │ Agent behavior rules              │
 
-│ 13 agent_routing_rules 11             │
+│ 13 │ agent_routing_rules             │ 11       │ Routing rules                     │
 
-│ 14 ♪ agent_training_data 13 ♪ Learning Data, Few-Shot        │
+│ 14 │ agent_training_data             │ 13       │ Training data and few-shot examples│
 
-│ 15 ♪ agent_knowledge_base 16 ♪ Knowledge base for RAG               │
+│ 15 │ agent_knowledge_base            │ 16       │ RAG knowledge base                │
 
-│ 16 organizational_structure 13 Organization         │
+│ 16 │ organizational_structure        │ 13       │ Organization structure            │
 
-│ 17 deployed_agents_registry 15 List of deployed agents        │
+│ 17 │ deployed_agents_registry        │ 15       │ Deployed-agent registry           │
 
-│ 18 x agent_performance_metrics 12 * Productivity metrics        │
+│ 18 │ agent_performance_metrics       │ 12       │ Performance metrics               │
 
-│ 19 system_metrics 8 System metrics                 │
+│ 19 │ system_metrics                  │ 8        │ System metrics                    │
 
 ├────┴─────────────────────────────────┴──────────┴───────────────────────────────────┤
 
@@ -656,7 +656,7 @@
 
 ┌─────────────────────────────────────────────────────────────────────────────────────┐
 
-│                            🔑 KEY LINKS (FOREIGNN KEYS))                         │
+│                         🔑 KEY RELATIONSHIPS (FOREIGN KEYS)                         │
 
 └─────────────────────────────────────────────────────────────────────────────────────┘
 
@@ -708,53 +708,53 @@ organizational_structure ──► organizational_structure (Self-referencing: m
 
 ┌─────────────────────────────────────────────────────────────────────────────────────┐
 
-│                          🎨 ARCHITECTURE SPECIFICS                                 │
+│                              🎨 ARCHITECTURE FEATURES                               │
 
 └─────────────────────────────────────────────────────────────────────────────────────┘
 
 
 
-✅ VERSIONALITY
+✅ VERSION HISTORY
 
-   └─► agent_prompts: is_current field allows to store prompt history
+   └─► agent_prompts: is_current preserves prompt history
 
-   └─► agent_version_history: Full history of all changes with snapshots
+   └─► agent_version_history: complete change history with snapshots
 
 
 
 ✅ TTL (TIME TO LIVE)
 
-   └─► operational_memory: expires_at field for automatic cleaning
+   └─► operational_memory: expires_at supports automatic cleanup
 
 
 
-✅ JSON FACILITATION FIELDS
+✅ JSON FIELDS for flexible payloads
 
    └─► metadata, parameters, tags, dimensions, config_snapshot_*
 
 
 
-✅ ENUM for Types
+✅ ENUM values for typed categories
 
    └─► status, role, memory_type, activity_type, routing_type, etc.
 
 
 
-✅ INDICES on all FK and frequently used fields
+✅ INDEXES on foreign keys and frequently queried fields
 
-   └─► Quick search agent_id, session_id, timestamp, etc.
+   └─► Indexed lookup by agent_id, session_id, timestamp, etc.
 
 
 
 ✅ CASCADING DELETE
 
-   └─► All related entries shall be removed when removal of agents
+   └─► Deleting an agent cascades to its related records
 
 
 
 ✅ SELF-REFERENCING
 
-   └─► organizational_structure: manager_id ~ id (hierarchy))
+   └─► organizational_structure: manager_id → id (hierarchy)
 
 
 
@@ -762,13 +762,13 @@ organizational_structure ──► organizational_structure (Self-referencing: m
 
 ┌─────────────────────────────────────────────────────────────────────────────────────┐
 
-│                          🚀 EXAMPLES OF USE                                   │
+│                                  🚀 USAGE EXAMPLES                                  │
 
 └─────────────────────────────────────────────────────────────────────────────────────┘
 
 
 
-1. CONFIGURE OF THE AGENCY:
+1. LOAD AGENT CONFIGURATION:
 
    SELECT a.*, ap.system_prompt, ags.model, ags.reasoning_effort
 
@@ -782,7 +782,7 @@ organizational_structure ──► organizational_structure (Self-referencing: m
 
 
 
-2. AGENCY INSTRUMENTS:
+2. GET AGENT TOOLS:
 
    SELECT at.tool_name, at.description, at.parameters
 
@@ -796,7 +796,7 @@ organizational_structure ──► organizational_structure (Self-referencing: m
 
 
 
-3. The Core Memory:
+3. LOAD CORE MEMORY:
 
    SELECT memory_key, memory_value, priority
 
@@ -808,15 +808,15 @@ organizational_structure ──► organizational_structure (Self-referencing: m
 
 
 
-4. COMMUNICATION:
+4. LOG A MESSAGE:
 
    INSERT INTO chat_history (message_id, agent_id, session_id, user_id, role, content)
 
-   VALUES (UUID(), 'recruiter_001', 'sess_123'; 'user_456' , 'assistant', 'Response'...');
+   VALUES (UUID(), 'recruiter_001', 'sess_123', 'user_456', 'assistant', 'Example reply');
 
 
 
-5. RECEIVED BY THE MARCHRUES:
+5. GET ROUTES:
 
    SELECT s.agent_name AS from, t.agent_name AS to, r.routing_type
 
@@ -834,9 +834,9 @@ organizational_structure ──► organizational_structure (Self-referencing: m
 
 ╔═══════════════════════════════════════════════════════════════════════════════════════╗
 
-║                              THE END OF THE DATABASE Schematic                                 ║
+║                                END OF DATABASE SCHEMA                                ║
 
-║                       Author: Workflow Office Team ♪ v2.0.0                             ║
+║                       Reference: Workflow Office schema | v2.0.0                       ║
 
 ╚═══════════════════════════════════════════════════════════════════════════════════════╝
 
