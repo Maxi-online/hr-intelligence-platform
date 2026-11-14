@@ -1,31 +1,31 @@
 FROM python:3.11-slim
 
-# Установка системных зависимостей
+# Installation of systems relationships
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
     && rm -rf /var/lib/apt/lists/*
 
-# Установка рабочей директории
+# Installation of the Work Directorate
 WORKDIR /app
 
-# Копирование файлов зависимостей
+# Copy Dependence Files
 COPY requirements.txt .
 
-# Установка Python зависимостей
+# Installation of Python Dependences
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Копирование исходного кода
+# Copy source code
 COPY . .
 
-# Создание директории для логов
+# Creation of a directory for lairs
 RUN mkdir -p logs
 
-# Установка прав доступа
+# Establishment of access rights
 RUN chmod +x *.py
 
-# Открытие портов
+# Opening of ports
 EXPOSE 8000 8001 8002 8003 8004
 
-# Команда по умолчанию
+# The default command
 CMD ["python", "gateway/main.py"]

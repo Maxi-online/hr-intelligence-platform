@@ -1,0 +1,345 @@
+{
+  "purpose": "Engineering prose, comments, docstrings, prompts, UI labels and setup instructions are English. Exact reviewed linguistic data retains its source-language semantics. No directory is excluded.",
+  "data_literals": [
+    {
+      "path": "components/candidate_ranking/ai_analysis/agents.py",
+      "sha256": "1b510124df11fb0e60548a43ea36be358740d1732154f0e71affc9e36dc1f545",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/candidate_ranking/ai_analysis/agents.py",
+      "sha256": "9c12635b2be212a5ec57a9adf3ca49ca142589162e18cfaa2c76957b2e2da6f8",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/candidate_ranking/ai_analysis/agents.py",
+      "sha256": "c2b22a7f7d08124db962cb6b8ad48ee965e51259c8d080a27655629273a1d094",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/candidate_ranking/ai_analysis/agents.py",
+      "sha256": "3d26af60ea1ba3bea1f2250e21e1a8fd27b5c77a5c8819a04877776acc80a493",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/candidate_ranking/ai_analysis/agents.py",
+      "sha256": "0a57d8be83c2599a23d51e7f3cd3f13a9df997a5fb67451ca1e31d96ebca65c4",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/candidate_ranking/ai_analysis/agents.py",
+      "sha256": "b8225c8fbb0411e01525f1b0025111357d7ea2c59df974b640b3fb08bbe236b6",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/candidate_ranking/ai_analysis/agents.py",
+      "sha256": "6de547b79c9923ca73661777f64c9d75f8c1158ebac0b85dd3fc93b061835db0",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/candidate_ranking/ai_analysis/agents.py",
+      "sha256": "25a514192b4357f8375d289f56e4b07d11d8045db9d173fa7bad4de95f4f9fd0",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/candidate_ranking/ai_analysis/agents.py",
+      "sha256": "2ac3f3eb8fe7c0449939ce68f07cff71be1b1d8c7a09ac3af59eec35a5b60972",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/candidate_ranking/ai_analysis/agents.py",
+      "sha256": "1ca9a0989f8652fdc18ec2418d3d61c6e89b0f5daf3c97a1887f5509e1bceee8",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/candidate_ranking/ai_analysis/agents.py",
+      "sha256": "52e4465aa0cfb8f5fddf7032f2d728713862824f378a7828439ab7ae38e48f38",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/candidate_ranking/ai_analysis/agents.py",
+      "sha256": "3a74142d66adb44c2b87bf8f184f67c8075701c5d6f1885d1b5e667bb4ab49af",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/candidate_ranking/ai_analysis/agents.py",
+      "sha256": "29546e0717e084145b5a5cd39abe14387a74935ba88e6e6bc3074a20c977d685",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/candidate_ranking/ai_analysis/agents.py",
+      "sha256": "2c73bf328575d305cf64c34bce9a6de3f70ac4868d0b4d008f738f17c6074c4e",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/candidate_ranking/ai_analysis/agents.py",
+      "sha256": "0bb33848a134705650635732421608fc3fad053e4bdc1905ff19231c54e0b26e",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/candidate_ranking/ai_analysis/agents.py",
+      "sha256": "2b4d778444837eea10683203cd88f48c712fc4507967a3cc60f932d094226a34",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/candidate_ranking/ai_analysis/agents.py",
+      "sha256": "bd6d8b6b5b0311a62bba1a0ce5a12e09e12f8c0d072ce2e4b0be0c51bbd5b50b",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/candidate_ranking/ai_analysis/agents.py",
+      "sha256": "b8087b699c7b5b8c8809a47795bf502ae171ccd642ee93d325e8fcac88581fc7",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/candidate_ranking/ai_analysis/agents.py",
+      "sha256": "102dcd5d8636066da5369bd19de39959138d57f97c6c82bedab9bd8d7b20870b",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/candidate_ranking/ai_analysis/agents.py",
+      "sha256": "02ec49a6cf6879963bf025938edefba0553fda4acdf2c5b6f45366720df47eb3",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/candidate_ranking/ai_analysis/agents.py",
+      "sha256": "b504d9096f6fbaabe9c645ff9ad8eee9c8bc46ee75736c43754ebae853880ff6",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/candidate_ranking/ai_analysis/agents.py",
+      "sha256": "fe507fc788a375c7f5d60a8a0805dc1ae2fdf68804eccad5c6f9f9bdf81bd4f5",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/candidate_ranking/ai_analysis/agents.py",
+      "sha256": "2152b3d0579392887980d688eb85bd07c0e4beba7508f2e7f6f30770f7b24aad",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/candidate_ranking/ai_analysis/agents.py",
+      "sha256": "8a944cf584d180259d6ae1f051f5887e4f570cfc8ea5ac5e3809fc365981e3da",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/candidate_ranking/ai_analysis/agents.py",
+      "sha256": "2194d3150d20c05847213af66b75d04d40b5f1d047a00ff9c1421ac87af1b8e2",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/candidate_ranking/ai_analysis/agents.py",
+      "sha256": "fb27e2b45f9959f94f87e9c154f2be282496f16755e948a67816136aab17428e",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/candidate_ranking/ai_analysis/agents.py",
+      "sha256": "16cba5e83013c2b49df0a7bc859aeb6a89c30c4251596c709608c68a49626911",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/candidate_ranking/ai_analysis/agents.py",
+      "sha256": "8349a4f88a86f84169ee8f460f4a60faab154a575371170a1938f421ab4e2150",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/candidate_ranking/ai_analysis/agents.py",
+      "sha256": "388c68b52cba34fdef08d25d24798ca59e5a24ad8e79b4e98608bdf7c646bfb2",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/candidate_ranking/ai_analysis/agents.py",
+      "sha256": "c51e7c55e36d34d86bc1c0a48446db5a65d31e962ef6d2b9ca753cb19cd2a8a0",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/candidate_ranking/ai_analysis/agents.py",
+      "sha256": "a359752b28cfaa1e2ae7d8a70cd12dc0fe09cabdc39ee0dc072b927444cd72d8",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/ai_analysis/agents.py",
+      "sha256": "1b510124df11fb0e60548a43ea36be358740d1732154f0e71affc9e36dc1f545",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/ai_analysis/agents.py",
+      "sha256": "9c12635b2be212a5ec57a9adf3ca49ca142589162e18cfaa2c76957b2e2da6f8",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/ai_analysis/agents.py",
+      "sha256": "c2b22a7f7d08124db962cb6b8ad48ee965e51259c8d080a27655629273a1d094",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/ai_analysis/agents.py",
+      "sha256": "3d26af60ea1ba3bea1f2250e21e1a8fd27b5c77a5c8819a04877776acc80a493",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/ai_analysis/agents.py",
+      "sha256": "0a57d8be83c2599a23d51e7f3cd3f13a9df997a5fb67451ca1e31d96ebca65c4",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/ai_analysis/agents.py",
+      "sha256": "b8225c8fbb0411e01525f1b0025111357d7ea2c59df974b640b3fb08bbe236b6",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/ai_analysis/agents.py",
+      "sha256": "6de547b79c9923ca73661777f64c9d75f8c1158ebac0b85dd3fc93b061835db0",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/ai_analysis/agents.py",
+      "sha256": "25a514192b4357f8375d289f56e4b07d11d8045db9d173fa7bad4de95f4f9fd0",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/ai_analysis/agents.py",
+      "sha256": "2ac3f3eb8fe7c0449939ce68f07cff71be1b1d8c7a09ac3af59eec35a5b60972",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/ai_analysis/agents.py",
+      "sha256": "1ca9a0989f8652fdc18ec2418d3d61c6e89b0f5daf3c97a1887f5509e1bceee8",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/ai_analysis/agents.py",
+      "sha256": "52e4465aa0cfb8f5fddf7032f2d728713862824f378a7828439ab7ae38e48f38",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/ai_analysis/agents.py",
+      "sha256": "3a74142d66adb44c2b87bf8f184f67c8075701c5d6f1885d1b5e667bb4ab49af",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/ai_analysis/agents.py",
+      "sha256": "29546e0717e084145b5a5cd39abe14387a74935ba88e6e6bc3074a20c977d685",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/ai_analysis/agents.py",
+      "sha256": "2c73bf328575d305cf64c34bce9a6de3f70ac4868d0b4d008f738f17c6074c4e",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/ai_analysis/agents.py",
+      "sha256": "0bb33848a134705650635732421608fc3fad053e4bdc1905ff19231c54e0b26e",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/ai_analysis/agents.py",
+      "sha256": "2b4d778444837eea10683203cd88f48c712fc4507967a3cc60f932d094226a34",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/ai_analysis/agents.py",
+      "sha256": "bd6d8b6b5b0311a62bba1a0ce5a12e09e12f8c0d072ce2e4b0be0c51bbd5b50b",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/ai_analysis/agents.py",
+      "sha256": "b8087b699c7b5b8c8809a47795bf502ae171ccd642ee93d325e8fcac88581fc7",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/ai_analysis/agents.py",
+      "sha256": "102dcd5d8636066da5369bd19de39959138d57f97c6c82bedab9bd8d7b20870b",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/ai_analysis/agents.py",
+      "sha256": "02ec49a6cf6879963bf025938edefba0553fda4acdf2c5b6f45366720df47eb3",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/ai_analysis/agents.py",
+      "sha256": "b504d9096f6fbaabe9c645ff9ad8eee9c8bc46ee75736c43754ebae853880ff6",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/ai_analysis/agents.py",
+      "sha256": "fe507fc788a375c7f5d60a8a0805dc1ae2fdf68804eccad5c6f9f9bdf81bd4f5",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/ai_analysis/agents.py",
+      "sha256": "2152b3d0579392887980d688eb85bd07c0e4beba7508f2e7f6f30770f7b24aad",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/ai_analysis/agents.py",
+      "sha256": "8a944cf584d180259d6ae1f051f5887e4f570cfc8ea5ac5e3809fc365981e3da",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/ai_analysis/agents.py",
+      "sha256": "2194d3150d20c05847213af66b75d04d40b5f1d047a00ff9c1421ac87af1b8e2",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/ai_analysis/agents.py",
+      "sha256": "fb27e2b45f9959f94f87e9c154f2be282496f16755e948a67816136aab17428e",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/ai_analysis/agents.py",
+      "sha256": "16cba5e83013c2b49df0a7bc859aeb6a89c30c4251596c709608c68a49626911",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/ai_analysis/agents.py",
+      "sha256": "8349a4f88a86f84169ee8f460f4a60faab154a575371170a1938f421ab4e2150",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/ai_analysis/agents.py",
+      "sha256": "388c68b52cba34fdef08d25d24798ca59e5a24ad8e79b4e98608bdf7c646bfb2",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/ai_analysis/agents.py",
+      "sha256": "c51e7c55e36d34d86bc1c0a48446db5a65d31e962ef6d2b9ca753cb19cd2a8a0",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/ai_analysis/agents.py",
+      "sha256": "a359752b28cfaa1e2ae7d8a70cd12dc0fe09cabdc39ee0dc072b927444cd72d8",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/autorecruiter/passive_recruiter_agent.py",
+      "sha256": "ed870c91f858f0d3c77a573d5e416e18d6d33f535cbbc91ebacc33e76606ccdc",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/autorecruiter/passive_recruiter_agent.py",
+      "sha256": "264389407247a6a59bbf1d78d59f41dfa27903a1d1108465a9795e1cf5057032",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/autorecruiter/passive_recruiter_agent.py",
+      "sha256": "353f8207e1ff6c35f8eedee810e3e8040114faa3ec4eb02ab33b872777cb2e66",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/autorecruiter/passive_recruiter_agent.py",
+      "sha256": "d89cae10e8876e2e7ce9a72f1941fa7f8c5316e5341770df99fe0a890287be3e",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/autorecruiter/passive_recruiter_agent.py",
+      "sha256": "d8e10f31ee5bfbc4d418f767762aad5ec7fced70487cb7c2e83d17a4699f8739",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "components/recruitment_runtime/autorecruiter/passive_recruiter_agent.py",
+      "sha256": "f0290d252164da38b12a11fa121b27e2b8af723c155c13efb944e121fd7b72f1",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    }
+  ]
+}

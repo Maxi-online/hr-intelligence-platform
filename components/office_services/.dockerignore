@@ -37,7 +37,7 @@ README.md
 # ====================================
 
 # ===============================
-# ФАЙЛЫ РАЗРАБОТКИ
+# FLYLE DEVELOPING
 # ===============================
 .git/
 .gitignore
@@ -49,9 +49,9 @@ docs/
 .idea/
 
 # ===============================
-# КОНФИДЕНЦИАЛЬНЫЕ ДАННЫЕ
+# CONFIDENTIAL DATA
 # ===============================
-# НЕ копируем секретные файлы в образ
+# Don't copy secret files into image.
 settings.json
 .env
 .env.*
@@ -60,12 +60,12 @@ settings.json
 *.p12
 *.pfx
 
-# Но оставляем примеры
+# But let's leave examples.
 !settings.example.json
 !.env.example
 
 # ===============================
-# ВРЕМЕННЫЕ И СИСТЕМНЫЕ ФАЙЛЫ
+# Temporarily and Systemally FLYLS
 # ===============================
 # Python cache
 __pycache__/
@@ -73,32 +73,32 @@ __pycache__/
 *$py.class
 .pytest_cache/
 
-# Виртуальные окружения
+# Virtual environment
 supevisor_env/
 supervisor_env/
 .venv/
 venv/
 env/
 
-# Логи
+# Logging
 *.log
 logs/
 log/
 
-# Временные файлы
+# Temporary files
 *.tmp
 *.temp
 temp/
 tmp/
 .cache/
 
-# Базы данных
+# Databases
 *.db
 *.sqlite
 *.sqlite3
 
 # ===============================
-# ОПЕРАЦИОННЫЕ СИСТЕМЫ
+# OPERATIONAL SYSTEMS
 # ===============================
 # Windows
 Thumbs.db
@@ -119,20 +119,20 @@ Icon
 .Trash-*
 
 # ===============================
-# DOCKER СПЕЦИФИЧНЫЕ
+# DOCKER SPECIFIC
 # ===============================
-# Docker файлы (кроме основных)
+# Docker files (other than main files)
 docker-compose.override.yml
 docker-compose.*.yml
 !docker-compose.yml
 
-# Volumes и bind mounts
+# Volumes and Bind mounts
 data/
 volume/
 mounts/
 
 # ===============================
-# IDE И РЕДАКТОРЫ
+# IDE AND EDITORS
 # ===============================
 .vscode/
 .idea/
@@ -141,7 +141,7 @@ mounts/
 *~
 
 # ===============================
-# ТЕСТИРОВАНИЕ
+# STEERING
 # ===============================
 .coverage
 .pytest_cache/
@@ -150,39 +150,39 @@ htmlcov/
 test_results/
 
 # ===============================
-# СПЕЦИФИЧНЫЕ ДЛЯ ПРОЕКТА
+# SPECIFIC FOR THE PROJECT
 # ===============================
-# Файлы памяти и кэша
+# Memory and Cash
 memory_storage/
 chat_history/
 simple_memory.db
 
-# Экспорты и отчеты
+# Exports and reports
 exports/
 reports/
 *.xlsx
 *.csv
 
-# Мониторинг
+# Monitoring
 monitoring/
 metrics/
 
-# Бэкапы
+# Backup
 *.bak
 *.backup
 backup/
 
 # ===============================
-# ИСКЛЮЧЕНИЯ (что НЕ игнорировать)
+# EXCEPTIONS (which should not be ignored)
 # ===============================
-# Конфигурационные файлы проекта
+# Project configuration files
 !requirements.txt
 !config.py
 !Dockerfile
 !docker-compose.yml
 !docker/
 
-# Исходный код приложения
+# Application reference code
 !*.py
 !microservices/
 !README.md

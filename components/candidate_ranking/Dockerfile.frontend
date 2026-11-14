@@ -1,31 +1,31 @@
 FROM python:3.11-slim
 
-# Установка системных зависимостей
+# Installation of systems relationships
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
     && rm -rf /var/lib/apt/lists/*
 
-# Установка рабочей директории
+# Installation of the Work Directorate
 WORKDIR /app
 
-# Копирование файлов зависимостей
+# Copy Dependence Files
 COPY requirements.txt .
 
-# Установка Python зависимостей
+# Installation Python Dependency
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Копирование исходного кода
+# Copy source code
 COPY . .
 
-# Создание директории для логов
+# Creation of a directory for lairs
 RUN mkdir -p logs
 
-# Установка прав доступа
+# Establishment of access rights
 RUN chmod +x *.py
 
-# Открытие порта для Streamlit
+# Opening of the port for Streamlit
 EXPOSE 8501
 
-# Команда по умолчанию для Streamlit
+# The default command for Streamlit
 CMD ["streamlit", "run", "frontend/app.py", "--server.port=8501", "--server.address=0.0.0.0"]
