@@ -1,39 +1,39 @@
 # ====================================
-# Centralized Supervisor Микросервис
+# Centralized Supervisor Microservices
 # ====================================
 FROM python:3.11-slim
 
 LABEL maintainer="HR AI Team"
-LABEL description="Centralized Supervisor Микросервис"
+LABEL descritation="Centralized Supervisor Microservice"
 LABEL version="1.0.0"
 
-# Переменные окружения
+# Changing environment
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PIP_NO_CACHE_DIR=1
 
-# Рабочая директория
+# Working Directorate
 WORKDIR /app
 
-# Установка системных зависимостей
+# Installation of systems relationships
 RUN apt-get update && apt-get install -y \
     curl \
     netcat-openbsd \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Копирование и установка Python зависимостей
+# Copying and Installation of Python Dependences
 COPY requirements.txt .
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# Копирование кода микросервиса
+# Copying the Microservice Code
 COPY . .
 
-# Создание директорий для логов
+# Create directors for lairs
 RUN mkdir -p /app/logs
 
-# Создание пользователя для безопасности
+# Creating a user for safety
 RUN groupadd -r supervisor && \
     useradd -r -g supervisor -d /app -s /bin/bash supervisor && \
     chown -R supervisor:supervisor /app
@@ -44,8 +44,8 @@ USER supervisor
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:8100/health || exit 1
 
-# Открытие порта
+# Opening of the port
 EXPOSE 8100
 
-# Запуск FastAPI сервера
+# FastAPI server start-up
 CMD ["python", "app.py"]

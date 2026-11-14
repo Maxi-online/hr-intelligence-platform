@@ -1,8 +1,8 @@
 """
-AutoRecruiter - Автономный агент для пассивного рекрутинга
+AutoRecruiter - Autonomous agent for passive recruitment
 
-Автономный AI агент который использует LLM для планирования и принятия решений,
-работая с существующими микросервисами как с инструментами.
+Autonomous AI agent who uses LLM for planning and decision-making,
+Working with existing microservices as tools.
 
 Author: Candidate Analysis Team  
 Version: 2.0.0 (AutoRecruiter Implementation)
@@ -18,19 +18,19 @@ from datetime import datetime
 from typing import Dict, Any, List, Optional
 import logging
 
-# Добавляем корневую директорию в путь
+# Add a root directory to the journey.
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from shared.utils import setup_logging, load_config
 from .models import AutoGPTTaskRequest, AutoGPTTaskResponse, AutoGPTTaskStatus
 from .recruitment_runtime_agent import PassiveRecruiterAgent
 
-# Настройка логирования
+# Logging settings
 logger = setup_logging("autorecruiter")
 
 app = FastAPI(
     title="AutoRecruiter",
-    description="Автономный AI агент для пассивного рекрутинга с LLM планированием",
+    description='Autonomous AI agent for passive recruitment with LLM planning',
     version="2.0.0"
 )
 
@@ -42,31 +42,31 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Глобальные компоненты
+# Global components
 master_agent = None
 active_tasks: Dict[str, Dict[str, Any]] = {}
 
 @app.on_event("startup")
 async def startup_event():
-    """Инициализация AutoGPT системы"""
+    'Initialization of the AutoGPT system'
     global master_agent
     
     try:
-        logger.info("🤖 Инициализация AutoRecruiter...")
+        logger.info('🤖 Initialization of AutoRecruiter...')
         
         config = load_config()
         master_agent = PassiveRecruiterAgent(config)
         await master_agent.initialize()
         
-        logger.info("✅ AutoRecruiter система готова к работе")
+        logger.info('✅ AutoRecruiter system ready to work')
         
     except Exception as e:
-        logger.error(f"❌ Ошибка инициализации AutoRecruiter: {e}")
+        logger.error(f"Error: ❌ Initialization of AutoRecruiter: {e}")
         raise
 
 @app.get("/health")
 async def health_check():
-    """Проверка здоровья AutoRecruiter системы"""
+    'AutoRecruiter System Health Test'
     return {
         "status": "healthy",
         "timestamp": datetime.now(),
@@ -78,18 +78,18 @@ async def health_check():
 @app.post("/api/autorecruiter/tasks", response_model=AutoGPTTaskResponse)
 async def create_autorecruiter_task(request: AutoGPTTaskRequest, background_tasks: BackgroundTasks):
     """
-    Создание автономной задачи для AutoRecruiter агента
+    Create an autonomous task for AutoRecruiter Agent
     
-    AutoRecruiter агент получает высокоуровневую цель и автономно планирует
-    и выполняет необходимые действия используя существующие микросервисы
+    AutoRecruiter Agent gets a high-level target and plans autonomously
+    and perform the necessary actions using existing microservices
     """
     try:
         task_id = f"autorecruiter_{uuid.uuid4().hex[:8]}"
         
-        logger.info(f"🎯 Новая AutoRecruiter задача: {task_id}")
-        logger.info(f"🎯 Цель: {request.goal}")
+        logger.info(f"🎯 New AutoRecruiter Task: {task_id}")
+        logger.info(f"🎯 Objective: {request.goal}")
         
-        # Регистрируем задачу
+        # Record the task
         active_tasks[task_id] = {
             "id": task_id,
             "goal": request.goal,
@@ -104,26 +104,26 @@ async def create_autorecruiter_task(request: AutoGPTTaskRequest, background_task
             "results": None
         }
         
-        # Запускаем AutoRecruiter агент в фоне
+        # Run AutoRecruiter agent in background
         background_tasks.add_task(execute_autorecruiter_task, task_id, request)
         
         return AutoGPTTaskResponse(
             task_id=task_id,
             status="accepted",
-            message="AutoRecruiter агент начал автономное выполнение задачи",
-            estimated_duration="Агент определит сам"
+            message='AutoRecruiter agent started to perform the task autonomously',
+            estimated_duration='The agent will determine for himself.'
         )
         
     except Exception as e:
-        logger.error(f"❌ Ошибка создания AutoRecruiter задачи: {e}")
+        logger.error(f"❌ The error of creating the AutoRecruiter task: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/autorecruiter/tasks/{task_id}/status", response_model=AutoGPTTaskStatus)
 async def get_autorecruiter_task_status(task_id: str):
-    """Получение статуса выполнения AutoRecruiter задачи"""
+    'AutoRecruiter task status'
     try:
         if task_id not in active_tasks:
-            raise HTTPException(status_code=404, detail="Задача не найдена")
+            raise HTTPException(status_code=404, detail='The task is not found.')
         
         task = active_tasks[task_id]
         
@@ -139,20 +139,20 @@ async def get_autorecruiter_task_status(task_id: str):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"❌ Ошибка получения статуса AutoRecruiter задачи: {e}")
+        logger.error(f"❌ Error in obtaining the AutoRecruiter status task: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/autorecruiter/tasks/{task_id}/result")
 async def get_autorecruiter_task_result(task_id: str):
-    """Получение результатов AutoRecruiter задачи"""
+    'AutoRecruiter Tasker Results'
     try:
         if task_id not in active_tasks:
-            raise HTTPException(status_code=404, detail="Задача не найдена")
+            raise HTTPException(status_code=404, detail='The task is not found.')
         
         task = active_tasks[task_id]
         
         if task["status"] not in ["completed", "failed"]:
-            raise HTTPException(status_code=400, detail="Задача еще не завершена")
+            raise HTTPException(status_code=400, detail='The task is not yet completed')
         
         return {
             "task_id": task_id,
@@ -168,28 +168,28 @@ async def get_autorecruiter_task_result(task_id: str):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"❌ Ошибка получения результатов AutoRecruiter: {e}")
+        logger.error(f"Error: ❌ Results of AutoRecruiter: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 async def execute_autorecruiter_task(task_id: str, request: AutoGPTTaskRequest):
     """
-    Выполнение AutoRecruiter задачи
+    AutoRecruiter task
     
-    AutoRecruiter агент работает автономно:
-    1. Анализирует цель через LLM
-    2. Планирует необходимые действия
-    3. Выполняет действия через инструменты (API микросервисов)
-    4. Оценивает результаты и принимает решения о следующих шагах
-    5. Повторяет цикл до достижения цели
+    AutoRecruiter is an autonomous agent:
+    1. Analyses target via LLM
+    2. Planes the necessary actions
+    3. Performs actions through tools (API microservices))
+    4. Assesss results and decides on next steps
+    5. Repeat cycle before goal
     """
     try:
-        logger.info(f"🤖 AutoRecruiter агент начинает работу над задачей {task_id}")
+        logger.info(f"🤖 AutoRecruiter agent starts work on task {task_id}")
         
-        # Обновляем статус
+        # Update status
         active_tasks[task_id]["status"] = "in_progress"
         
-        # Запускаем автономный цикл AutoRecruiter
-        # Добавляем requirements и constraints в context
+        # Start AutoRecruiter autonomous cycle
+        # Adds requements and constraints to the content
         enriched_context = dict(request.context) if request.context else {}
         enriched_context.update({
             "requirements": request.requirements,
@@ -203,7 +203,7 @@ async def execute_autorecruiter_task(task_id: str, request: AutoGPTTaskRequest):
             progress_callback=lambda action, thoughts: update_task_progress(task_id, action, thoughts)
         )
         
-        # Сохраняем результаты
+        # Save the results.
         active_tasks[task_id]["status"] = "completed"
         active_tasks[task_id]["results"] = result
         active_tasks[task_id]["completed_at"] = datetime.now()
@@ -211,17 +211,17 @@ async def execute_autorecruiter_task(task_id: str, request: AutoGPTTaskRequest):
             active_tasks[task_id]["completed_at"] - active_tasks[task_id]["created_at"]
         ).total_seconds()
         
-        logger.info(f"✅ AutoRecruiter задача {task_id} выполнена автономно")
+        logger.info(f"✅ AutoRecruiter Task {task_id} implemented autonomously")
         
     except Exception as e:
-        logger.error(f"❌ Ошибка выполнения AutoRecruiter задачи {task_id}: {e}")
+        logger.error(f"❌ Error in performing the AutoRecruiter task {task_id}: {e}")
         
         active_tasks[task_id]["status"] = "failed"
         active_tasks[task_id]["error"] = str(e)
         active_tasks[task_id]["completed_at"] = datetime.now()
 
 def update_task_progress(task_id: str, action: str, thoughts: List[str]):
-    """Обновление прогресса выполнения AutoRecruiter задачи"""
+    'Update progress in the AutoRecruiter task'
     if task_id in active_tasks:
         active_tasks[task_id]["current_action"] = action
         active_tasks[task_id]["agent_thoughts"].extend(thoughts)

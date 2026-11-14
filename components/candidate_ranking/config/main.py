@@ -36,18 +36,18 @@ def _resolve_settings_env(value):
 
 
 
-# Добавляем родительскую директорию в путь для импорта shared модулей
+# Add the parent directory to the route to import the used modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from shared.models import HealthResponse, ErrorResponse
 from shared.utils import setup_logging
 
-# Настройка логирования
+# Logging settings
 logger = setup_logging("config-service")
 
 app = FastAPI(
     title="Config Service",
-    description="Сервис управления конфигурацией для Candidate Analysis",
+    description='Candidate Analysis configuration control service',
     version="1.0.0"
 )
 
@@ -66,21 +66,21 @@ class ConfigManager:
         self.config = self._load_config()
     
     def _load_config(self) -> Dict[str, Any]:
-        """Загрузка конфигурации из файла"""
+        'Upload configuration from file'
         try:
             with open(self.config_file, 'r', encoding='utf-8') as file:
                 config = _resolve_settings_env(yaml.safe_load(file))
-            logger.info("Конфигурация успешно загружена")
+            logger.info('The configuration has been successfully downloaded')
             return config
         except FileNotFoundError:
-            logger.error(f"Файл конфигурации {self.config_file} не найден")
+            logger.error(f"The configuration file {self.config_file} not found")
             return self._get_default_config()
         except Exception as e:
-            logger.error(f"Ошибка загрузки конфигурации: {e}")
+            logger.error(f"Configuration Error: {e}")
             return self._get_default_config()
     
     def _get_default_config(self) -> Dict[str, Any]:
-        """Конфигурация по умолчанию"""
+        'default configuration'
         return {
             "hh_api": {
                 "base_url": "https://api.hh.ru",
@@ -99,37 +99,37 @@ class ConfigManager:
         }
     
     def get_config(self, section: str = None) -> Dict[str, Any]:
-        """Получение конфигурации или её секции"""
+        'Catalyzing configuration or section'
         if section:
             return self.config.get(section, {})
         return self.config
     
     def update_config(self, section: str, data: Dict[str, Any]) -> bool:
-        """Обновление секции конфигурации"""
+        'Renovation of the configuration section'
         try:
             self.config[section] = data
             self._save_config()
-            logger.info(f"Конфигурация секции {section} обновлена")
+            logger.info(f"Section configuration {section} updated")
             return True
         except Exception as e:
-            logger.error(f"Ошибка обновления конфигурации: {e}")
+            logger.error(f"Configuration Update Error: {e}")
             return False
     
     def _save_config(self):
-        """Сохранение конфигурации в файл"""
+        'Maintain configuration to file'
         try:
             with open(self.config_file, 'w', encoding='utf-8') as file:
                 yaml.dump(self.config, file, default_flow_style=False, allow_unicode=True)
         except Exception as e:
-            logger.error(f"Ошибка сохранения конфигурации: {e}")
+            logger.error(f"Configuration Error: {e}")
             raise
 
-# Инициализация менеджера конфигурации
+# Initialization of Configuration Manager
 config_manager = ConfigManager()
 
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
-    """Проверка здоровья сервиса"""
+    'Service health check'
     return HealthResponse(
         status="healthy",
         timestamp=datetime.now(),
@@ -138,76 +138,76 @@ async def health_check():
 
 @app.get("/config")
 async def get_config(section: str = None):
-    """Получение конфигурации"""
+    'Catalyzing configuration'
     try:
         config = config_manager.get_config(section)
         return {"config": config}
     except Exception as e:
-        logger.error(f"Ошибка получения конфигурации: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка получения конфигурации")
+        logger.error(f"Error of Configuration: {e}")
+        raise HTTPException(status_code=500, detail='Error of Configuration')
 
 @app.get("/config/{section}")
 async def get_config_section(section: str):
-    """Получение конкретной секции конфигурации"""
+    'Obtaining a specific configuration section'
     try:
         config = config_manager.get_config(section)
         if not config:
-            raise HTTPException(status_code=404, detail=f"Секция {section} не найдена")
+            raise HTTPException(status_code=404, detail=f"Section {section} not found")
         return {"config": config}
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Ошибка получения секции конфигурации: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка получения конфигурации")
+        logger.error(f"Error of Configuration Section: {e}")
+        raise HTTPException(status_code=500, detail='Error of Configuration')
 
 @app.put("/config/{section}")
 async def update_config_section(section: str, data: Dict[str, Any]):
-    """Обновление секции конфигурации"""
+    'Renovation of the configuration section'
     try:
         success = config_manager.update_config(section, data)
         if not success:
-            raise HTTPException(status_code=500, detail="Ошибка обновления конфигурации")
-        return {"message": f"Секция {section} успешно обновлена"}
+            raise HTTPException(status_code=500, detail='Configuration Update Error')
+        return {"message": f"Section {section} has been successfully updated"}
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Ошибка обновления конфигурации: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка обновления конфигурации")
+        logger.error(f"Configuration Update Error: {e}")
+        raise HTTPException(status_code=500, detail='Configuration Update Error')
 
 @app.get("/services")
 async def get_services_config():
-    """Получение конфигурации всех сервисов"""
+    'Acquire the configuration of all services'
     try:
         services = config_manager.get_config("services")
         return {"services": services}
     except Exception as e:
-        logger.error(f"Ошибка получения конфигурации сервисов: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка получения конфигурации сервисов")
+        logger.error(f"Error in Configuration of Services: {e}")
+        raise HTTPException(status_code=500, detail='Error in Configuration of Services')
 
 @app.get("/services/{service_name}")
 async def get_service_config(service_name: str):
-    """Получение конфигурации конкретного сервиса"""
+    'Getting a specific service configuration'
     try:
         services = config_manager.get_config("services")
         service_config = services.get(service_name)
         if not service_config:
-            raise HTTPException(status_code=404, detail=f"Сервис {service_name} не найден")
+            raise HTTPException(status_code=404, detail=f"Tools {service_name} not found")
         return {"service": service_config}
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Ошибка получения конфигурации сервиса: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка получения конфигурации сервиса")
+        logger.error(f"Error in Configuration of Service: {e}")
+        raise HTTPException(status_code=500, detail='Error in Configuration of Service')
 
 @app.get("/hh-api")
 async def get_hh_api_config():
-    """Получение конфигурации HH API"""
+    'HH API configuration acquisition'
     try:
         hh_config = config_manager.get_config("hh_api")
         return {"hh_api": hh_config}
     except Exception as e:
-        logger.error(f"Ошибка получения конфигурации HH API: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка получения конфигурации HH API")
+        logger.error(f"Configuration error of HH API: {e}")
+        raise HTTPException(status_code=500, detail='Configuration error of HH API')
 
 if __name__ == "__main__":
     import uvicorn

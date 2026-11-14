@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <clickhouse>
-    <!-- Основные настройки -->
+    <!-- Main settings -->
     <logger>
         <level>information</level>
         <log>/var/log/clickhouse-server/clickhouse-server.log</log>
@@ -9,34 +9,34 @@
         <count>10</count>
     </logger>
 
-    <!-- HTTP интерфейс -->
+    <!-- HTTP Interface -->
     <http_port>8123</http_port>
     <tcp_port>9000</tcp_port>
     
-    <!-- Межсерверный HTTP порт -->
+    <!-- Inter-server HTTP Port -->
     <interserver_http_port>9009</interserver_http_port>
 
-    <!-- Настройки для Docker - только IPv4 -->
+    <!-- Substrates for Docker - Only IPv4 -->
     <listen_host>0.0.0.0</listen_host>
     
-    <!-- Максимальное количество соединений -->
+    <!-- Maximum number of connections -->
     <max_connections>4096</max_connections>
     
-    <!-- Настройки для аналитических запросов -->
+    <!-- Analytical request settings -->
     <max_concurrent_queries>100</max_concurrent_queries>
     
-    <!-- Настройки памяти -->
+    <!-- Settings of memory -->
     <max_memory_usage>10000000000</max_memory_usage> <!-- 10GB -->
     <max_memory_usage_for_user>5000000000</max_memory_usage_for_user> <!-- 5GB -->
     
-    <!-- Настройки компрессии -->
+    <!-- Compressive settings -->
     <compression>
         <case>
             <method>lz4</method>
         </case>
     </compression>
 
-    <!-- Профили пользователей -->
+    <!-- User profiles -->
     <profiles>
         <default>
             <max_memory_usage>10000000000</max_memory_usage>
@@ -50,14 +50,14 @@
             <max_bytes_before_external_sort>20000000000</max_bytes_before_external_sort>
         </hr_analytics>
         
-        <!-- Профиль для AI анализа -->
+        <!-- Profile for AI analysis -->
         <ai_analysis>
             <max_memory_usage>15000000000</max_memory_usage>
-            <max_execution_time>300</max_execution_time> <!-- 5 минут -->
+            <max_execution_time>300</max_execution_time> <!-- 5 minutes -->
         </ai_analysis>
     </profiles>
 
-    <!-- Пользователи -->
+    <!-- Users -->
     <users>
         <default>
             <password from_env="CLICKHOUSE_PASSWORD"/>
@@ -78,7 +78,7 @@
         </hrhelp_user>
     </users>
 
-    <!-- Квоты -->
+    <!-- Coats -->
     <quotas>
         <default>
             <interval>
@@ -92,23 +92,23 @@
         </default>
     </quotas>
 
-    <!-- Настройки MergeTree -->
+    <!-- Settings MergeTree -->
     <merge_tree>
         <max_suspicious_broken_parts>10</max_suspicious_broken_parts>
     </merge_tree>
     
-    <!-- Настройки для распределенных запросов -->
+    <!-- Postings for distributed requests -->
     <distributed_ddl>
         <path>/clickhouse/task_queue/ddl</path>
     </distributed_ddl>
 
-    <!-- Настройки кэша -->
+    <!-- Cache settings -->
     <mark_cache_size>5368709120</mark_cache_size> <!-- 5GB -->
     <uncompressed_cache_size>8589934592</uncompressed_cache_size> <!-- 8GB -->
     
-    <!-- Настройки временных файлов -->
+    <!-- Time file settings -->
     <tmp_path>/var/lib/clickhouse/tmp/</tmp_path>
     
-    <!-- Настройки форматов данных -->
+    <!-- Data formats configuration -->
     <format_schema_path>/var/lib/clickhouse/format_schemas/</format_schema_path>
 </clickhouse>

@@ -1,11 +1,11 @@
 """
-AutoGPT File System Tool - Управление файлами
+AutoGPT File System Tool - File Management
 
-Обеспечивает AutoGPT агенту работу с файловой системой:
-- Создание и редактирование файлов
-- Чтение и анализ документов
-- Сохранение результатов работы
-- Безопасная работа в изолированной директории
+Provides AutoGPT to the agent to work with the file system:
+- Creation and editing of files
+- Document reading and analysis
+- Retaining the results of the work
+- Safe work in an isolated directory
 
 Author: Candidate Analysis Team
 Version: 1.0.0
@@ -26,20 +26,20 @@ logger = logging.getLogger("file-manager")
 
 class FileSystemTool:
     """
-    Инструмент для работы с файловой системой
+    File system tool
     
-    Возможности:
-    - Создание и редактирование файлов
-    - Чтение различных форматов
-    - Безопасная работа в изолированной директории
-    - Резервное копирование важных файлов
+    Opportunities:
+    - Creation and editing of files
+    - Reading different formats
+    - Safe work in an isolated directory
+    - Backup of important files
     """
     
     def __init__(self, workspace_dir: Union[str, Path]):
         self.workspace = Path(workspace_dir)
         self.workspace.mkdir(exist_ok=True)
         
-        # Создаем структуру директорий
+        # Create a directorial structure
         self.subdirs = {
             "reports": self.workspace / "reports",
             "data": self.workspace / "data", 
@@ -52,7 +52,7 @@ class FileSystemTool:
         for subdir in self.subdirs.values():
             subdir.mkdir(exist_ok=True)
         
-        # Статистика файловых операций
+        # File operations statistics
         self.stats = {
             "files_created": 0,
             "files_read": 0,
@@ -61,31 +61,31 @@ class FileSystemTool:
             "total_operations": 0
         }
         
-        logger.info(f"📁 File System Tool инициализирован в {self.workspace}")
+        logger.info(f"📁 File System Tool initialized in {self.workspace}")
     
     async def create_file(self, filename: str, content: str, 
                          subdirectory: str = None) -> Dict[str, Any]:
-        """Создание нового файла"""
+        'Create a new file'
         try:
-            # Определяем путь
+            # Determine the path
             if subdirectory and subdirectory in self.subdirs:
                 file_path = self.subdirs[subdirectory] / filename
             else:
                 file_path = self.workspace / filename
             
-            # Проверяем безопасность пути
+            # Validate path safety
             if not self._is_safe_path(file_path):
-                raise ValueError(f"Небезопасный путь: {file_path}")
+                raise ValueError(f"Unsafe route: {file_path}")
             
-            # Создаем файл
+            # Create File
             async with aiofiles.open(file_path, 'w', encoding='utf-8') as f:
                 await f.write(content)
             
-            # Обновляем статистику
+            # Update statistics
             self.stats["files_created"] += 1
             self.stats["total_operations"] += 1
             
-            logger.info(f"📄 Файл создан: {file_path}")
+            logger.info(f"📄 File Created: {file_path}")
             
             return {
                 "success": True,
@@ -95,34 +95,34 @@ class FileSystemTool:
             }
             
         except Exception as e:
-            logger.error(f"❌ Ошибка создания файла {filename}: {e}")
+            logger.error(f"❌ Error of file creation {filename}: {e}")
             return {
                 "success": False,
                 "error": str(e)
             }
     
     async def read_file(self, filename: str, subdirectory: str = None) -> Dict[str, Any]:
-        """Чтение файла"""
+        'Reading File'
         try:
-            # Определяем путь
+            # Determine the path
             if subdirectory and subdirectory in self.subdirs:
                 file_path = self.subdirs[subdirectory] / filename
             else:
                 file_path = self.workspace / filename
             
-            # Проверяем существование файла
+            # Checking the existence of the file
             if not file_path.exists():
-                raise FileNotFoundError(f"Файл не найден: {file_path}")
+                raise FileNotFoundError(f"File not found: {file_path}")
             
-            # Читаем файл
+            # Read File
             async with aiofiles.open(file_path, 'r', encoding='utf-8') as f:
                 content = await f.read()
             
-            # Обновляем статистику
+            # Update statistics
             self.stats["files_read"] += 1
             self.stats["total_operations"] += 1
             
-            logger.info(f"📖 Файл прочитан: {file_path}")
+            logger.info(f"📖 File Read: {file_path}")
             
             return {
                 "success": True,
@@ -133,7 +133,7 @@ class FileSystemTool:
             }
             
         except Exception as e:
-            logger.error(f"❌ Ошибка чтения файла {filename}: {e}")
+            logger.error(f"❌ Error in reading the file {filename}: {e}")
             return {
                 "success": False,
                 "error": str(e)
@@ -141,28 +141,28 @@ class FileSystemTool:
     
     async def update_file(self, filename: str, content: str, 
                          subdirectory: str = None, append: bool = False) -> Dict[str, Any]:
-        """Обновление файла"""
+        'File Update'
         try:
-            # Определяем путь
+            # Determine the path
             if subdirectory and subdirectory in self.subdirs:
                 file_path = self.subdirs[subdirectory] / filename
             else:
                 file_path = self.workspace / filename
             
-            # Создаем резервную копию если файл существует
+            # Create a backup copy if a file exists
             if file_path.exists():
                 await self._create_backup(file_path)
             
-            # Записываем файл
+            # Record File
             mode = 'a' if append else 'w'
             async with aiofiles.open(file_path, mode, encoding='utf-8') as f:
                 await f.write(content)
             
-            # Обновляем статистику
+            # Update statistics
             self.stats["files_updated"] += 1
             self.stats["total_operations"] += 1
             
-            logger.info(f"✏️ Файл обновлен: {file_path}")
+            logger.info(f"✏️ File updated: {file_path}")
             
             return {
                 "success": True,
@@ -172,36 +172,36 @@ class FileSystemTool:
             }
             
         except Exception as e:
-            logger.error(f"❌ Ошибка обновления файла {filename}: {e}")
+            logger.error(f"❌ Error of file update {filename}: {e}")
             return {
                 "success": False,
                 "error": str(e)
             }
     
     async def delete_file(self, filename: str, subdirectory: str = None) -> Dict[str, Any]:
-        """Удаление файла"""
+        'File Remove'
         try:
-            # Определяем путь
+            # Determine the path
             if subdirectory and subdirectory in self.subdirs:
                 file_path = self.subdirs[subdirectory] / filename
             else:
                 file_path = self.workspace / filename
             
-            # Проверяем существование файла
+            # Checking the existence of the file
             if not file_path.exists():
-                raise FileNotFoundError(f"Файл не найден: {file_path}")
+                raise FileNotFoundError(f"File not found: {file_path}")
             
-            # Создаем резервную копию перед удалением
+            # Create a backup before disposal
             await self._create_backup(file_path)
             
-            # Удаляем файл
+            # Remove File
             file_path.unlink()
             
-            # Обновляем статистику
+            # Update statistics
             self.stats["files_deleted"] += 1
             self.stats["total_operations"] += 1
             
-            logger.info(f"🗑️ Файл удален: {file_path}")
+            logger.info(f"🗑️ File deleted: {file_path}")
             
             return {
                 "success": True,
@@ -210,7 +210,7 @@ class FileSystemTool:
             }
             
         except Exception as e:
-            logger.error(f"❌ Ошибка удаления файла {filename}: {e}")
+            logger.error(f"❌ Error of file removal {filename}: {e}")
             return {
                 "success": False,
                 "error": str(e)
@@ -218,15 +218,15 @@ class FileSystemTool:
     
     async def list_files(self, subdirectory: str = None, 
                         pattern: str = "*") -> Dict[str, Any]:
-        """Список файлов в директории"""
+        'List of files in the directory'
         try:
-            # Определяем директорию
+            # Defining the directory.
             if subdirectory and subdirectory in self.subdirs:
                 target_dir = self.subdirs[subdirectory]
             else:
                 target_dir = self.workspace
             
-            # Получаем список файлов
+            # Get a file list.
             files = []
             for file_path in target_dir.glob(pattern):
                 if file_path.is_file():
@@ -239,10 +239,10 @@ class FileSystemTool:
                         "extension": file_path.suffix
                     })
             
-            # Сортируем по дате изменения
+            # Sorting by date of change
             files.sort(key=lambda x: x["modified"], reverse=True)
             
-            logger.info(f"📋 Список файлов: {len(files)} файлов в {target_dir}")
+            logger.info(f"📋 File List: {len(files)} Files in {target_dir}")
             
             return {
                 "success": True,
@@ -252,7 +252,7 @@ class FileSystemTool:
             }
             
         except Exception as e:
-            logger.error(f"❌ Ошибка получения списка файлов: {e}")
+            logger.error(f"❌ Error in obtaining a list of files: {e}")
             return {
                 "success": False,
                 "error": str(e)
@@ -260,20 +260,20 @@ class FileSystemTool:
     
     async def save_json(self, filename: str, data: Dict[str, Any], 
                        subdirectory: str = "data") -> Dict[str, Any]:
-        """Сохранение данных в JSON"""
+        'Data preservation in JSON'
         try:
             json_content = json.dumps(data, ensure_ascii=False, indent=2)
             return await self.create_file(filename, json_content, subdirectory)
             
         except Exception as e:
-            logger.error(f"❌ Ошибка сохранения JSON: {e}")
+            logger.error(f"❌ The JSON Storage Error: {e}")
             return {
                 "success": False,
                 "error": str(e)
             }
     
     async def load_json(self, filename: str, subdirectory: str = "data") -> Dict[str, Any]:
-        """Загрузка данных из JSON"""
+        'Loading data from JSON'
         try:
             result = await self.read_file(filename, subdirectory)
             
@@ -291,7 +291,7 @@ class FileSystemTool:
                 return result
                 
         except Exception as e:
-            logger.error(f"❌ Ошибка загрузки JSON: {e}")
+            logger.error(f"❌ Error of JSON: {e}")
             return {
                 "success": False,
                 "error": str(e)
@@ -299,31 +299,31 @@ class FileSystemTool:
     
     async def save_csv(self, filename: str, data: List[Dict[str, Any]], 
                       subdirectory: str = "data") -> Dict[str, Any]:
-        """Сохранение данных в CSV"""
+        'Save data to CSV'
         try:
             if not data:
-                raise ValueError("Нет данных для сохранения")
+                raise ValueError('No data to save')
             
-            # Определяем путь
+            # Determine the path
             file_path = self.subdirs[subdirectory] / filename
             
-            # Записываем CSV
+            # Record CSV
             async with aiofiles.open(file_path, 'w', newline='', encoding='utf-8') as f:
-                # Получаем заголовки из первой записи
+                # Getting the headlines from the first entry.
                 fieldnames = list(data[0].keys())
                 
-                # Создаем содержимое CSV
+                # Create CSV contents
                 csv_content = []
                 
-                # Заголовок
+                # Heading
                 csv_content.append(','.join(fieldnames))
                 
-                # Данные
+                # Data
                 for row in data:
                     values = []
                     for field in fieldnames:
                         value = str(row.get(field, ''))
-                        # Экранируем запятые и кавычки
+                        # We'll check the commas and the quotations.
                         if ',' in value or '"' in value or '\n' in value:
                             value = '"' + value.replace('"', '""') + '"'
                         values.append(value)
@@ -331,11 +331,11 @@ class FileSystemTool:
                 
                 await f.write('\n'.join(csv_content))
             
-            # Обновляем статистику
+            # Update statistics
             self.stats["files_created"] += 1
             self.stats["total_operations"] += 1
             
-            logger.info(f"📊 CSV файл создан: {file_path}")
+            logger.info(f"📊 CSV File Created: {file_path}")
             
             return {
                 "success": True,
@@ -345,7 +345,7 @@ class FileSystemTool:
             }
             
         except Exception as e:
-            logger.error(f"❌ Ошибка сохранения CSV: {e}")
+            logger.error(f"❌ Error of CSV: {e}")
             return {
                 "success": False,
                 "error": str(e)
@@ -353,7 +353,7 @@ class FileSystemTool:
     
     async def create_report(self, title: str, data: Dict[str, Any], 
                            format_type: str = "markdown") -> Dict[str, Any]:
-        """Создание отчета в различных форматах"""
+        'Creating a report in different formats'
         try:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"report_{timestamp}.{format_type}"
@@ -372,18 +372,18 @@ class FileSystemTool:
             return await self.create_file(filename, content, "reports")
             
         except Exception as e:
-            logger.error(f"❌ Ошибка создания отчета: {e}")
+            logger.error(f"❌ Error in making a report: {e}")
             return {
                 "success": False,
                 "error": str(e)
             }
     
     def _format_markdown_report(self, title: str, data: Dict[str, Any]) -> str:
-        """Форматирование отчета в Markdown"""
+        'Presentation of the report in Markdown'
         report = [
             f"# {title}",
             f"",
-            f"**Создано:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+            f"** Done:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
             f"",
             f"---",
             f""
@@ -407,12 +407,12 @@ class FileSystemTool:
         return "\n".join(report)
     
     def _format_text_report(self, title: str, data: Dict[str, Any]) -> str:
-        """Форматирование отчета в текстовом формате"""
+        'Formatting the report in text format'
         report = [
             "=" * 50,
             title.upper(),
             "=" * 50,
-            f"Создано: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+            f"Established: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
             ""
         ]
         
@@ -430,7 +430,7 @@ class FileSystemTool:
         return "\n".join(report)
     
     async def _create_backup(self, file_path: Path) -> None:
-        """Создание резервной копии файла"""
+        'Create a back-up file'
         try:
             if file_path.exists():
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -438,22 +438,22 @@ class FileSystemTool:
                 backup_path = self.subdirs["backups"] / backup_name
                 
                 shutil.copy2(file_path, backup_path)
-                logger.debug(f"💾 Создана резервная копия: {backup_path}")
+                logger.debug(f"💾 A backup copy has been created: {backup_path}")
                 
         except Exception as e:
-            logger.error(f"❌ Ошибка создания резервной копии: {e}")
+            logger.error(f"❌ Error in creating a backup: {e}")
     
     def _is_safe_path(self, file_path: Path) -> bool:
-        """Проверка безопасности пути"""
+        'Checking route security'
         try:
-            # Проверяем что путь находится внутри рабочей директории
+            # Check that the way is inside the work directorate.
             file_path.resolve().relative_to(self.workspace.resolve())
             return True
         except ValueError:
             return False
     
     async def cleanup_temp_files(self, older_than_hours: int = 24) -> Dict[str, Any]:
-        """Очистка временных файлов"""
+        'Cleaning Time Files'
         try:
             cutoff_time = datetime.now().timestamp() - (older_than_hours * 3600)
             deleted_files = []
@@ -463,7 +463,7 @@ class FileSystemTool:
                     file_path.unlink()
                     deleted_files.append(file_path.name)
             
-            logger.info(f"🧹 Очищено {len(deleted_files)} временных файлов")
+            logger.info(f"🧹 Peeled {len(deleted_files)} Time files")
             
             return {
                 "success": True,
@@ -472,14 +472,14 @@ class FileSystemTool:
             }
             
         except Exception as e:
-            logger.error(f"❌ Ошибка очистки временных файлов: {e}")
+            logger.error(f"❌ Error in cleaning temporary files: {e}")
             return {
                 "success": False,
                 "error": str(e)
             }
     
     def get_workspace_stats(self) -> Dict[str, Any]:
-        """Статистика рабочего пространства"""
+        'Workspace statistics'
         try:
             stats = {
                 "workspace_path": str(self.workspace),
@@ -506,5 +506,5 @@ class FileSystemTool:
             return stats
             
         except Exception as e:
-            logger.error(f"❌ Ошибка получения статистики: {e}")
+            logger.error(f"❌ Error in obtaining statistics: {e}")
             return {"error": str(e)}

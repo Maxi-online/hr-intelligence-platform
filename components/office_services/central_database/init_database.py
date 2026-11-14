@@ -1,6 +1,6 @@
 """
-Инициализация централизованной базы данных PostgreSQL
-Создает таблицы и заполняет их базовыми данными
+Initialization of a centralized database PostgreSQL
+Creates tables and completes them with basic data
 """
 import os
 
@@ -12,9 +12,9 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 
 def init_database():
-    """Инициализация базы данных"""
+    'Initialization of the database'
     
-    # Конфигурация подключения
+    # Connectivity
     db_config = {
         'host': 'localhost',
         'port': 5432,
@@ -24,7 +24,7 @@ def init_database():
     }
     
     try:
-        # Подключение к PostgreSQL
+        # Connect to PostgreSQL
         connection = psycopg2.connect(
             host=db_config['host'],
             port=db_config['port'],
@@ -35,10 +35,10 @@ def init_database():
         
         cursor = connection.cursor()
         
-        # Создание таблиц
-        logger.info("📋 Создание таблиц...")
+        # Establishment of tables
+        logger.info('📋 Establishment of tables...')
         
-        # Таблица конфигураций агентов
+        # Agent configuration table
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS agent_configurations (
             agent_id VARCHAR(255) PRIMARY KEY,
@@ -58,7 +58,7 @@ def init_database():
         );
         """)
         
-        # Таблица организационной структуры
+        # Organization chart
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS organizational_structure (
             id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -73,7 +73,7 @@ def init_database():
         );
         """)
         
-        # Реестр развернутых агентов
+        # Register of deployed agents
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS deployed_agents_registry (
             agent_id VARCHAR(255) PRIMARY KEY,
@@ -89,7 +89,7 @@ def init_database():
         );
         """)
         
-        # Таблица оперативной памяти
+        # Operational Memory Table
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS operational_memory (
             id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -105,7 +105,7 @@ def init_database():
         );
         """)
         
-        # Таблица core памяти
+        # Table of core memory
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS core_memory (
             id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -120,7 +120,7 @@ def init_database():
         );
         """)
         
-        # Таблица истории чатов
+        # Table of chat rooms history
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS chat_history (
             id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -135,7 +135,7 @@ def init_database():
         );
         """)
         
-        # Таблица системных метрик
+        # System metric table
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS system_metrics (
             id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -148,8 +148,8 @@ def init_database():
         );
         """)
         
-        # Создание индексов
-        logger.info("📊 Создание индексов...")
+        # Creation of indices
+        logger.info('📊 Creation of indices...')
         
         indexes = [
             "CREATE INDEX IF NOT EXISTS idx_agent_config_active ON agent_configurations (is_active);",
@@ -171,20 +171,20 @@ def init_database():
         for index_sql in indexes:
             cursor.execute(index_sql)
         
-        # Логирование инициализации
+        # Logging Initialization
         cursor.execute("""
         INSERT INTO system_metrics (metric_name, metric_value, agent_id, period) 
         VALUES ('database_initialized', 1.0, 'system', 'initialization');
         """)
         
         connection.commit()
-        logger.info("✅ База данных успешно инициализирована")
+        logger.info('✅ Database successfully initialized')
         
         cursor.close()
         connection.close()
         
     except Exception as e:
-        logger.error(f"❌ Ошибка инициализации базы данных: {e}")
+        logger.error(f"❌ Error in initializing the database: {e}")
         raise
 
 if __name__ == "__main__":

@@ -1,23 +1,23 @@
-# Основные зависимости
+# Main dependencies
 fastapi==0.116.1
 uvicorn[standard]==0.33.0
 pydantic==2.10.6
 requests==2.32.4
 streamlit==1.40.1
 
-# Обработка данных
+# Data processing
 pandas==2.0.3
 numpy==1.24.4
 scikit-learn==1.3.2
 
-# Визуализация
+# Visualization
 plotly==6.2.0
 
-# Конфигурация и логирование
+# Format and logic
 pyyaml==6.0.2
 python-dotenv==1.2.2
 
-# Дополнительные утилиты
+# Additional Utilities
 python-multipart==0.0.20
 aiofiles==24.1.0
 
@@ -27,7 +27,7 @@ httpx>=0.24.0
 backoff>=2.2.1
 
 # Database dependencies
-# sqlite3 - встроенная в Python
+# sqlite3 is embedded in Python
 # pymongo>=4.0.0  # For MongoDB
 # psycopg2-binary>=2.9.0  # For PostgreSQL
 clickhouse-driver>=0.2.6  # For ClickHouse native protocol
