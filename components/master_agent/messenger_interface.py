@@ -1,8 +1,8 @@
 """
-Messenger Interface - Интерфейс для работы с мессенджерами
+Messenger Interface - Interface for Messenger
 
-Обеспечивает интеграцию Master Agent с Teams, Telegram и Email
-для естественного общения с людьми в организации.
+Integration of Master Agent with Teams, Telegram and Email
+to communicate naturally with people in the organization.
 
 Author: Candidate Analysis Team
 Version: 1.0.0
@@ -23,34 +23,34 @@ logger = logging.getLogger("messenger-interface")
 
 class MessengerInterface:
     """
-    Интерфейс для работы с мессенджерами
+    Interface for Messengers
     
-    Поддерживает:
-    - Microsoft Teams (через Bot Framework)
-    - Telegram (через Bot API)
-    - Email (через SMTP/IMAP)
-    - Webhook уведомления
+    Supports:
+    - Microsoft Teams (through Bot Framework)
+    - Telegram (through Bot API)
+    - Email (through SMTP/IMAP)
+    - Webhook notifications
     """
     
     def __init__(self, config: Dict[str, Any]):
         self.config = config
         self.logger = logger
         
-        # Конфигурация мессенджеров
+        # Messenger configuration
         self.messenger_config = config.get("messengers", {})
         
-        # Активные каналы
+        # Active channels
         self.active_channels: Dict[str, CommunicationChannel] = {}
         
-        # Обработчики событий
+        # Event handlers
         self.message_handlers: List[Callable] = []
         self.event_handlers: Dict[str, List[Callable]] = {}
         
-        # Сессии и состояние
+        # Sessions and status
         self.user_sessions: Dict[str, Dict[str, Any]] = {}
         self.bot_tokens: Dict[str, str] = {}
         
-        # Статистика
+        # Statistics
         self.stats = {
             "messages_sent": 0,
             "messages_received": 0,
@@ -59,40 +59,40 @@ class MessengerInterface:
         }
     
     async def initialize(self):
-        """Инициализация всех мессенджеров"""
+        'Initialization of all messengers'
         try:
-            # Инициализация Teams
+            # Initialization of Teams
             if self.messenger_config.get("teams", {}).get("enabled", False):
                 await self._initialize_teams()
             
-            # Инициализация Telegram
+            # Initialization of Telegram
             if self.messenger_config.get("telegram", {}).get("enabled", False):
                 await self._initialize_telegram()
             
-            # Инициализация Email
+            # Initialization of email
             if self.messenger_config.get("email", {}).get("enabled", False):
                 await self._initialize_email()
             
-            self.logger.info(f"✅ Messenger Interface инициализирован: {len(self.active_channels)} каналов")
+            self.logger.info(f"✅ Messenger Interface initialized: {len(self.active_channels)} Channels")
             
         except Exception as e:
-            self.logger.error(f"❌ Ошибка инициализации мессенджеров: {e}")
+            self.logger.error(f"❌ Error in initializing messengers: {e}")
             raise
     
     async def _initialize_teams(self):
-        """Инициализация Microsoft Teams бота"""
+        'Microsoft Teams Boot'
         try:
             teams_config = self.messenger_config["teams"]
             
-            # Настройка Teams бота
+            # Configure the Teams bot
             bot_id = teams_config.get("bot_id")
             bot_password = teams_config.get("bot_password")
             
             if not bot_id or not bot_password:
-                self.logger.warning("⚠️ Teams bot credentials не настроены")
+                self.logger.warning('⚠️ Teams boot credentials are not set')
                 return
             
-            # Создание канала для Teams
+            # Create a channel for Teams
             teams_channel = CommunicationChannel(
                 channel_id="teams_main",
                 channel_type="teams",
@@ -108,26 +108,26 @@ class MessengerInterface:
             self.active_channels["teams"] = teams_channel
             self.bot_tokens["teams"] = await self._get_teams_token(bot_id, bot_password)
             
-            self.logger.info("✅ Teams бот инициализирован")
+            self.logger.info('✅ Teams bot initialized')
             
         except Exception as e:
-            self.logger.error(f"❌ Ошибка инициализации Teams: {e}")
+            self.logger.error(f"❌ Initialization error Teams: {e}")
     
     async def _initialize_telegram(self):
-        """Инициализация Telegram бота"""
+        'Initialization of the Telegram Bot'
         try:
             telegram_config = self.messenger_config["telegram"]
             
             bot_token = telegram_config.get("bot_token")
             if not bot_token:
-                self.logger.warning("⚠️ Telegram bot token не настроен")
+                self.logger.warning('⚠️ Telegram boot token not set')
                 return
             
-            # Проверка токена
+            # Test of current
             if not await self._verify_telegram_token(bot_token):
-                raise ValueError("Неверный Telegram bot token")
+                raise ValueError('Incorrect Telegram boot token')
             
-            # Создание канала для Telegram
+            # Create Telegram Channel
             telegram_channel = CommunicationChannel(
                 channel_id="telegram_main",
                 channel_type="telegram",
@@ -143,22 +143,22 @@ class MessengerInterface:
             self.active_channels["telegram"] = telegram_channel
             self.bot_tokens["telegram"] = bot_token
             
-            # Установка webhook (если настроен)
+            # Webhook setup (if set)
             webhook_url = telegram_config.get("webhook_url")
             if webhook_url:
                 await self._set_telegram_webhook(bot_token, webhook_url)
             
-            self.logger.info("✅ Telegram бот инициализирован")
+            self.logger.info('✅ Telegram bot initialized')
             
         except Exception as e:
-            self.logger.error(f"❌ Ошибка инициализации Telegram: {e}")
+            self.logger.error(f"❌ The error of initialization of Telegram: {e}")
     
     async def _initialize_email(self):
-        """Инициализация Email интеграции"""
+        'Initialization of Email Integration'
         try:
             email_config = self.messenger_config["email"]
             
-            # Создание канала для Email
+            # Create a channel for Email
             email_channel = CommunicationChannel(
                 channel_id="email_main",
                 channel_type="email",
@@ -175,13 +175,13 @@ class MessengerInterface:
             
             self.active_channels["email"] = email_channel
             
-            self.logger.info("✅ Email интеграция инициализирована")
+            self.logger.info('✅ Email integration initialized')
             
         except Exception as e:
-            self.logger.error(f"❌ Ошибка инициализации Email: {e}")
+            self.logger.error(f"❌ Error in initializing email: {e}")
     
     async def send_message(self, message: ConversationMessage) -> bool:
-        """Отправка сообщения в указанный канал"""
+        'Sending a message to the specified channel'
         try:
             channel = message.channel
             
@@ -192,20 +192,20 @@ class MessengerInterface:
             elif channel == "email":
                 return await self._send_email_message(message)
             else:
-                self.logger.error(f"❌ Неизвестный канал: {channel}")
+                self.logger.error(f"❌ Unknown channel: {channel}")
                 return False
                 
         except Exception as e:
-            self.logger.error(f"❌ Ошибка отправки сообщения: {e}")
+            self.logger.error(f"❌ Error in sending a message: {e}")
             return False
     
     async def _send_teams_message(self, message: ConversationMessage) -> bool:
-        """Отправка сообщения в Teams"""
+        'Sending a message to Teams'
         try:
             if "teams" not in self.bot_tokens:
                 return False
             
-            # Формирование запроса к Teams API
+            # Forming a Request for Teams API
             teams_api_url = f"https://api.botframework.com/v3/conversations/{message.conversation_id}/activities"
             
             headers = {
@@ -213,12 +213,12 @@ class MessengerInterface:
                 "Content-Type": "application/json"
             }
             
-            # Форматирование сообщения для Teams
+            # Message Format for Teams
             teams_message = {
                 "type": "message",
                 "from": {
                     "id": "master-agent",
-                    "name": "РЕКС"
+                    "name": 'REX'
                 },
                 "text": message.content,
                 "timestamp": message.timestamp.isoformat()
@@ -230,15 +230,15 @@ class MessengerInterface:
                         self.stats["messages_sent"] += 1
                         return True
                     else:
-                        self.logger.error(f"❌ Teams API ошибка: {response.status}")
+                        self.logger.error(f"❌ Teams API error: {response.status}")
                         return False
                         
         except Exception as e:
-            self.logger.error(f"❌ Ошибка отправки в Teams: {e}")
+            self.logger.error(f"❌ Delivery error in Teams: {e}")
             return False
     
     async def _send_telegram_message(self, message: ConversationMessage) -> bool:
-        """Отправка сообщения в Telegram"""
+        'Sending Message to Telegram'
         try:
             bot_token = self.bot_tokens.get("telegram")
             if not bot_token:
@@ -247,7 +247,7 @@ class MessengerInterface:
             # URL Telegram Bot API
             telegram_api_url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
             
-            # Формирование запроса
+            # Request Formation
             telegram_message = {
                 "chat_id": message.conversation_id,
                 "text": message.content,
@@ -261,32 +261,32 @@ class MessengerInterface:
                         return True
                     else:
                         response_text = await response.text()
-                        self.logger.error(f"❌ Telegram API ошибка: {response.status} - {response_text}")
+                        self.logger.error(f"❌ Telegram API error: {response.status} - {response_text}")
                         return False
                         
         except Exception as e:
-            self.logger.error(f"❌ Ошибка отправки в Telegram: {e}")
+            self.logger.error(f"❌ Errors in Telegram: {e}")
             return False
     
     async def _send_email_message(self, message: ConversationMessage) -> bool:
-        """Отправка Email сообщения"""
+        'Sending Email Message'
         try:
             email_settings = self.active_channels.get("email", {}).settings
             
-            # Здесь бы была интеграция с SMTP
-            # Для примера возвращаем True
-            self.logger.info(f"📧 Email отправлен: {message.recipient}")
+            # There would be integration with SMTP.
+            # For example, let's return True
+            self.logger.info(f"📧 Email sent: {message.recipient}")
             self.stats["messages_sent"] += 1
             return True
             
         except Exception as e:
-            self.logger.error(f"❌ Ошибка отправки Email: {e}")
+            self.logger.error(f"❌ Error in sending email: {e}")
             return False
     
     async def handle_incoming_message(self, raw_message: Dict[str, Any], channel: str) -> Optional[ConversationMessage]:
-        """Обработка входящего сообщения"""
+        'Processing of incoming message'
         try:
-            # Парсинг сообщения в зависимости от канала
+            # Parsing message by channel
             if channel == "teams":
                 message = await self._parse_teams_message(raw_message)
             elif channel == "telegram":
@@ -294,27 +294,27 @@ class MessengerInterface:
             elif channel == "email":
                 message = await self._parse_email_message(raw_message)
             else:
-                self.logger.error(f"❌ Неизвестный канал: {channel}")
+                self.logger.error(f"❌ Unknown channel: {channel}")
                 return None
             
             if message:
                 self.stats["messages_received"] += 1
                 
-                # Вызов обработчиков
+                # Call for processors
                 for handler in self.message_handlers:
                     try:
                         await handler(message)
                     except Exception as e:
-                        self.logger.error(f"❌ Ошибка обработчика сообщений: {e}")
+                        self.logger.error(f"❌ Error of Message Processor: {e}")
                 
                 return message
             
         except Exception as e:
-            self.logger.error(f"❌ Ошибка обработки входящего сообщения: {e}")
+            self.logger.error(f"❌ Error in the processing of the input message: {e}")
             return None
     
     async def _parse_teams_message(self, raw_message: Dict[str, Any]) -> Optional[ConversationMessage]:
-        """Парсинг сообщения из Teams"""
+        'Parse a Teams message'
         try:
             return ConversationMessage(
                 message_id=raw_message.get("id", f"teams_{uuid.uuid4().hex[:8]}"),
@@ -326,11 +326,11 @@ class MessengerInterface:
                 metadata=raw_message
             )
         except Exception as e:
-            self.logger.error(f"❌ Ошибка парсинга Teams сообщения: {e}")
+            self.logger.error(f"❌ Parsing Error Teams Message: {e}")
             return None
     
     async def _parse_telegram_message(self, raw_message: Dict[str, Any]) -> Optional[ConversationMessage]:
-        """Парсинг сообщения из Telegram"""
+        'Parsing messages from Telegram'
         try:
             message_data = raw_message.get("message", {})
             
@@ -344,11 +344,11 @@ class MessengerInterface:
                 metadata=raw_message
             )
         except Exception as e:
-            self.logger.error(f"❌ Ошибка парсинга Telegram сообщения: {e}")
+            self.logger.error(f"❌ The error of parsing Telegram messages: {e}")
             return None
     
     async def _parse_email_message(self, raw_message: Dict[str, Any]) -> Optional[ConversationMessage]:
-        """Парсинг Email сообщения"""
+        'Parsing Email Messages'
         try:
             return ConversationMessage(
                 message_id=raw_message.get("message_id", f"email_{uuid.uuid4().hex[:8]}"),
@@ -360,21 +360,21 @@ class MessengerInterface:
                 metadata=raw_message
             )
         except Exception as e:
-            self.logger.error(f"❌ Ошибка парсинга Email сообщения: {e}")
+            self.logger.error(f"❌ Errors of Parsing Email Messages: {e}")
             return None
     
     def add_message_handler(self, handler: Callable):
-        """Добавление обработчика сообщений"""
+        'Add message handler'
         self.message_handlers.append(handler)
     
     def add_event_handler(self, event_type: str, handler: Callable):
-        """Добавление обработчика событий"""
+        'Adding an event handler'
         if event_type not in self.event_handlers:
             self.event_handlers[event_type] = []
         self.event_handlers[event_type].append(handler)
     
     async def _get_teams_token(self, bot_id: str, bot_password: str) -> str:
-        """Получение токена для Teams бота"""
+        'Getting a Teams Bot current'
         try:
             token_url = "https://login.microsoftonline.com/botframework.com/oauth2/v2.0/token"
             
@@ -391,15 +391,15 @@ class MessengerInterface:
                         token_data = await response.json()
                         return token_data.get("access_token", "")
                     else:
-                        self.logger.error(f"❌ Ошибка получения Teams токена: {response.status}")
+                        self.logger.error(f"❌ Error of obtaining Teams token: {response.status}")
                         return ""
                         
         except Exception as e:
-            self.logger.error(f"❌ Ошибка получения Teams токена: {e}")
+            self.logger.error(f"❌ Error of obtaining Teams token: {e}")
             return ""
     
     async def _verify_telegram_token(self, bot_token: str) -> bool:
-        """Проверка Telegram токена"""
+        'Telegram test'
         try:
             verify_url = f"https://api.telegram.org/bot{bot_token}/getMe"
             
@@ -411,7 +411,7 @@ class MessengerInterface:
             return False
     
     async def _set_telegram_webhook(self, bot_token: str, webhook_url: str):
-        """Установка webhook для Telegram бота"""
+        'Webhook for Telegram Bot'
         try:
             webhook_api_url = f"https://api.telegram.org/bot{bot_token}/setWebhook"
             
@@ -423,15 +423,15 @@ class MessengerInterface:
             async with aiohttp.ClientSession() as session:
                 async with session.post(webhook_api_url, json=data) as response:
                     if response.status == 200:
-                        self.logger.info(f"✅ Telegram webhook установлен: {webhook_url}")
+                        self.logger.info(f"✅ Telegram webhook installed: {webhook_url}")
                     else:
-                        self.logger.error(f"❌ Ошибка установки webhook: {response.status}")
+                        self.logger.error(f"Error: ❌ Configuration of Webhook: {response.status}")
                         
         except Exception as e:
-            self.logger.error(f"❌ Ошибка установки Telegram webhook: {e}")
+            self.logger.error(f"Error: ❌ Installation of Telegram Webhook: {e}")
     
     async def broadcast_message(self, content: str, channels: List[str] = None) -> Dict[str, bool]:
-        """Рассылка сообщения по каналам"""
+        'Sending the message through the channels'
         if channels is None:
             channels = list(self.active_channels.keys())
         
@@ -454,7 +454,7 @@ class MessengerInterface:
         return results
     
     async def get_stats(self) -> Dict[str, Any]:
-        """Получение статистики мессенджеров"""
+        'Collection of messengers statistics'
         return {
             "active_channels": len(self.active_channels),
             "messages_sent": self.stats["messages_sent"],

@@ -1,13 +1,13 @@
 """
-Recruitment Runtime Agent - Автономный агент для пассивного рекрутинга
+Recruitment Runtime Agency - Autonomous agent for passive recruitment
 
-Автономный AI агент для автоматизации пассивного рекрутинга с:
-- Долгосрочной и краткосрочной памятью
-- Интернет доступом для поиска
-- Файловой системой
-- Специализированными агентами
-- Векторной базой знаний
-- Самообучением
+Autonomous AI Agent to automate passive recruitment from:
+- Long and short-term memory
+- Internet search access
+- File system
+- Specialized agents
+- Vector knowledge base
+Self-learning
 
 Author: Candidate Analysis Team
 Version: 2.0.0 (Recruitment Runtime Implementation)
@@ -36,40 +36,40 @@ logger = logging.getLogger("recruitment_runtime")
 
 class PassiveRecruiterAgent:
     """
-    Автономный агент для пассивного рекрутинга
+    Autonomous agent for passive recruitment
     
-    Ключевые возможности:
-    - 🧠 GPT-4 для планирования и принятия решений
-    - 💾 Долгосрочная память с векторным поиском
-    - 🌐 Интернет доступ для информационного поиска
-    - 📁 Файловая система для сохранения результатов
-    - ⚡ Специализированные под-агенты
-    - 🔧 Исполнение Python кода
-    - 📊 Самомониторинг и улучшение
+    Key opportunities:
+    - 🧠 GPT-4 for planning and decision-making
+    - 💾 Long-term memory with vector search
+    - 🌐 Internet access for information retrieval
+    - 📁 File system to save results
+    - ⚡ Specialized agents
+    - 🔧 Python Code Implementation
+    - 📊 Self-monitoring and improvement
     """
     
     def __init__(self, config: Dict[str, Any]):
         self.config = config
         self.logger = logger
         
-        # Настройка LLM
+        # LLM Settings
         self._setup_llm()
         
-        # Инициализация памяти
+        # Initialization of memory
         self.long_term_memory = LongTermMemory()
         self.short_term_memory = ShortTermMemory()
         
-        # Инициализация инструментов
+        # Initialization of tools
         self.tools = self._initialize_tools()
         
-        # Специализированные агенты
+        # Specialized agents
         self.sub_agents = self._create_sub_agents()
         
-        # Рабочая директория
+        # Working Directorate
         self.workspace = Path("autogpt_workspace")
         self.workspace.mkdir(exist_ok=True)
         
-        # Статистика
+        # Statistics
         self.stats = {
             "goals_completed": 0,
             "total_iterations": 0,
@@ -79,36 +79,36 @@ class PassiveRecruiterAgent:
             "code_executions": 0
         }
         
-        logger.info("🤖 Recruitment Runtime агент инициализирован")
+        logger.info('🤖 Recruitment Runtime agent initialized')
     
     async def initialize(self):
-        """Инициализация агента и всех компонентов"""
+        'Initialization of the agent and all components'
         try:
-            # Инициализируем память
+            # Initializing memory
             await self.long_term_memory.initialize() if hasattr(self.long_term_memory, 'initialize') else None
             
-            # Инициализируем инструменты
+            # Initiating tools
             for tool_name, tool in self.tools.items():
                 if hasattr(tool, 'initialize'):
                     await tool.initialize()
             
-            logger.info("✅ Recruitment Runtime агент готов к автономной работе")
+            logger.info('✅ Recruitment Runtime agent ready for stand-alone work')
             
         except Exception as e:
-            logger.error(f"❌ Ошибка инициализации агента: {e}")
+            logger.error(f"❌ Error of initialization of the agent: {e}")
             raise
     
     def _setup_llm(self):
-        """Настройка LLM клиента с поддержкой GPT-5"""
+        'Settings LLM client with GPT-5 support'
         ai_config = self.config.get("ai_analysis", {})
         
-        # Подготовка клиента с прокси поддержкой
+        # Training of client with proxie support
         client_params = {
             "api_key": ai_config.get("openai_api_key"),
             "base_url": ai_config.get("base_url", "https://api.openai.com/v1")
         }
         
-        # Добавляем прокси если настроен
+        # Add a proxie if you're in the mood.
         proxy_config = ai_config.get("proxy", {})
         if proxy_config.get("enabled", False):
             import httpx
@@ -120,65 +120,65 @@ class PassiveRecruiterAgent:
             
             client_params["http_client"] = httpx.AsyncClient(
                 proxies=proxy_url,
-                verify=False  # Отключаем проверку SSL для прокси
+                verify=False  # Disable SSL test for Proxi
             )
-            logger.info(f"🌐 Настроен прокси: {proxy_config['host']}:{proxy_config['port']}")
+            logger.info(f"🌐 Adjusted Proxi: {proxy_config['host']}:{proxy_config['port']}")
         
-        # Основной LLM для стратегического планирования (GPT-5 Mini)
+        # Core LLM for Strategic Planning (GPT-5 Mini))
         self.main_llm = AsyncOpenAI(**client_params)
         self.main_model = "gpt-5-mini"
         
-        # Быстрый LLM для принятия решений (GPT-5 Mini с минимальным рассуждением) 
+        # Quick LLM for decision making (GPT-5 Mini with minimum reasoning)) 
         self.fast_llm = AsyncOpenAI(**client_params)
         self.fast_model = "gpt-5-mini"
         
-        # GPT-5 параметры для разных типов задач
+        # GPT-5 Options for Different Task Types
         self.gpt5_params = {
             "strategic": {
-                "verbosity": "high",  # Подробные стратегические планы
-                "reasoning_effort": "medium"  # Полноценное рассуждение
+                "verbosity": "high",  # Detailed strategic plans
+                "reasoning_effort": "medium"  # Full Thought
             },
             "analysis": {
-                "verbosity": "medium",  # Сбалансированный анализ
+                "verbosity": "medium",  # Balanced analysis
                 "reasoning_effort": "medium"
             },
             "decision": {
-                "verbosity": "low",  # Краткие решения
-                "reasoning_effort": "minimal"  # Быстрые решения без объяснений
+                "verbosity": "low",  # Summary decisions
+                "reasoning_effort": "minimal"  # Rapid solutions without explanation
             },
             "evaluation": {
-                "verbosity": "medium",  # Детальная оценка
+                "verbosity": "medium",  # Detailed assessment
                 "reasoning_effort": "medium"
             }
         }
         
-        logger.info("✅ GPT-5 Mini клиенты настроены с прокси поддержкой")
+        logger.info('✅ GPT-5 Mini clients are set up with proxies support')
     
     def _initialize_tools(self) -> Dict[str, Any]:
-        """Инициализация инструментов AutoGPT"""
+        'Initialization of AutoGPT tools'
         return {
             "web_search": WebSearchTool(),
             "file_system": FileSystemTool(self.workspace),
-            # "code_executor": CodeExecutorTool(),  # Временно отключен
+            # "code_executor": CodeExecutorTool(),  # Temporarily disabled
             
-            # Gateway - единая точка оркестрации
+            # Gateway is a single orchestrating point
             "vacancy_processor": {
                 "name": "vacancy_processor",
-                "description": "Полная обработка вакансии через Gateway: получение откликов → AI анализ → ранжирование",
+                "description": 'Full processing of vacancy through Gateway: receiving feedback from AI analysis',
                 "service_url": "http://localhost:8088",
                 "endpoint": "/vacancy/top",
                 "method": "POST"
             },
             "vacancy_builder": {
                 "name": "vacancy_builder",
-                "description": "Создание вакансий для HH.ru через Gateway",
+                "description": 'Vacancy creation for HH.ru via Gateway',
                 "service_url": "http://localhost:8088",
                 "endpoint": "/vacancy/create",
                 "method": "POST"
             },
             "vacancy_responses": {
                 "name": "vacancy_responses",
-                "description": "Получение откликов на вакансию через Gateway",
+                "description": 'Retrieving the vacancy via Gateway',
                 "service_url": "http://localhost:8088",
                 "endpoint": "/vacancy/responses",
                 "method": "POST"
@@ -186,12 +186,12 @@ class PassiveRecruiterAgent:
         }
     
     def _create_sub_agents(self) -> Dict[str, Any]:
-        """Создание специализированных под-агентов"""
+        'Establishment of specialized agents'
         return {
             "researcher": ResearcherAgent(self.main_llm, self.tools["web_search"]),
             "analyst": AnalystAgent(self.main_llm, self.tools["vacancy_processor"]),
             "writer": WriterAgent(self.fast_llm, self.tools["file_system"]),
-            # "coder": CoderAgent(self.main_llm, self.tools["code_executor"]),  # Временно отключен
+            # "coder": CoderAgent(self.main_llm, self.tools["code_executor"]),  # Temporarily disabled
             "recruiter": RecruiterAgent(self.main_llm, {
                 "vacancy_builder": self.tools["vacancy_builder"],
                 "vacancy_processor": self.tools["vacancy_processor"],
@@ -202,22 +202,22 @@ class PassiveRecruiterAgent:
     async def execute_autonomous_goal(self, goal: str, context: Dict[str, Any], 
                                     task_id: str, progress_callback: Callable) -> Dict[str, Any]:
         """
-        ГЛАВНЫЙ ЦИКЛ AUTOGPT
+        MAIN AUTOGPT CYCLE
         
-        Полностью автономное выполнение цели с использованием:
-        - Долгосрочной памяти для контекста
-        - Интернет поиска для исследований
-        - Файловой системы для сохранения результатов
-        - Специализированных агентов для задач
-        - Самомониторинга и улучшения
+        Fully autonomous implementation of the goal through:
+        - Long-term memory for context
+        - Research Internet
+        - File system to save results
+        - Specialized agents for tasks
+        - Self-monitoring and improvement
         """
         try:
-            logger.info(f"🎯 Recruitment Runtime начинает автономную работу: {goal}")
+            logger.info(f"🎯 Recruitment Runtime begins autonomous work: {goal}")
             
-            # Загружаем контекст из долгосрочной памяти
+            # Download the context from long-term memory
             relevant_memories = await self.long_term_memory.search_relevant(goal, limit=10)
             
-            # Инициализируем память сессии
+            # Initializing the memory of the session
             session_memory = AutoGPTMemory(
                 task_id=task_id,
                 goal=goal,
@@ -231,99 +231,99 @@ class PassiveRecruiterAgent:
             
             while iteration < max_iterations:
                 iteration += 1
-                logger.info(f"🔄 AutoGPT итерация {iteration}/{max_iterations}")
+                logger.info(f"🔄 AutoGPT iteration {iteration}/{max_iterations}")
                 
-                # ШАГ 1: ГЛУБОКИЙ АНАЛИЗ через GPT-4
+                # SAG 1: GLUBOCY ANALYSIS via GPT-4
                 analysis = await self._deep_analysis(session_memory, iteration)
                 session_memory.thoughts.extend(analysis["thoughts"])
                 progress_callback("analyzing", analysis["insights"])
                 
-                # ШАГ 2: СТРАТЕГИЧЕСКОЕ ПЛАНИРОВАНИЕ
+                # SAG 2: STRATEGIC PLANNING
                 plan = await self._strategic_planning(session_memory, analysis)
                 session_memory.current_plan = plan["steps"]
-                progress_callback("planning", [f"Стратегия: {plan['strategy']}"])
+                progress_callback("planning", [f"Strategy: {plan['strategy']}"])
                 
-                # ШАГ 3: ВЫБОР И ВЫПОЛНЕНИЕ ЧЕРЕЗ АГЕНТОВ
+                # CHAPTER 3: ELECTION AND IMPLEMENTATION OF THE AGENCIES
                 action_result = await self._execute_with_agents(session_memory, plan)
                 session_memory.actions.append(action_result["action"])
-                progress_callback("executing", [f"Выполнено: {action_result['action'].description}"])
+                progress_callback("executing", [f"Implemented: {action_result['action'].description}"])
                 
-                # ШАГ 4: КРИТИЧЕСКАЯ ОЦЕНКА И ОБУЧЕНИЕ
+                # SAG 4: CRITICAL ASSESSMENT AND TRAINING
                 evaluation = await self._critical_evaluation(session_memory, action_result)
                 progress_callback("evaluating", evaluation["lessons"])
                 
-                # ШАГ 5: СОХРАНЕНИЕ В ДОЛГОСРОЧНУЮ ПАМЯТЬ
+                # Step 5: Keeping Long-Term Memory
                 await self._save_to_long_term_memory(session_memory, evaluation)
                 
-                # ШАГ 6: ПРИНЯТИЕ РЕШЕНИЯ О ПРОДОЛЖЕНИИ
+                # SAG 6: DECISION ON THE CONTINUATION
                 decision = await self._autonomous_decision(session_memory, evaluation)
                 
                 if decision["should_stop"]:
-                    logger.info(f"✅ Цель достигнута за {iteration} итераций: {decision['reason']}")
+                    logger.info(f"✅ Target achieved for {iteration} Iterations: {decision['reason']}")
                     break
                 
-                # Обновляем статистику
+                # Update statistics
                 self.stats["total_iterations"] += 1
                 self.stats["total_thoughts"] += len(analysis["thoughts"])
             
-            # Формируем финальный отчет
+            # Forming the final report
             final_result = await self._generate_comprehensive_report(session_memory)
             
             self.stats["goals_completed"] += 1
-            logger.info(f"🏆 Recruitment Runtime завершил работу за {iteration} итераций")
+            logger.info(f"🏆 Recruitment Runtime completed the work for {iteration} Iterations")
             
             return final_result
             
         except Exception as e:
-            logger.error(f"❌ Ошибка автономного выполнения: {e}")
+            logger.error(f"❌ Error of autonomous execution: {e}")
             raise
     
     async def _deep_analysis(self, memory: AutoGPTMemory, iteration: int) -> Dict[str, Any]:
-        """Глубокий анализ ситуации через GPT-4"""
+        'In-depth analysis of the situation through GPT-4'
         try:
-            # Исследуем тему через интернет
+            # Studying the topic online
             if iteration == 1:
                 search_results = await self.tools["web_search"].search(
-                    f"{memory.goal} лучшие практики методы"
+                    f"{memory.goal} best practices"
                 )
                 self.stats["web_searches"] += 1
             else:
                 search_results = []
             
-            # Формируем контекст для анализа
+            # Form a context for analysis
             analysis_prompt = f"""
-            Ты - экспертный AutoGPT агент. Проведи ГЛУБОКИЙ анализ ситуации.
+            You're an expert AutoGPT agent. Conduct a GLUBOCI analysis of the situation.
             
-            ЦЕЛЬ: {memory.goal}
-            ИТЕРАЦИЯ: {iteration}
-            КОНТЕКСТ: {json.dumps(memory.context, ensure_ascii=False)}
-            ВЫПОЛНЕННЫЕ ДЕЙСТВИЯ: {len(memory.actions)}
-            ИЗУЧЕННЫЕ ФАКТЫ: {'; '.join(memory.learned_facts[-5:]) if memory.learned_facts else 'Нет'}
-            ИНТЕРНЕТ ИССЛЕДОВАНИЕ: {search_results[:3] if search_results else 'Не проводилось'}
+            OBJECTIVE: {memory.goal}
+            INTERANCE: {iteration}
+            CONTEXT: {json.dumps(memory.context, ensure_ascii=False)}
+            Action taken: {len(memory.actions)}
+            FACTS RESEARCH: {'; '.join(memory.learned_facts[-5:]) if memory.learned_facts else 'None'}
+            INTERNET STUDY: {search_results[:3] if search_results else 'None'}
             
-            ПРОВЕДИ АНАЛИЗ:
-            1. Оцени текущее состояние прогресса к цели
-            2. Определи критические факторы успеха
-            3. Выяви потенциальные риски и препятствия  
-            4. Найди скрытые возможности и инсайты
-            5. Проанализируй доступные ресурсы и инструменты
+            Take a look at this:
+            1. Assess the current status of progress towards the target
+            2. Identify critical success factors
+            3. Identify potential risks and obstacles  
+            4. Find hidden opportunities and sites
+            5. Review available resources and tools
             
-            Ответь в JSON:
+            Answer JSON:
             {{
-                "thoughts": ["глубокая мысль 1", "критический инсайт 2", "стратегическое наблюдение 3"],
-                "progress_assessment": "детальная оценка прогресса",
-                "critical_factors": ["фактор 1", "фактор 2"],
-                "risks": ["риск 1", "риск 2"],
-                "opportunities": ["возможность 1", "возможность 2"],
-                "insights": ["ключевой инсайт 1", "ключевой инсайт 2"],
-                "confidence_level": 0.8
+                \"thoughts\": [\"A Deep Thought 1\", \"Critical site 2\", \"Strategic observation 3\"],
+                \"progress_assessment\": \"Detailed assessment of progress\",
+                \"critical_factors\": [\"factor 1\", \"factor 2\"],
+                \"risks\": [\"Risk 1\", \"Risk 2\"],
+                \"opportunities\": [\"Opportunity 1\", \"Opportunity 2\"],
+                \"insights\": [\"Key site 1\", \"Key site 2\"],
+                \"confidence_level\": 0.8
             }}
             """
             
             response = await self._call_main_llm(analysis_prompt, "analysis")
             analysis_data = json.loads(response)
             
-            # Создаем мысли
+            # Making Thoughts
             thoughts = []
             for thought_text in analysis_data.get("thoughts", []):
                 thought = AutoGPTThought(
@@ -342,43 +342,43 @@ class PassiveRecruiterAgent:
             }
             
         except Exception as e:
-            logger.error(f"❌ Ошибка глубокого анализа: {e}")
+            logger.error(f"❌ Mistake of deep analysis: {e}")
             return {
-                "thoughts": [AutoGPTThought(content="Ошибка анализа", type="error", confidence=0.1)],
-                "insights": ["Требуется восстановление после ошибки"]
+                "thoughts": [AutoGPTThought(content='Error of analysis', type="error", confidence=0.1)],
+                "insights": ['Recovery after a mistake']
             }
     
     async def _strategic_planning(self, memory: AutoGPTMemory, analysis: Dict[str, Any]) -> Dict[str, Any]:
-        """Стратегическое планирование через GPT-4"""
+        'Strategic planning through GPT-4'
         try:
             planning_prompt = f"""
-            Как экспертный стратег, создай ДЕТАЛЬНЫЙ план достижения цели.
+            As an expert strategist, create a child-friendly plan to achieve the goal.
             
-            ЦЕЛЬ: {memory.goal}
-            АНАЛИЗ СИТУАЦИИ: {json.dumps(analysis, ensure_ascii=False)}
-            ДОСТУПНЫЕ ИНСТРУМЕНТЫ: {', '.join(memory.available_tools)}
-            ДОСТУПНЫЕ АГЕНТЫ: {', '.join(self.sub_agents.keys())}
+            OBJECTIVE: {memory.goal}
+            ANALYSIS OF THE SITUATION: {json.dumps(analysis, ensure_ascii=False)}
+            ESTABLISHED INSTRUMENTS: {', '.join(memory.available_tools)}
+            AGENCIES: {', '.join(self.sub_agents.keys())}
             
-            КРИТИЧЕСКИЕ ФАКТОРЫ: {analysis.get('critical_factors', [])}
-            ВОЗМОЖНОСТИ: {analysis.get('opportunities', [])}
-            РИСКИ: {analysis.get('risks', [])}
+            CRITICAL FACTORS: {analysis.get('critical_factors', [])}
+            OPPORTUNITIES: {analysis.get('opportunities', [])}
+            RISKS: {analysis.get('risks', [])}
             
-            Создай СТРАТЕГИЧЕСКИЙ план:
-            1. Определи оптимальную стратегию подхода
-            2. Выбери наиболее подходящих агентов
-            3. Спланируй последовательность действий
-            4. Предусмотри варианты для рисков
-            5. Определи критерии успеха
+            Create a Strategic Plan:
+            1. Identify an optimal strategy for the approach
+            2. Select the most suitable agents
+            3. Plan a sequence of actions
+            4. Provide risk options
+            5. Identify success criteria
             
-            Ответь в JSON:
+            Answer JSON:
             {{
-                "strategy": "описание стратегии",
-                "chosen_agent": "наиболее подходящий агент",
-                "steps": ["шаг 1", "шаг 2", "шаг 3"],
-                "tools_needed": ["инструмент 1", "инструмент 2"],
-                "success_criteria": ["критерий 1", "критерий 2"],
-                "risk_mitigation": ["план на риск 1", "план на риск 2"],
-                "expected_outcome": "ожидаемый результат"
+                \"strategy\": \"Description of the strategy\",
+                \"chosen_agent\": \"The most suitable agent\",
+                \"steps\": [\"step 1\", \"step 2\", \"step 3\"],
+                \"tools_needed\": [\"tool 1\", \"tool 2\"],
+                \"success_criteria\": [\"criterion 1\", \"criterion 2\"],
+                \"risk_mitigation\": [\"Risk plan 1\", \"Risk plan 2\"],
+                \"expected_outcome\": \"Output expected\"
             }}
             """
             
@@ -386,27 +386,27 @@ class PassiveRecruiterAgent:
             return json.loads(response)
             
         except Exception as e:
-            logger.error(f"❌ Ошибка планирования: {e}")
+            logger.error(f"❌ Error of planning: {e}")
             return {
-                "strategy": "Базовый план восстановления",
+                "strategy": 'Basic recovery plan',
                 "chosen_agent": "recruiter",
-                "steps": ["Восстановить работу", "Продолжить выполнение"],
+                "steps": ['Restore Work', 'Continue Implementation'],
                 "tools_needed": ["vacancy_builder"],
-                "success_criteria": ["Система работает"]
+                "success_criteria": ['The system is working.']
             }
     
     async def _execute_with_agents(self, memory: AutoGPTMemory, plan: Dict[str, Any]) -> Dict[str, Any]:
-        """Выполнение через специализированных агентов"""
+        'Implementation through specialized agents'
         try:
             chosen_agent_name = plan.get("chosen_agent", "recruiter")
             agent = self.sub_agents.get(chosen_agent_name)
             
             if not agent:
-                raise ValueError(f"Агент {chosen_agent_name} не найден")
+                raise ValueError(f"Agent {chosen_agent_name} not found")
             
-            logger.info(f"🤖 Делегируем выполнение агенту: {chosen_agent_name}")
+            logger.info(f"🤖 We'll delegate it to the agent: {chosen_agent_name}")
             
-            # Выполняем через специализированного агента
+            # We do it through a specialized agent.
             result = await agent.execute(
                 goal=memory.goal,
                 plan=plan,
@@ -414,11 +414,11 @@ class PassiveRecruiterAgent:
                 tools=plan.get("tools_needed", [])
             )
             
-            # Создаем действие
+            # Create Action
             action = AutoGPTAction(
                 action_type="delegate_to_agent",
-                description=f"Делегировано агенту {chosen_agent_name}: {plan.get('strategy', '')}",
-                reasoning=f"Выбран агент {chosen_agent_name} как наиболее подходящий",
+                description=f"Delegated to agent {chosen_agent_name}: {plan.get('strategy', '')}",
+                reasoning=f"Agent selected {chosen_agent_name} as the most appropriate",
                 tool_name=chosen_agent_name,
                 result=result
             )
@@ -426,44 +426,44 @@ class PassiveRecruiterAgent:
             return {"action": action, "agent_result": result}
             
         except Exception as e:
-            logger.error(f"❌ Ошибка выполнения через агента: {e}")
+            logger.error(f"❌ Mistake through the agent: {e}")
             
-            # Fallback выполнение
+            # Fallback Performance
             action = AutoGPTAction(
                 action_type="fallback",
-                description="Базовое выполнение из-за ошибки агента",
-                reasoning="Агент недоступен, используем fallback",
+                description='Basic execution due to the error of the agent',
+                reasoning='Agent not available, used Fallback',
                 result={"error": str(e)}
             )
             
             return {"action": action, "agent_result": {}}
     
     async def _critical_evaluation(self, memory: AutoGPTMemory, action_result: Dict[str, Any]) -> Dict[str, Any]:
-        """Критическая оценка результатов"""
+        'Critical evaluation of results'
         try:
             evaluation_prompt = f"""
-            Как критический аналитик, оцени результаты выполненного действия.
+            As a critical analyst, evaluate the results of the action.
             
-            ЦЕЛЬ: {memory.goal}
-            ВЫПОЛНЕННОЕ ДЕЙСТВИЕ: {action_result['action'].description}
-            РЕЗУЛЬТАТ: {json.dumps(action_result.get('agent_result', {}), ensure_ascii=False)[:1000]}
+            OBJECTIVE: {memory.goal}
+            Action taken: {action_result['action'].description}
+            Results: {json.dumps(action_result.get('agent_result', {}), ensure_ascii=False)[:1000]}
             
-            ПРОВЕДИ КРИТИЧЕСКУЮ ОЦЕНКУ:
-            1. Насколько результат приближает к цели?
-            2. Какие уроки можно извлечь?
-            3. Что сработало хорошо?
-            4. Что можно улучшить?
-            5. Какие новые возможности открылись?
+            Go through the critique:
+            1. How close the result is to the goal?
+            2. What lessons can be learned?
+            3. Which worked well?
+            4. What Can Be Improved?
+            5. What new opportunities have opened up?
             
-            Ответь в JSON:
+            Answer JSON:
             {{
-                "goal_progress": 0.7,
-                "success_rating": 0.8,
-                "lessons": ["урок 1", "урок 2"],
-                "strengths": ["что сработало хорошо"],
-                "improvements": ["что улучшить"],
-                "new_opportunities": ["новые возможности"],
-                "next_recommendations": ["рекомендация 1", "рекомендация 2"]
+                \"goal_progress\": 0.7,
+                \"success_rating\": 0.8,
+                \"lessons\": [\"Lesson 1\", \"Lesson 2\"],
+                \"strengths\": [\"That worked well\"],
+                \"improvements\": [\"What's to be improved\"],
+                \"new_opportunities\": [\"new opportunities\"],
+                \"next_recommendations\": [\"Recommendation 1\", \"Recommendation 2\"]
             }}
             """
             
@@ -471,18 +471,18 @@ class PassiveRecruiterAgent:
             return json.loads(response)
             
         except Exception as e:
-            logger.error(f"❌ Ошибка оценки: {e}")
+            logger.error(f"❌ Error of assessment: {e}")
             return {
                 "goal_progress": 0.1,
                 "success_rating": 0.1,
-                "lessons": ["Техническая ошибка оценки"],
-                "next_recommendations": ["Восстановить работу"]
+                "lessons": ['Technical errors of assessment'],
+                "next_recommendations": ['Restore Work']
             }
     
     async def _save_to_long_term_memory(self, memory: AutoGPTMemory, evaluation: Dict[str, Any]):
-        """Сохранение в долгосрочную память"""
+        'Storage in long-term memory'
         try:
-            # Сохраняем ключевые уроки
+            # Save Key Lessons
             for lesson in evaluation.get("lessons", []):
                 await self.long_term_memory.store(
                     content=lesson,
@@ -494,10 +494,10 @@ class PassiveRecruiterAgent:
                     }
                 )
             
-            # Сохраняем успешные стратегии
+            # Maintain successful strategies
             if evaluation.get("success_rating", 0) > 0.7:
                 await self.long_term_memory.store(
-                    content=f"Успешная стратегия для цели '{memory.goal}': {memory.current_plan}",
+                    content=f"A Successful Strategy for the Goal{memory.goal}': {memory.current_plan}",
                     metadata={
                         "task_id": memory.task_id,
                         "type": "successful_strategy",
@@ -505,33 +505,33 @@ class PassiveRecruiterAgent:
                     }
                 )
             
-            logger.info("💾 Обновлена долгосрочная память")
+            logger.info('💾 Updated long-term memory')
             
         except Exception as e:
-            logger.error(f"❌ Ошибка сохранения в память: {e}")
+            logger.error(f"❌ Error in memory: {e}")
     
     async def _autonomous_decision(self, memory: AutoGPTMemory, evaluation: Dict[str, Any]) -> Dict[str, Any]:
-        """Автономное принятие решения о продолжении"""
+        'Autonomous decision to continue'
         try:
             decision_prompt = f"""
-            Как автономный агент, прими решение о дальнейших действиях.
+            As an autonomous agent, decide on the way forward.
             
-            ЦЕЛЬ: {memory.goal}
-            ПРОГРЕСС К ЦЕЛИ: {evaluation.get('goal_progress', 0)}
-            РЕЙТИНГ УСПЕХА: {evaluation.get('success_rating', 0)}
-            ВЫПОЛНЕНО ИТЕРАЦИЙ: {len(memory.actions)}
+            OBJECTIVE: {memory.goal}
+            PROGRESS TO THE OBJECTIVE: {evaluation.get('goal_progress', 0)}
+            RATEING OF THE SECRET: {evaluation.get('success_rating', 0)}
+            COMPLIANCE WITH THE INTERACTIONS: {len(memory.actions)}
             
-            ОЦЕНИ:
-            1. Достигнута ли цель?
-            2. Стоит ли продолжать?
-            3. Есть ли смысл в дополнительных итерациях?
+            EVALUATION:
+            1. Whether the goal has been achieved?
+            2. Should We Continue?
+            3. Does it make sense to have extra iterations?
             
-            Ответь в JSON:
+            Answer JSON:
             {{
-                "should_stop": true/false,
-                "reason": "обоснование решения",
-                "confidence": 0.9,
-                "next_focus": "на чем сосредоточиться дальше"
+                \"should_stop\": true/false,
+                \"reason\": \"Justification of the decision\",
+                \"confidence\": 0.9,
+                \"next_focus\": \"What to focus on next\"
             }}
             """
             
@@ -539,17 +539,17 @@ class PassiveRecruiterAgent:
             return json.loads(response)
             
         except Exception as e:
-            logger.error(f"❌ Ошибка принятия решения: {e}")
+            logger.error(f"❌ Error in decision making: {e}")
             return {
                 "should_stop": False,
-                "reason": "Ошибка принятия решения, продолжаем",
+                "reason": 'Mistake of decision, we continue',
                 "confidence": 0.1
             }
     
     async def _generate_comprehensive_report(self, memory: AutoGPTMemory) -> Dict[str, Any]:
-        """Генерация исчерпывающего отчета"""
+        'Generation of exhaustive report'
         try:
-            # Сохраняем отчет в файл
+            # Save report to file
             report_data = {
                 "task_id": memory.task_id,
                 "goal": memory.goal,
@@ -562,43 +562,43 @@ class PassiveRecruiterAgent:
                 "generated_at": datetime.now().isoformat()
             }
             
-            # Сохраняем в файл
+            # Save to File
             report_file = self.workspace / f"report_{memory.task_id}.json"
             async with aiofiles.open(report_file, 'w', encoding='utf-8') as f:
                 await f.write(json.dumps(report_data, ensure_ascii=False, indent=2))
             
             self.stats["files_created"] += 1
             
-            logger.info(f"📊 Отчет сохранен: {report_file}")
+            logger.info(f"📊 Report retained: {report_file}")
             return report_data
             
         except Exception as e:
-            logger.error(f"❌ Ошибка генерации отчета: {e}")
+            logger.error(f"❌ Error in reporting: {e}")
             return {"error": str(e)}
     
     async def _call_main_llm(self, prompt: str, task_type: str = "strategic") -> str:
-        """Вызов основного LLM (GPT-5 Mini) с оптимизацией для агентов"""
+        'Main LLM call (GPT-5 Mini) optimized for agents'
         try:
-            # Получаем параметры для типа задачи
+            # Get the parameters for the task type.
             gpt5_settings = self.gpt5_params.get(task_type, self.gpt5_params["strategic"])
             
             response = await self.main_llm.chat.completions.create(
                 model=self.main_model,
                 messages=[
-                    {"role": "system", "content": "Ты - экспертный AutoGPT агент, специализированный на автономном планировании и выполнении задач рекрутинга. Используй свои расширенные возможности для стратегического мышления."},
+                    {"role": "system", "content": "You're an expert AutoGPT agent specialized in autonomous recruitment planning and execution. Use your enhanced strategic thinking opportunities."},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.1,
-                max_completion_tokens=4000,  # GPT-5 использует max_completion_tokens вместо max_tokens
+                max_completion_tokens=4000,  # GPT-5 uses max_completion_tokens instead of max_tokens
                 timeout=90,
-                # GPT-5 специфичные параметры
+                # GPT-5 Specific Options
                 verbosity=gpt5_settings["verbosity"],
                 reasoning_effort=gpt5_settings["reasoning_effort"]
             )
             
             content = response.choices[0].message.content.strip()
             
-            # Извлекаем JSON
+            # The JSON
             if "```json" in content:
                 start = content.find("```json") + 7
                 end = content.find("```", start)
@@ -607,32 +607,32 @@ class PassiveRecruiterAgent:
             return content
             
         except Exception as e:
-            logger.error(f"❌ Ошибка вызова GPT-5 Mini: {e}")
-            return '{"error": "GPT-5 Mini недоступен"}'
+            logger.error(f"Error: ❌ Specifications of GPT-5 Mini: {e}")
+            return '{"== sync, corrected by elderman == @elder_man"}'
     
     async def _call_fast_llm(self, prompt: str, task_type: str = "decision") -> str:
-        """Вызов быстрого LLM (GPT-5 Mini) с минимальным рассуждением"""
+        'Rapid LLM call (GPT-5 Mini) with minimal reasoning'
         try:
-            # Быстрые решения с минимальным рассуждением
+            # Rapid solutions with minimal reasoning
             gpt5_settings = self.gpt5_params.get(task_type, self.gpt5_params["decision"])
             
             response = await self.fast_llm.chat.completions.create(
                 model=self.fast_model,
                 messages=[
-                    {"role": "system", "content": "Ты - быстрый AutoGPT помощник для принятия автономных решений. Действуй эффективно и прагматично."},
+                    {"role": "system", "content": "You're a fast AutoGPT helper to make autonomous decisions. Act effectively and pragmatically."},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.1,
-                max_completion_tokens=1500,  # GPT-5 параметр
+                max_completion_tokens=1500,  # GPT-5 parameter
                 timeout=45,
-                # GPT-5 оптимизация для быстрых решений
+                # GPT-5 Optimization for Quick Solutions
                 verbosity=gpt5_settings["verbosity"],
                 reasoning_effort=gpt5_settings["reasoning_effort"]
             )
             
             content = response.choices[0].message.content.strip()
             
-            # Извлекаем JSON
+            # The JSON
             if "```json" in content:
                 start = content.find("```json") + 7
                 end = content.find("```", start)
@@ -641,90 +641,90 @@ class PassiveRecruiterAgent:
             return content
             
         except Exception as e:
-            logger.error(f"❌ Ошибка вызова GPT-5 Mini (fast): {e}")
-            return '{"error": "GPT-5 Mini недоступен"}'
+            logger.error(f"❌ Call error GPT-5 Mini (fast)): {e}")
+            return '{"== sync, corrected by elderman == @elder_man"}'
 
 
-# Специализированные агенты
+# Specialized agents
 
 class ResearcherAgent:
-    """Агент для исследований через интернет"""
+    'Agent for Internet research'
     
     def __init__(self, llm, web_search_tool):
         self.llm = llm
         self.web_search = web_search_tool
     
     async def execute(self, goal: str, plan: Dict, context: Dict, tools: List[str]) -> Dict[str, Any]:
-        """Проводит исследование по теме"""
-        search_query = f"{goal} исследование анализ тренды"
+        'Conducting research on the topic'
+        search_query = f"{goal} trend analysis"
         results = await self.web_search.search(search_query)
         
         return {
             "agent": "researcher",
             "search_results": results[:5],
-            "insights": ["Исследование завершено", "Найдены релевантные данные"]
+            "insights": ['Study completed', 'Relevant data found']
         }
 
 
 class AnalystAgent:
-    """Агент для анализа данных"""
+    'Agent for data analysis'
     
     def __init__(self, llm, ai_analysis_tool):
         self.llm = llm
         self.ai_analysis = ai_analysis_tool
     
     async def execute(self, goal: str, plan: Dict, context: Dict, tools: List[str]) -> Dict[str, Any]:
-        """Анализирует данные кандидатов"""
+        'Analyses candidates &apos; data'
         return {
             "agent": "analyst", 
             "analysis_completed": True,
-            "insights": ["Анализ завершен", "Найдены ключевые паттерны"]
+            "insights": ['Analysis completed', 'Key Pathers Found']
         }
 
 
 class WriterAgent:
-    """Агент для создания документов"""
+    'Agent for document creation'
     
     def __init__(self, llm, file_tool):
         self.llm = llm
         self.file_tool = file_tool
     
     async def execute(self, goal: str, plan: Dict, context: Dict, tools: List[str]) -> Dict[str, Any]:
-        """Создает документы и отчеты"""
+        'Creates documents and reports'
         return {
             "agent": "writer",
-            "documents_created": ["отчет.txt", "анализ.md"],
-            "insights": ["Документы созданы", "Отчеты готовы"]
+            "documents_created": ['Report.txt', 'analysis.md'],
+            "insights": ['Documents created', 'The reports are ready.']
         }
 
 
 class CoderAgent:
-    """Агент для исполнения кода"""
+    'Agent for code execution'
     
     def __init__(self, llm, code_executor):
         self.llm = llm
         self.code_executor = code_executor
     
     async def execute(self, goal: str, plan: Dict, context: Dict, tools: List[str]) -> Dict[str, Any]:
-        """Выполняет код для автоматизации"""
+        'Runs the automation code'
         return {
             "agent": "coder",
             "code_executed": True,
-            "insights": ["Код выполнен", "Автоматизация работает"]
+            "insights": ['Code implemented', 'Automation is working.']
         }
 
 
 class RecruiterAgent:
-    """Специализированный агент для рекрутинга"""
+    'Specialized recruitment agent'
     
     def __init__(self, llm, recruitment_tools):
         self.llm = llm
         self.tools = recruitment_tools
     
     async def execute(self, goal: str, plan: Dict, context: Dict, tools: List[str]) -> Dict[str, Any]:
-        """Выполняет задачи пассивного рекрутинга"""
+        'Performs passive recruitment tasks'
         try:
-            # Определяем что нужно сделать на основе цели
+            # Defining what needs to be done on the basis of the goal
             if "создать вакансию" in goal.lower() or "вакансия" in goal.lower():
                 return await self._create_vacancy(goal, context)
             elif "найти кандидатов" in goal.lower() or "поиск" in goal.lower():
@@ -732,49 +732,49 @@ class RecruiterAgent:
             elif "ранжировать" in goal.lower() or "оценить" in goal.lower():
                 return await self._rank_candidates(goal, context)
             else:
-                # Полный цикл рекрутинга
+                # Full recruitment cycle
                 return await self._full_recruitment_cycle(goal, context)
                 
         except Exception as e:
             return {
                 "agent": "recruiter",
                 "error": str(e),
-                "insights": ["Ошибка выполнения рекрутинга"]
+                "insights": ['Error in recruitment']
             }
     
     async def _create_vacancy(self, goal: str, context: Dict) -> Dict[str, Any]:
-        """Создание вакансии"""
-        # Здесь используем vacancy_builder и hh_api
+        'Vacancy creation'
+        # Use vacancy_builder and hh_api
         return {
             "agent": "recruiter",
             "action": "vacancy_created",
             "vacancy_id": "mock_vacancy_123",
             "vacancy_url": "https://hh.ru/vacancy/123",
-            "insights": ["Вакансия создана успешно", "Опубликована на HH.ru"]
+            "insights": ['The vacancy has been successful.', 'Published on HH.ru']
         }
     
     async def _search_candidates(self, goal: str, context: Dict) -> Dict[str, Any]:
-        """Поиск кандидатов"""
-        # Здесь используем search_service
+        'Search for candidates'
+        # Use search_service here
         return {
             "agent": "recruiter",
             "action": "candidates_found",
             "candidates_count": 15,
-            "insights": ["Найдено 15 релевантных кандидатов", "Готовы к анализу"]
+            "insights": ['15 relevant candidates found', 'Ready for analysis']
         }
     
     async def _rank_candidates(self, goal: str, context: Dict) -> Dict[str, Any]:
-        """Ранжирование кандидатов"""
-        # Здесь используем ai_analysis и ranking_service
+        'Earnings of candidates'
+        # Use ai_analysis and ranking_service
         return {
             "agent": "recruiter",
             "action": "candidates_ranked",
             "top_candidates": 5,
-            "insights": ["ТОП-5 кандидатов выбраны", "Ранжирование завершено"]
+            "insights": ['TAP-5 candidates selected', 'The injury has been completed']
         }
     
     async def _full_recruitment_cycle(self, goal: str, context: Dict) -> Dict[str, Any]:
-        """Полный цикл пассивного рекрутинга"""
+        'Full passive recruitment cycle'
         return {
             "agent": "recruiter",
             "action": "full_cycle_completed",
@@ -782,10 +782,10 @@ class RecruiterAgent:
             "candidates_found": 20,
             "top_candidates": 10,
             "insights": [
-                "Полный цикл рекрутинга завершен",
-                "Создана вакансия",
-                "Найдено 20 кандидатов", 
-                "Выбран ТОП-10",
-                "Результаты готовы для HR"
+                'Full recruitment cycle complete',
+                'Vacancy created',
+                '20 candidates found', 
+                'TAP-10 selected',
+                'Results ready for HR'
             ]
         }

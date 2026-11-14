@@ -5,7 +5,7 @@ import sys
 from datetime import datetime
 from typing import Dict, Any, List
 
-# Добавляем родительскую директорию в путь для импорта shared модулей
+# Add the parent directory to the route to import the used modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from shared.models import HealthResponse, RankingRequest, RankingResponse, RankingWeights, Candidate, SearchRequest
@@ -15,7 +15,7 @@ logger = setup_logging("ranking-service")
 
 app = FastAPI(
     title="Ranking Service",
-    description="Сервис ранжирования кандидатов (AI-first)",
+    description="Candidates' ranking service (AI-first)",
     version="1.0.0"
 )
 
@@ -27,12 +27,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Храним веса в памяти для обратной совместимости UI/интеграций
+# Weight storage in memory for reverse UI/integration compatibility
 current_weights = RankingWeights()
 
 
 def sort_by_ai_score(candidates: List[Candidate]) -> List[Candidate]:
-    # Сортировка по полю score (AI-оценка), если нет — 0.0
+    # Sorting field Score (AI-estimate) if not 0.0
     return sorted(candidates, key=lambda c: (c.score or 0.0), reverse=True)
 
 
@@ -45,7 +45,7 @@ async def health_check():
 async def rank_candidates(request: RankingRequest):
     try:
         ranked = sort_by_ai_score(request.candidates)
-        # Минимальные метаданные: просто фиксируем распределение скоров
+        # Minimum metadata: just record the speed distribution
         scores = [c.score or 0.0 for c in ranked]
         metadata = {
             "total_candidates": len(ranked),
@@ -55,8 +55,8 @@ async def rank_candidates(request: RankingRequest):
         }
         return RankingResponse(ranked_candidates=ranked, ranking_metadata=metadata)
     except Exception as e:
-        logger.error(f"Ошибка ранжирования: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка ранжирования")
+        logger.error(f"Error of ranking: {e}")
+        raise HTTPException(status_code=500, detail='Error of ranking')
 
 
 @app.get("/weights")
@@ -64,8 +64,8 @@ async def get_weights():
     try:
         return {"weights": current_weights.model_dump()}
     except Exception as e:
-        logger.error(f"Ошибка получения весов: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка получения весов")
+        logger.error(f"Error to gain weight: {e}")
+        raise HTTPException(status_code=500, detail='Error to gain weight')
 
 
 @app.put("/weights")
@@ -73,24 +73,24 @@ async def update_weights(weights: RankingWeights):
     try:
         global current_weights
         current_weights = weights
-        return {"message": "Веса обновлены"}
+        return {"message": 'Weights updated'}
     except Exception as e:
-        logger.error(f"Ошибка обновления весов: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка обновления весов")
+        logger.error(f"Error of Weight Update: {e}")
+        raise HTTPException(status_code=500, detail='Error of Weight Update')
 
 
 @app.post("/calculate-scores")
 async def calculate_scores(request: RankingRequest):
     try:
-        # В AI-first архитектуре считаем, что score уже проставлен мультиагентной системой.
-        # Для обратной совместимости возвращаем входные кандидаты и простую метаинформацию.
+        # In AI-first architecture, we believe that the score is already running the multi-agent system.
+        # For interoperability, return entry candidates and simple meta-information.
         return {
             "candidates": [c.model_dump() for c in request.candidates],
-            "metadata": {"note": "AI-first: базовые баллы уже заданы в поле score"}
+            "metadata": {"note": 'AI-first: Basic points already set in score field'}
         }
     except Exception as e:
-        logger.error(f"Ошибка расчета баллов: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка расчета баллов")
+        logger.error(f"Error in calculating points: {e}")
+        raise HTTPException(status_code=500, detail='Error in calculating points')
 
 
 if __name__ == "__main__":

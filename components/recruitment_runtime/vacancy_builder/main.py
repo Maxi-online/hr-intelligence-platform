@@ -1,8 +1,8 @@
 """
 RecruitmentWorkflow Suite - Vacancy Builder Service
 
-Микросервис для создания вакансий на HeadHunter.ru через API.
-Интегрирован с основной архитектурой RecruitmentWorkflow Suite.
+Microservice to create vacancies on HeadHunter.ru via API.
+Integrated with the main architecture of RecruitmentWorkflow Suite.
 """
 
 import os
@@ -12,12 +12,12 @@ import yaml
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 
-# Принудительно устанавливаем UTF-8 кодировку для всего приложения
+# Force UTF-8 encoding for the entire application
 os.environ['PYTHONIOENCODING'] = 'utf-8'
 os.environ['LC_ALL'] = 'C.UTF-8'
 os.environ['LANG'] = 'C.UTF-8'
 
-# Устанавливаем кодировку для stdout/stderr
+# Set encoding for stdout/stderr
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8')
 if hasattr(sys.stderr, 'reconfigure'):
@@ -26,7 +26,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 import requests
 
-# Добавляем путь к shared модулям
+# Adding the path to the shared modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from shared.models import (
@@ -39,23 +39,23 @@ from shared.models import (
 )
 from shared.utils import setup_logging, load_config, handle_errors
 
-# Настройка логирования
+# Logging settings
 logger = setup_logging("vacancy-builder")
 
-# Дополнительная настройка кодировки для логгера
+# Additional encoding settings for logger
 import logging
 for handler in logger.handlers:
     if hasattr(handler, 'stream') and hasattr(handler.stream, 'reconfigure'):
         handler.stream.reconfigure(encoding='utf-8')
     elif hasattr(handler, 'setStream'):
-        # Для файловых хендлеров
+        # For file hendlers
         import io
         if hasattr(handler, 'baseFilename'):
             handler.stream = io.open(handler.baseFilename, 'a', encoding='utf-8')
 
 app = FastAPI(
     title="RecruitmentWorkflow Suite Vacancy Builder",
-    description="Сервис создания вакансий на HeadHunter.ru",
+    description='HeadHunter.ru job creation service',
     version="1.0.0"
 )
 
@@ -69,34 +69,34 @@ app.add_middleware(
 )
 
 class VacancyBuilderService:
-    """Основной класс сервиса создания вакансий"""
+    'Principal level of the job creation service'
     
     def __init__(self):
         self.config = load_config()
         self.hh_api_config = self.config.get("hh_api", {})
         
-        # URL для HH API сервиса
+        # URL for HH API service
         is_docker = os.getenv("DOCKER_ENV") == "true"
         if is_docker:
             self.hh_api_url = "http://hh_api:8003"
         else:
             self.hh_api_url = "http://localhost:8003"
             
-        logger.info(f"VacancyBuilderService инициализирован, HH API URL: {self.hh_api_url}")
+        logger.info(f"VacancyBuilderService initialized, HH API URL: {self.hh_api_url}")
     
     def _get_headers(self) -> Dict[str, str]:
-        """Получение заголовков для запросов к HH API"""
+        'Collection of Headings for HH API Requests'
         return {
             "User-Agent": self.hh_api_config.get("user_agent", "RecruitmentWorkflow Suite-VacancyBuilder/1.0"),
             "Content-Type": "application/json"
         }
     
     def _make_hh_request(self, method: str, endpoint: str, data: Optional[Dict] = None) -> Dict[str, Any]:
-        """Выполнение запроса к HH API сервису"""
+        'HH API service request execution'
         try:
             url = f"{self.hh_api_url}{endpoint}"
             
-            # Добавим более безопасные заголовки
+            # Add safer headlines.
             headers = {
                 "User-Agent": "RecruitmentWorkflow Suite-VacancyBuilder/1.0",
                 "Content-Type": "application/json; charset=utf-8",
@@ -124,9 +124,9 @@ class VacancyBuilderService:
             raise HTTPException(status_code=500, detail="Internal error")
     
     def get_areas(self) -> List[VacancyArea]:
-        """Получение списка регионов через наш HH API сервис"""
+        'Getting a list of regions through our HH API service'
         try:
-            # Используем наш HH API сервис вместо прямого подключения
+            # Use our HH API service instead of a direct connection.
             logger.info(f"Requesting areas from {self.hh_api_url}/areas")
             response = requests.get(f"{self.hh_api_url}/areas", timeout=30)
             response.raise_for_status()
@@ -137,11 +137,11 @@ class VacancyBuilderService:
             areas = []
             
             def process_area(area_data):
-                """Рекурсивная обработка региона и его подрегионов"""
+                'Recurring the region and its sub-regions'
                 if not isinstance(area_data, dict):
                     return
                     
-                # Безопасное получение значений
+                # Safety to obtain values
                 area_id = area_data.get("id")
                 area_name = area_data.get("name")
                 
@@ -150,15 +150,15 @@ class VacancyBuilderService:
                         area_id_int = int(area_id)
                         areas.append(VacancyArea(id=area_id_int, name=str(area_name)))
                     except (ValueError, TypeError):
-                        pass  # пропускаем регионы с некорректными ID
+                        pass  # missing regions with incorrect IDs
                 
-                # Рекурсивно обрабатываем подрегионы
+                # Recurring sub-regions
                 sub_areas = area_data.get("areas")
                 if isinstance(sub_areas, list):
                     for sub_area in sub_areas:
                         process_area(sub_area)
             
-            # Согласно официальной документации HH API, /areas возвращает прямой массив регионов
+            # According to official HH API documentation, /areas returns a direct array of regions
             logger.info(f"Received data type: {type(areas_data)}")
             if not isinstance(areas_data, list):
                 logger.error(f"HH API returned unexpected type: {type(areas_data)}, expected list")
@@ -167,7 +167,7 @@ class VacancyBuilderService:
             areas_list = areas_data
             logger.info(f"Processing {len(areas_list)} top-level areas from HH API")
             
-            # Обрабатываем все регионы рекурсивно
+            # Processing all regions recursively
             for top_level_area in areas_list:
                 process_area(top_level_area)
             
@@ -179,9 +179,9 @@ class VacancyBuilderService:
             raise HTTPException(status_code=500, detail="Error loading areas")
     
     def get_professional_roles(self) -> List[VacancyProfessionalRole]:
-        """Получение списка профессиональных ролей через наш HH API сервис"""
+        'Getting a list of professional roles through our HH API service'
         try:
-            # Используем наш HH API сервис вместо прямого подключения
+            # Use our HH API service instead of a direct connection.
             logger.info(f"Requesting professional roles from {self.hh_api_url}/professional-roles")
             response = requests.get(f"{self.hh_api_url}/professional-roles", timeout=30)
             response.raise_for_status()
@@ -190,7 +190,7 @@ class VacancyBuilderService:
             logger.info(f"Professional roles raw response type: {type(roles_data)}, first few chars: {str(roles_data)[:200]}")
             
             roles = []
-            # Согласно официальной документации HH API, /professional_roles возвращает объект с categories
+            # According to the official HH API documentation, /professional_roles returns the object with categories
             logger.info(f"Professional roles data type: {type(roles_data)}, keys: {roles_data.keys() if isinstance(roles_data, dict) else 'not a dict'}")
             
             if not isinstance(roles_data, dict) or "categories" not in roles_data:
@@ -219,44 +219,44 @@ class VacancyBuilderService:
             raise HTTPException(status_code=500, detail="Error loading roles")
     
     def validate_vacancy_draft(self, draft: VacancyDraft) -> List[VacancyValidationError]:
-        """Валидация черновика вакансии"""
+        'Validation of the draft of the vacancy'
         errors = []
         
-        # Валидация названия
+        # Name validation
         if not draft.name or len(draft.name.strip()) < 3:
             errors.append(VacancyValidationError(
                 field="name",
-                message="Название вакансии должно содержать минимум 3 символа"
+                message='The name of the vacancy shall contain a minimum of 3 characters'
             ))
         
-        # Валидация описания
+        # Description validation
         if not draft.description or len(draft.description.strip()) < 200:
             errors.append(VacancyValidationError(
                 field="description",
-                message="Описание вакансии должно содержать минимум 200 символов"
+                message='The vacancy description shall contain a minimum of 200 symbols'
             ))
         
-        # Валидация зарплаты
+        # Salary validation
         if draft.salary:
             if draft.salary.from_amount and draft.salary.to_amount:
                 if draft.salary.from_amount > draft.salary.to_amount:
                     errors.append(VacancyValidationError(
                         field="salary",
-                        message="Зарплата 'от' не может быть больше зарплаты 'до'"
+                        message="The pay 't' can't be more than 'd''"
                     ))
         
-        # Валидация контактов
+        # Contact validation
         if draft.contact:
             if draft.contact.email and "@" not in draft.contact.email:
                 errors.append(VacancyValidationError(
                     field="contact.email",
-                    message="Некорректный формат email"
+                    message='Uncorrect email format'
                 ))
         
         return errors
     
     def prepare_hh_vacancy_data(self, draft: VacancyDraft, company_name: str) -> Dict[str, Any]:
-        """Подготовка данных для создания вакансии в HH API формате"""
+        'Preparation of HH API vacancy data'
         vacancy_data = {
             "name": draft.name,
             "description": draft.description,
@@ -271,7 +271,7 @@ class VacancyBuilderService:
             "accept_kids": draft.accept_kids
         }
         
-        # Добавляем зарплату если указана
+        # Add a salary if specified
         if draft.salary:
             salary_data = {}
             if draft.salary.from_amount:
@@ -282,13 +282,13 @@ class VacancyBuilderService:
             salary_data["gross"] = draft.salary.gross
             vacancy_data["salary"] = salary_data
         
-        # Добавляем контактную информацию
+        # Add contact information
         if draft.contact:
             contacts = {"name": draft.contact.name}
             if draft.contact.email:
                 contacts["email"] = draft.contact.email
             if draft.contact.phone:
-                # Простое разбиение телефона (можно улучшить)
+                # Simple cell phone break-up (may be improved)
                 phone = draft.contact.phone.replace("+", "").replace("-", "").replace(" ", "")
                 if phone.startswith("7") and len(phone) == 11:
                     contacts["phones"] = [{
@@ -301,38 +301,38 @@ class VacancyBuilderService:
         return vacancy_data
     
     def create_vacancy(self, request: VacancyCreationRequest) -> VacancyCreationResponse:
-        """Создание вакансии на HH.ru"""
+        'Creation of a vacancy on HH.ru'
         try:
-            logger.info(f"Создание вакансии: {request.draft.name}")
+            logger.info(f"Vacancy creation: {request.draft.name}")
             
-            # Валидация черновика
+            # Draft validation
             validation_errors = self.validate_vacancy_draft(request.draft)
             if validation_errors:
                 return VacancyCreationResponse(
                     success=False,
                     errors=validation_errors,
-                    message="Вакансия содержит ошибки валидации"
+                    message='Vacation contains validation errors'
                 )
             
-            # Подготовка данных для HH API
+            # HH API Data Preparation
             vacancy_data = self.prepare_hh_vacancy_data(request.draft, request.company_name)
             
-            # Отправка запроса на создание вакансии через HH API
+            # Sending a job request via HH API
             try:
                 response_data = self._make_hh_request("POST", "/employer/vacancies", vacancy_data)
-                logger.info("Вакансия успешно создана через HH API")
+                logger.info('The vacancy was successfully created through HH API')
             except HTTPException as e:
-                logger.error(f"Ошибка создания вакансии в HH API: {e.detail}")
-                # Если ошибка - возвращаем mock для демонстрации
+                logger.error(f"Errors in HH API: {e.detail}")
+                # If the error is made, we return the mock for the demonstration
                 response_data = {
                     "id": f"mock_vacancy_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
                     "alternate_url": f"https://hh.ru/vacancy/{int(datetime.now().timestamp())}",
                     "name": request.draft.name,
-                    "area": {"id": request.draft.area_id, "name": "Регион"},
+                    "area": {"id": request.draft.area_id, "name": 'Region'},
                     "created_at": datetime.now().isoformat(),
                     "published_at": datetime.now().isoformat(),
                     "published": True,
-                    "_note": "Mock-вакансия для демонстрации (ошибка HH API)"
+                    "_note": 'Mock vacation for demonstration (HH API error))'
                 }
             
             mock_response = response_data
@@ -346,101 +346,69 @@ class VacancyBuilderService:
                 published=mock_response["published"]
             )
             
-            logger.info(f"Вакансия успешно создана: {vacancy_response.id}")
+            logger.info(f"The vacancy has been successfully established: {vacancy_response.id}")
             
             return VacancyCreationResponse(
                 success=True,
                 vacancy=vacancy_response,
-                message="Вакансия успешно создана"
+                message='The vacancy has been successfully created'
             )
             
         except Exception as e:
-            logger.error(f"Ошибка создания вакансии: {e}")
+            logger.error(f"Error of Creating a Vacation: {e}")
             return VacancyCreationResponse(
                 success=False,
-                message=f"Ошибка создания вакансии: {str(e)}"
+                message=f"Error of Creating a Vacation: {str(e)}"
             )
     
     def get_templates(self) -> List[VacancyTemplate]:
-        """Получение шаблонов вакансий"""
-        # Шаблон из примера задачи
+        'Obtaining vacancy templates'
+        # A template from the example of the task
         template = VacancyTemplate(
             id="it_project_manager_1c",
-            name="Руководитель проектов 1С",
+            name='Project Manager 1C',
             category="IT Management",
-            title="Руководитель проектов 1С",
-            description="""Мы — IT-компания полного цикла, аккредитованная в Минцифры.
-
-Мы создаем инновационные технологии и программные продукты, которые помогают нашим клиентам повышать эффективность и достижимость бизнес-целей, обеспечивая их конкурентное преимущество.
-
-В нашу команду требуется опытный профессионал на позицию «Руководитель проектов 1С».
-
-Обязанности:
-• Руководить разработкой и внедрением решений на базе 1С
-• Формировать roadmap и план-график реализации проекта, планировать ресурсы для реализации проекта
-• Управлять task-трекером проекта (ЯндексТрекер), проводить ежедневные статусы с командой (Microsoft Teams), вести базу знаний проекта (ЯндексWiki)
-• Оценивать результаты работ команды
-• Управлять рисками проекта, документирование работы с рисками
-• Участвовать в разработке и согласовании проектной документации
-• Контактировать с топ-менеджерами Заказчика, крупных компаний, и стейкхолдерами проекта
-• Разрабатывать и презентовать результаты работ, планы-графики проекта, оргструктуру проекта, отчеты о выполнении проекта
-• Участие в поиске и развитии сотрудников
-
-Требования:
-• Опыт работы на должности руководителя проектов от 4 лет
-• Опыт работы над проектами на базе 1С:Предприятие, 1С:УХ, 1С:ЗУП, 1С:НСИ(1С:MDM)
-• Опыт интеграций (ERP, ЗУП, шина данных и др)
-• Опыт входа в проект на стадии реализации
-• Знания жизненного цикла разработки, понимание архитектуры решений и внедрения базовых конфигураций 1С
-• Высшее образование (Приветствуется прохождение курсов по специализации "Управление проектами разработки программного обеспечения" с подтверждением сертификатом)
-
-Мы предлагаем:
-• Удаленная работа с периодическими выездами к заказчику (При желании предлагаем работу в комфортном офисе на м. Нагатинская)
-• Официальное трудоустройство по ТК РФ, включая все социальные гарантии
-• Конкурентная заработная плата, уровень которой обсуждается индивидуально по итогам собеседования в зависимости от вашего опыта и компетенций
-• Ресурсы для реализации внедрения новых методов управления проектами
-• Прозрачная обратная связь и коммуникация с высшим руководством
-
-Будем рады видеть вас в нашей команде!""",
+            title='Project Manager 1C',
+            description='We\'re a full-cycle IT company accredited to the Ministry of Science.\n\nWe create innovative technologies and software products that help our customers improve the efficiency and achievability of business goals, providing their competitive advantage.\n\nIn our team, we need an experienced professional at the 1C Project Manager position».\n\nResponsibilities:\n• Lead the development and implementation of 1C-based solutions\n• Develop roadmap and project schedule, plan resources for project implementation\n• Manage the project task tracker (YandexTracker), conduct daily status with the team (Microsoft Teams), lead the project knowledge base (YandexWiki))\n• Assess team performance\n• Management of project risks, documentation of risk management\n• Participate in the development and harmonization of project documents\n• Contact the Top Manager of the Buyer, major companies, and steakholders of the project\n• Develop and present the results of work, project plans, project structure, project performance reports\n• Participation in staff search and development\n\nRequirements:\n• 4-year experience as Project Manager\n• 1C: Enterprise, 1C: CCS, 1C:CCP, 1C:NSI(1C:MDM))\n• Integrating experience (ERP, ZKP, data tyre, etc.))\n• Project entry experience at the implementation stage\n• Knowledge of the life cycle of development, understanding of the decision architecture and implementation of 1C basic configurations\n• Graduate Education (Welcome to pass courses in the specialization "Project Management of Software Development" with certificate confirmation)\n\nWe propose:\n• Remote work with periodic visits to the employer (if you wish, offer work in a comfortable office at m). Nagatinsky)\n• Formal employment under the Russian Federation TC, including all social guarantees\n• Competitive wages, the level of which is discussed individually according to the results of the interview depending on your experience and competences\n• Resources for the implementation of new project management practices\n• Transparent feedback and communication with senior management\n\nWe\'ll be glad to see you on our team!',
             experience=VacancyExperienceLevel.MORE_THAN_6,
             employment=[EmploymentType.FULL],
             schedule=[ScheduleType.REMOTE, ScheduleType.FLEXIBLE],
             key_skills=[
-                VacancySkill(name="1С:Предприятие", required=True),
-                VacancySkill(name="Управление проектами", required=True),
-                VacancySkill(name="ERP системы", required=True),
-                VacancySkill(name="Яндекс.Трекер", required=False),
+                VacancySkill(name='1C: Enterprise', required=True),
+                VacancySkill(name='Project management', required=True),
+                VacancySkill(name='ERP System', required=True),
+                VacancySkill(name='Yandex. Trainer', required=False),
                 VacancySkill(name="Microsoft Teams", required=False),
-                VacancySkill(name="1С:ЗУП", required=True),
-                VacancySkill(name="1С:УХ", required=True),
-                VacancySkill(name="Интеграция систем", required=True)
+                VacancySkill(name='1C:SUP', required=True),
+                VacancySkill(name='1C:UH', required=True),
+                VacancySkill(name='System integration', required=True)
             ],
             benefits=[
-                "Удаленная работа",
-                "Гибкий график", 
-                "Официальное трудоустройство",
-                "Конкурентная зарплата",
-                "Профессиональное развитие",
-                "Комфортный офис",
-                "Социальные гарантии"
+                'Remote work',
+                'Flexible schedule', 
+                'Formal employment',
+                'Competition pay',
+                'Professional development',
+                'Easy office.',
+                'Social guarantees'
             ]
         )
         return [template]
     
     def get_template_by_id(self, template_id: str) -> Optional[VacancyTemplate]:
-        """Получение шаблона по ID"""
+        'ID template receipt'
         templates = self.get_templates()
         for template in templates:
             if template.id == template_id:
                 return template
         return None
 
-# Глобальная переменная для сервиса
+# Global variable for service
 vacancy_service = None
 
 @app.on_event("startup")
 async def startup_event():
-    """Инициализация при старте приложения"""
+    'Initialization at the start of application'
     global vacancy_service
     vacancy_service = VacancyBuilderService()
 
@@ -448,7 +416,7 @@ async def startup_event():
 
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
-    """Проверка здоровья сервиса"""
+    'Service health check'
     return HealthResponse(
         status="healthy",
         timestamp=datetime.now(),
@@ -457,7 +425,7 @@ async def health_check():
 
 @app.get("/areas")
 async def get_areas():
-    """Получение списка регионов"""
+    'Retrieving the list of regions'
     try:
         if vacancy_service is None:
             raise HTTPException(status_code=503, detail="Service not initialized")
@@ -476,47 +444,47 @@ async def get_areas():
 
 @app.get("/professional-roles")
 async def get_professional_roles():
-    """Получение списка профессиональных ролей"""
+    'Getting a list of professional roles'
     try:
         roles = vacancy_service.get_professional_roles()
         return {"professional_roles": [{"id": r.id, "name": r.name} for r in roles]}
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Ошибка получения профессиональных ролей: {e}")
-        raise HTTPException(status_code=500, detail="Внутренняя ошибка сервера")
+        logger.error(f"Error in obtaining professional roles: {e}")
+        raise HTTPException(status_code=500, detail='The internal server error')
 
 @app.get("/templates")
 async def get_templates():
-    """Получение списка шаблонов вакансий"""
+    'Obtaining a list of vacancy patterns'
     try:
         templates = vacancy_service.get_templates()
         return {"templates": [t.dict() for t in templates]}
     except Exception as e:
-        logger.error(f"Ошибка получения шаблонов: {e}")
-        raise HTTPException(status_code=500, detail="Внутренняя ошибка сервера")
+        logger.error(f"Error in receiving templates: {e}")
+        raise HTTPException(status_code=500, detail='The internal server error')
 
 @app.get("/templates/{template_id}")
 async def get_template(template_id: str):
-    """Получение шаблона по ID"""
+    'ID template receipt'
     template = vacancy_service.get_template_by_id(template_id)
     if not template:
-        raise HTTPException(status_code=404, detail="Шаблон не найден")
+        raise HTTPException(status_code=404, detail='No shuttle found.')
     return {"template": template.dict()}
 
 @app.post("/create", response_model=VacancyCreationResponse)
 async def create_vacancy(request: VacancyCreationRequest):
-    """Создание вакансии"""
+    'Vacancy creation'
     try:
         result = vacancy_service.create_vacancy(request)
         return result
     except Exception as e:
-        logger.error(f"Ошибка создания вакансии: {e}")
-        raise HTTPException(status_code=500, detail="Внутренняя ошибка сервера")
+        logger.error(f"Error of Creating a Vacation: {e}")
+        raise HTTPException(status_code=500, detail='The internal server error')
 
 @app.post("/validate")
 async def validate_vacancy(draft: VacancyDraft):
-    """Валидация черновика вакансии"""
+    'Validation of the draft of the vacancy'
     try:
         errors = vacancy_service.validate_vacancy_draft(draft)
         return {
@@ -524,8 +492,8 @@ async def validate_vacancy(draft: VacancyDraft):
             "errors": [e.dict() for e in errors]
         }
     except Exception as e:
-        logger.error(f"Ошибка валидации: {e}")
-        raise HTTPException(status_code=500, detail="Внутренняя ошибка сервера")
+        logger.error(f"Validation errors: {e}")
+        raise HTTPException(status_code=500, detail='The internal server error')
 
 if __name__ == "__main__":
     import uvicorn

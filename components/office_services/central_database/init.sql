@@ -1,15 +1,15 @@
 -- ====================================
--- Централизованная база данных агентов
--- SQL «Отпечатки» агентов согласно схеме
+-- Central database of agents
+-- SQL "fingerprints" of agents according to diagram
 -- ====================================
 
--- Создание базы данных
+-- Database development
 CREATE DATABASE IF NOT EXISTS office_services_agents;
 
 USE office_services_agents;
 
 -- ====================================
--- Таблица конфигураций агентов
+-- Agent configuration table
 -- ====================================
 CREATE TABLE IF NOT EXISTS agent_configurations (
     agent_id VARCHAR(255) PRIMARY KEY,
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS agent_configurations (
 );
 
 -- ====================================
--- Таблица организационной структуры
+-- Organization chart
 -- ====================================
 CREATE TABLE IF NOT EXISTS organizational_structure (
     id UUID DEFAULT (UUID()),
@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS organizational_structure (
 );
 
 -- ====================================
--- Реестр развернутых агентов
+-- Register of deployed agents
 -- ====================================
 CREATE TABLE IF NOT EXISTS deployed_agents_registry (
     agent_id VARCHAR(255) PRIMARY KEY,
@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS deployed_agents_registry (
 );
 
 -- ====================================
--- Таблица оперативной памяти (контекст задач)
+-- Operational Memory Table (Task Context))
 -- ====================================
 CREATE TABLE IF NOT EXISTS operational_memory (
     id UUID DEFAULT (UUID()),
@@ -82,7 +82,7 @@ CREATE TABLE IF NOT EXISTS operational_memory (
 );
 
 -- ====================================
--- Таблица core-памяти (правила)
+-- Core Memory Table (Rules))
 -- ====================================
 CREATE TABLE IF NOT EXISTS core_memory (
     id UUID DEFAULT (UUID()),
@@ -100,7 +100,7 @@ CREATE TABLE IF NOT EXISTS core_memory (
 );
 
 -- ====================================
--- Таблица истории чатов
+-- Table of chat rooms history
 -- ====================================
 CREATE TABLE IF NOT EXISTS chat_history (
     id UUID DEFAULT (UUID()),
@@ -119,7 +119,7 @@ CREATE TABLE IF NOT EXISTS chat_history (
 );
 
 -- ====================================
--- Таблица системных метрик
+-- System metric table
 -- ====================================
 CREATE TABLE IF NOT EXISTS system_metrics (
     id UUID DEFAULT (UUID()),
@@ -136,7 +136,7 @@ CREATE TABLE IF NOT EXISTS system_metrics (
 );
 
 -- ====================================
--- Создание индексов для производительности
+-- Creation of productivity indices
 -- ====================================
 CREATE INDEX IF NOT EXISTS idx_agent_config_active ON agent_configurations (is_active);
 CREATE INDEX IF NOT EXISTS idx_deployed_agents_status ON deployed_agents_registry (status);
@@ -144,20 +144,20 @@ CREATE INDEX IF NOT EXISTS idx_chat_history_agent_time ON chat_history (agent_id
 CREATE INDEX IF NOT EXISTS idx_operational_memory_agent ON operational_memory (agent_id);
 
 -- ====================================
--- Логирование инициализации
+-- Logging Initialization
 -- ====================================
 INSERT INTO system_metrics (metric_name, metric_value, agent_id, period) 
 VALUES ('database_initialized', 1.0, 'system', 'initialization');
 
 -- ====================================
--- Создание пользователя для приложения
+-- Create user for application
 -- ====================================
 CREATE USER IF NOT EXISTS 'office_services_user'@'%' IDENTIFIED BY 'office_services_pass';
 GRANT ALL PRIVILEGES ON office_services_agents.* TO 'office_services_user'@'%';
 FLUSH PRIVILEGES;
 
 -- ====================================
--- Финальная проверка
+-- Final verification
 -- ====================================
 SHOW TABLES;
 SELECT 'Centralized Agent Database initialized successfully' as status;

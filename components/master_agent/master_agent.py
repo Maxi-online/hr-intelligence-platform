@@ -1,8 +1,8 @@
 """
-Master Agent (РЕКС) - Главный координатор нейросотрудников
+Master Agent (REX) - Chief Coordinator of Neuro Officers
 
-Автономный AI агент использующий GPT-5 для управления всеми нейросотрудниками
-организации с AutoGPT логикой планирования и принятия решений.
+Autonomous AI Agent uses GPT-5 to manage all Neuro staff
+AutoGPT planning and decision-making logic.
 
 Author: Candidate Analysis Team
 Version: 1.0.0
@@ -33,41 +33,41 @@ logger = logging.getLogger("master-agent")
 
 class MasterAgent:
     """
-    Главный координатор нейросотрудников (РЕКС)
+    Chief Coordinator of Neuro Officers (REX)
     
-    Ключевые возможности:
-    - 🧠 GPT-5 для стратегического планирования
-    - 💬 Естественное общение с людьми через Teams/Telegram
-    - 🎯 Автономное распределение задач между агентами
-    - 🏛️ Понимание контекста организации
-    - ✅ Контроль качества и обучение
-    - 📊 Мониторинг и аналитика
-    - ⚙️ Управление рабочими процессами
+    Key opportunities:
+    - 🧠 GPT-5 for strategic planning
+    - 💬 Natural communication with people through Teams/Telegram
+    - 🎯 Autonomous task sharing among agents
+    - 🏛️ Understanding the context of the organization
+    - ✅ Quality control and learning
+    - 📊 Monitoring and Analyst
+    - ⚙️ Business processes management
     """
     
     def __init__(self, config: Dict[str, Any]):
         self.config = config
         self.logger = logger
         
-        # Уникальный ID агента
+        # A unique I.D. Agent
         self.agent_id = f"master_agent_{uuid.uuid4().hex[:8]}"
         
-        # Настройка LLM
+        # LLM Settings
         self._setup_llm()
         
-        # Инициализация компонентов
+        # Initialization of components
         self.messenger = MessengerInterface(config)
         self.task_distributor = TaskDistributor(config, self)
         self.org_context = OrganizationContextManager(config)
         self.memory_manager = MasterMemoryManager(config)
         self.quality_controller = QualityController(config, self)
         
-        # Активные задачи и состояние
+        # Active tasks and status
         self.active_tasks: Dict[str, Dict[str, Any]] = {}
         self.agent_statuses: Dict[str, Dict[str, Any]] = {}
         self.conversation_contexts: Dict[str, List[ConversationMessage]] = {}
         
-        # Статистика
+        # Statistics
         self.stats = {
             "total_tasks": 0,
             "completed_tasks": 0,
@@ -78,18 +78,18 @@ class MasterAgent:
             "uptime_start": datetime.now()
         }
         
-        logger.info(f"💼 РЕКС - AI Директор инициализирован: {self.agent_id}")
+        logger.info(f"💼 REX-AI Director initialized: {self.agent_id}")
     
     def _setup_llm(self):
-        """Настройка LLM клиентов"""
+        'LLM client settings'
         try:
             ai_config = self.config.get("master_agent", {})
             
-            # Основной GPT-5 для стратегического планирования
+            # Core GPT-5 for strategic planning
             self.main_model = ai_config.get("main_model", "gpt-5-mini")
             self.fast_model = ai_config.get("fast_model", "gpt-5-mini")
             
-            # Настройка прокси
+            # Settings of Proxi
             proxy_config = ai_config.get("proxy", {})
             proxy_enabled = proxy_config.get("enabled", False)
             
@@ -104,7 +104,7 @@ class MasterAgent:
             if not http_client:
                 http_client = httpx.AsyncClient(timeout=httpx.Timeout(60.0))
             
-            # OpenRouter или OpenAI клиент
+            # OpenRouter or OpenAI client
             base_url = ai_config.get("base_url", "https://openrouter.ai/api/v1")
             api_key = ai_config.get("openrouter_api_key") or ai_config.get("openai_api_key")
             
@@ -114,56 +114,56 @@ class MasterAgent:
                 http_client=http_client
             )
             
-            # Параметры GPT-5
+            # GPT-5 Options
             self.max_completion_tokens = ai_config.get("max_completion_tokens", 4000)
             self.temperature = ai_config.get("temperature", 0.2)
             
-            # GPT-5 специфичные настройки
+            # GPT-5 Specific Settings
             gpt5_features = ai_config.get("gpt5_features", {})
             self.verbosity = gpt5_features.get("default_verbosity", "medium")
             self.reasoning_effort = gpt5_features.get("default_reasoning_effort", "medium")
             
-            logger.info(f"✅ LLM настроен: {self.main_model}")
+            logger.info(f"✅ LLM is set: {self.main_model}")
             
         except Exception as e:
-            logger.error(f"❌ Ошибка настройки LLM: {e}")
+            logger.error(f"❌ Configuration of LLM errors: {e}")
             raise
     
     async def initialize(self):
-        """Инициализация всех компонентов"""
+        'Initialization of all components'
         try:
-            # Инициализация подсистем
+            # Initialization of subsystems
             await self.messenger.initialize()
             await self.task_distributor.initialize()
             await self.org_context.initialize()
             await self.memory_manager.initialize()
             await self.quality_controller.initialize()
             
-            # Восстановление состояния из памяти
+            # Restoration of memory
             await self._restore_state()
             
-            logger.info("🚀 Master Agent полностью инициализирован")
+            logger.info('🚀 Master Agent fully initialized')
             
         except Exception as e:
-            logger.error(f"❌ Ошибка инициализации Master Agent: {e}")
+            logger.error(f"Error: ❌ Initialization of Master Agent: {e}")
             raise
     
     async def process_task(self, request: MasterTaskRequest, progress_callback: Optional[Callable] = None) -> MasterTaskResponse:
         """
-        Основной цикл обработки задачи (AutoGPT логика)
+        Main task processing cycle (AutuGPT logic)
         
-        Этапы:
-        1. ANALYZE - Глубокий анализ задачи и контекста
-        2. PLAN - Стратегическое планирование и выбор агентов  
-        3. ACT - Делегирование задач и координация
-        4. EVALUATE - Оценка результатов и качества
-        5. DECIDE - Принятие решений о следующих шагах
+        Steps:
+        1. ANALYZE - In-depth analysis of the challenge and context
+        2. PLAN - Strategic planning and selection of agents  
+        3. ACT - Delegation of tasks and coordination
+        4. EVALUATE - Evaluation of results and quality
+        5. DECIDE - Decision-making on next steps
         """
         task_id = f"task_{uuid.uuid4().hex[:8]}"
         start_time = datetime.now()
         
         try:
-            # Создание задачи
+            # Creation of the task
             task_data = {
                 "id": task_id,
                 "request": request,
@@ -178,31 +178,31 @@ class MasterAgent:
             self.active_tasks[task_id] = task_data
             self.stats["total_tasks"] += 1
             
-            # Уведомление о принятии задачи
+            # Notification of acceptance of task
             response = MasterTaskResponse(
                 task_id=task_id,
                 status=MasterTaskStatus.ANALYZING,
-                message=f"Задача принята к выполнению. Начинаю анализ цели: '{request.goal}'",
-                estimated_duration="Анализирую...",
+                message=f"Target accepted. Commencing goal analysis: '{request.goal}'",
+                estimated_duration="I'm analyzing...",
                 assigned_agents=[]
             )
             
             if progress_callback:
-                await progress_callback(task_id, "received", ["Задача получена", "Начинаю обработку"])
+                await progress_callback(task_id, "received", ['Objective received', 'Commence processing'])
             
-            # === 1. ANALYZE - Глубокий анализ ===
+            # === 1. ANALYZE - In-depth analysis ===
             analysis_result = await self._deep_analysis(task_data)
             task_data["analysis"] = analysis_result
             task_data["progress"] = 0.2
             
             if progress_callback:
                 await progress_callback(task_id, "analyzing", [
-                    "Анализ завершен",
-                    f"Тип задачи: {analysis_result.get('task_type', 'general')}",
-                    f"Сложность: {analysis_result.get('complexity', 'medium')}"
+                    'Analysis completed',
+                    f"Type of task: {analysis_result.get('task_type', 'general')}",
+                    f"Complexity: {analysis_result.get('complexity', 'medium')}"
                 ])
             
-            # === 2. PLAN - Стратегическое планирование ===
+            # === 2. PLAN - Strategic planning ===
             task_data["status"] = MasterTaskStatus.PLANNING
             planning_result = await self._strategic_planning(task_data)
             task_data["plan"] = planning_result
@@ -210,12 +210,12 @@ class MasterAgent:
             
             if progress_callback:
                 await progress_callback(task_id, "planning", [
-                    "План создан",
-                    f"Агенты: {', '.join(planning_result.get('agents', []))}",
-                    f"Этапы: {len(planning_result.get('steps', []))}"
+                    'Plan established',
+                    f"Agents: {', '.join(planning_result.get('agents', []))}",
+                    f"Steps: {len(planning_result.get('steps', []))}"
                 ])
             
-            # === 3. ACT - Делегирование и координация ===
+            # === 3. ACT - Delegation and coordination ===
             task_data["status"] = MasterTaskStatus.DELEGATING
             execution_result = await self._coordinate_execution(task_data)
             task_data["execution"] = execution_result
@@ -223,23 +223,23 @@ class MasterAgent:
             
             if progress_callback:
                 await progress_callback(task_id, "executing", [
-                    "Задачи делегированы",
-                    "Координирую выполнение",
-                    f"Активных агентов: {len(execution_result.get('active_agents', []))}"
+                    'Tasks delegated',
+                    'Coordinated implementation',
+                    f"Active agents: {len(execution_result.get('active_agents', []))}"
                 ])
             
-            # === 4. EVALUATE - Оценка результатов ===
+            # === 4. EVALUATE - Evaluation of results ===
             task_data["status"] = MasterTaskStatus.MONITORING
             evaluation_result = await self._evaluate_results(task_data)
             task_data["evaluation"] = evaluation_result
             task_data["progress"] = 0.95
             
-            # === 5. DECIDE - Принятие решений ===
+            # === 5. DECIDE - Decision-making ===
             decision_result = await self._make_final_decision(task_data)
             task_data["decision"] = decision_result
             task_data["progress"] = 1.0
             
-            # Завершение
+            # Conclusion
             if decision_result.get("success", False):
                 task_data["status"] = MasterTaskStatus.COMPLETED
                 self.stats["completed_tasks"] += 1
@@ -247,11 +247,11 @@ class MasterAgent:
                 completion_time = (datetime.now() - start_time).total_seconds()
                 self._update_performance_metrics(completion_time, True)
                 
-                # Сохранение успешной стратегии
+                # Maintaining a successful strategy
                 await self._save_successful_strategy(task_data)
                 
                 response.status = MasterTaskStatus.COMPLETED
-                response.message = decision_result.get("message", "Задача выполнена успешно")
+                response.message = decision_result.get("message", 'Achieved successfully')
                 response.assigned_agents = planning_result.get("agents", [])
                 
             else:
@@ -259,18 +259,18 @@ class MasterAgent:
                 self.stats["failed_tasks"] += 1
                 
                 response.status = MasterTaskStatus.FAILED
-                response.message = decision_result.get("message", "Задача не выполнена")
+                response.message = decision_result.get("message", 'Mission not achieved')
             
             if progress_callback:
                 await progress_callback(task_id, "completed", [
-                    decision_result.get("message", "Задача завершена"),
-                    f"Время выполнения: {(datetime.now() - start_time).total_seconds():.1f}с"
+                    decision_result.get("message", 'Completed'),
+                    f"Time frame: {(datetime.now() - start_time).total_seconds():.1f}c"
                 ])
             
             return response
             
         except Exception as e:
-            logger.error(f"❌ Ошибка обработки задачи {task_id}: {e}")
+            logger.error(f"❌ Error of task processing {task_id}: {e}")
             self.stats["failed_tasks"] += 1
             
             if task_id in self.active_tasks:
@@ -280,91 +280,91 @@ class MasterAgent:
             return MasterTaskResponse(
                 task_id=task_id,
                 status=MasterTaskStatus.FAILED,
-                message=f"Ошибка выполнения: {str(e)}",
+                message=f"Error of execution: {str(e)}",
                 estimated_duration="N/A",
                 assigned_agents=[]
             )
     
     async def _deep_analysis(self, task_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Глубокий анализ задачи с использованием GPT-5"""
+        'In-depth GPT-5 task analysis'
         try:
             request = task_data["request"]
             
-            # Получение контекста организации
+            # Getting the context of the organization
             org_context = await self.org_context.get_context()
             
-            # Анализ истории похожих задач
+            # Analysis of the history of similar tasks
             similar_tasks = await self.memory_manager.find_similar_tasks(request.goal)
             
-            # Промпт для директорского анализа
+            # Prompt for Director Analysis
             analysis_prompt = f"""
-Ты - РЕКС, AI директор компании "{org_context.company_name}".
-Ты управляешь ВСЕМИ отделами и принимаешь стратегические решения.
+You're REX, AI's director of the company.{org_context.company_name}\".
+You run every department and make strategic decisions.
 
-ЗАДАЧА ДЛЯ АНАЛИЗА:
-Цель: {request.goal}
-Контекст: {json.dumps(request.context, ensure_ascii=False, indent=2)}
-Приоритет: {request.priority}
-Отделы: {request.departments or 'не указаны'}
-Ограничения: {request.constraints}
+ANALYSIS'S OBJECTIVE:
+Objective: {request.goal}
+Context: {json.dumps(request.context, ensure_ascii=False, indent=2)}
+Priority: {request.priority}
+Divisions: {request.departments or 'Not specified'}
+Limitations: {request.constraints}
 
-КОНТЕКСТ ОРГАНИЗАЦИИ:
-- Отрасль: {org_context.industry}
-- Размер: {org_context.company_size}
-- Отделы под управлением: {[dept.get('name', '') for dept in org_context.departments]}
-- Стиль управления: {org_context.communication_style}
+CONTEXT OF THE UNITED NATIONS:
+- Industry: {org_context.industry}
+- Size: {org_context.company_size}
+- Divisions managed by: {[dept.get('name', '') for dept in org_context.departments]}
+- Control style: {org_context.communication_style}
 
-ДОСТУПНЫЕ РЕСУРСЫ:
-ЛЮДИ ПО ОТДЕЛАМ:
+ELEVABLE RESOURCES:
+People in the department:
 {self._format_human_resources(org_context)}
 
-ИИ-ИНСТРУМЕНТЫ:
-1. Recruitment Runtime - HR: создание вакансий, анализ откликов
-2. Active Recruiter - HR: активный поиск, headhunting
-3. Data Analyst - Аналитика: бизнес-метрики, отчеты
-4. Content Generator - Маркетинг: контент, соцсети
-5. Code Reviewer - Разработка: анализ кода, ревью
-6. Customer Support - Сервис: поддержка клиентов
-7. Finance Helper - Финансы: анализ бюджета, отчеты
-8. Generic Tool - Универсальный настраиваемый инструмент
+INSTRUMENTS:
+1. Recruitment Runtime - HR: job creation, feedback analysis
+2. Active Recruiter - HR: Active Search, Headhunting
+3. Data Analyst - Analysis: Business metrics, reports
+4. Content Generator - Marketing: Content, social media
+5. Code Reviewer - Development: code analysis, review
+6. Computer Support - Services: client support
+7. Finance Help - Finance: Budget Analysis, Reports
+8. Generic Tool - Universal Setup Tool
 
-ПОХОЖИЕ РЕШЕНИЯ ИЗ ОПЫТА:
+EXPERIENCE SOLUTIONS:
 {json.dumps(similar_tasks, ensure_ascii=False, indent=2)}
 
-ПРОАНАЛИЗИРУЙ КАК ДИРЕКТОР:
-1. Природа и масштаб задачи (какие отделы затронуты)
-2. Стратегическая важность для компании
-3. Требуется ли информация от людей
-4. Какие инструменты могут помочь
-5. Кого из людей привлечь и почему
-6. Последовательность действий и координация
-7. Риски и возможности для бизнеса
-8. Влияние на общие цели компании
+PROANALIZATION AS DIRECTOR:
+1. Nature and scope of the task (which divisions are affected))
+2. Strategic importance for the company
+3. Whether information is required from people
+4. What tools can help
+5. Which people to attract and why
+6. Synergies and coordination
+7. Risks and business opportunities
+8. Impact on the general objectives of the company
 
-Ответь в формате JSON:
+Answer JSON:
 {{
-    "task_nature": "описание природы задачи",
-    "domain": "основная область (hr/tech/marketing/finance/management/universal)",
-    "scope": "масштаб (departmental/cross_departmental/company_wide)",
-    "complexity": "сложность (low/medium/high/strategic)",
-    "affected_departments": ["список затронутых отделов"],
-    "required_human_input": ["что нужно узнать у людей"],
-    "recommended_tools": ["список рекомендуемых инструментов"],
-    "human_assignments": ["кого из людей привлечь"],
-    "strategic_importance": "low/medium/high/critical",
-    "business_impact": "описание влияния на бизнес",
-    "key_stages": ["этап 1", "этап 2", ...],
-    "risks": ["риск 1", "риск 2", ...],
-    "estimated_hours": число,
-    "confidence": 0.95,
-    "director_insights": ["ключевые инсайты директора"]
+    \"task_nature\": \"Description of the nature of the task\",
+    \"domain\": \"Main area (hr/tech/marketing/finance/management/universal)\",
+    \"scope\": \"Scope (departmental/cross_departmental/company_wide)\",
+    \"complexity\": \"Complexity (low/medium/high/strategic)\",
+    \"affected_departments\": [\"List of affected divisions\"],
+    \"required_human_input\": [\"What people need to know\"],
+    \"recommended_tools\": [\"List of recommended tools\"],
+    \"human_assignments\": [\"Someone to attract\"],
+    \"strategic_importance\": \"low/medium/high/critical\",
+    \"business_impact\": \"Description of the impact on business\",
+    \"key_stages\": [\"Phase 1\", \"Phase 2\", ...],
+    \"risks\": [\"Risk 1\", \"Risk 2\", ...],
+    \"estimated_hours\": number,
+    \"confidence\": 0.95,
+    \"director_insights\": [\"Director &apos; s key websites\"]
 }}
 """
             
             response = await self.llm_client.chat.completions.create(
                 model=self.main_model,
                 messages=[
-                    {"role": "system", "content": "Ты директор компании с полными полномочиями управления всеми отделами."},
+                    {"role": "system", "content": "You're the director of a company with full authority to run all departments."},
                     {"role": "user", "content": analysis_prompt}
                 ],
                 temperature=self.temperature,
@@ -376,11 +376,11 @@ class MasterAgent:
             
             analysis_result = json.loads(response.choices[0].message.content)
             
-            logger.info(f"✅ Анализ завершен: {analysis_result.get('domain')} ({analysis_result.get('complexity')})")
+            logger.info(f"✅ Analysis completed: {analysis_result.get('domain')} ({analysis_result.get('complexity')})")
             return analysis_result
             
         except Exception as e:
-            logger.error(f"❌ Ошибка анализа: {e}")
+            logger.error(f"❌ Error of analysis: {e}")
             return {
                 "task_nature": "standard",
                 "domain": "universal",
@@ -389,75 +389,75 @@ class MasterAgent:
                 "affected_departments": ["management"],
                 "recommended_tools": ["generic_tool"],
                 "strategic_importance": "medium",
-                "business_impact": "Требует внимания",
+                "business_impact": 'Needs attention.',
                 "estimated_hours": 2,
                 "confidence": 0.5,
-                "director_insights": ["Необходим дополнительный анализ"],
+                "director_insights": ['Further analysis required'],
                 "error": str(e)
             }
     
     def _format_human_resources(self, org_context: OrganizationContext) -> str:
-        """Форматирование информации о человеческих ресурсах"""
+        'Formatting information on human resources'
         resources = []
         for dept in org_context.departments:
-            dept_name = dept.get('name', 'Неизвестный отдел')
-            dept_head = dept.get('head', 'Не назначен')
+            dept_name = dept.get('name', 'Unknown Division')
+            dept_head = dept.get('head', 'Not designated')
             dept_size = dept.get('size', 0)
             
-            resources.append(f"- {dept_name}: {dept_head} (команда {dept_size} чел.)")
+            resources.append(f"- {dept_name}: {dept_head} (command) {dept_size} (number of persons)")
         
         return "\n".join(resources)
     
     async def _strategic_planning(self, task_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Стратегическое планирование выполнения"""
+        'Strategic implementation planning'
         try:
             analysis = task_data["analysis"]
             request = task_data["request"]
             
-            # Проверка доступности агентов
+            # Checking the availability of agents
             agent_availability = await self.task_distributor.check_agent_availability()
             
             planning_prompt = f"""
-На основе анализа задачи создай детальный план выполнения.
+On the basis of the task analysis, establish a detailed implementation plan.
 
-АНАЛИЗ ЗАДАЧИ:
+ANALYSIS OF THE PROBLEMS:
 {json.dumps(analysis, ensure_ascii=False, indent=2)}
 
-ДОСТУПНОСТЬ АГЕНТОВ:
+ACCESS TO AGENCIES:
 {json.dumps(agent_availability, ensure_ascii=False, indent=2)}
 
-СОЗДАЙ ПЛАН:
-1. Последовательность шагов
-2. Распределение по агентам  
-3. Зависимости между задачами
-4. Временные рамки
-5. Точки контроля и синхронизации
-6. Plan B при сбоях
+ESTABLISH THE PLAN:
+1. Step sequence
+2. Agent distribution  
+3. Relationships between tasks
+4. Time frame
+5. Control and sync points
+6. Plan B for malfunctions
 
-Формат ответа JSON:
+JSON response format:
 {{
-    "agents": ["список выбранных агентов"],
-    "steps": [
+    \"agents\": [\"List of selected agents\"],
+    \"steps\": [
         {{
-            "step": 1,
-            "description": "описание",
-            "agent": "тип агента",
-            "estimated_time": "время",
-            "dependencies": ["зависимости"],
-            "deliverables": ["результаты"]
+            \"step\": 1,
+            \"description\": \"Description\",
+            \"agent\": \"Type of agent\",
+            \"estimated_time\": \"time\",
+            \"dependencies\": [\"Dependency\"],
+            \"deliverables\": [\"results\"]
         }}
     ],
-    "coordination_points": ["точки синхронизации"],
-    "quality_checks": ["проверки качества"], 
-    "contingency_plans": ["планы на случай сбоев"],
-    "total_estimated_time": "общее время"
+    \"coordination_points\": [\"Synchronization points\"],
+    \"quality_checks\": [\"Quality assurance\"], 
+    \"contingency_plans\": [\"Malfunction plans\"],
+    \"total_estimated_time\": \"Total time\"
 }}
 """
             
             response = await self.llm_client.chat.completions.create(
                 model=self.main_model,
                 messages=[
-                    {"role": "system", "content": "Ты стратегический планировщик задач для команды ИИ-агентов."},
+                    {"role": "system", "content": "You're a strategic task planner for an I.I.A. team."},
                     {"role": "user", "content": planning_prompt}
                 ],
                 temperature=self.temperature,
@@ -469,40 +469,40 @@ class MasterAgent:
             
             plan = json.loads(response.choices[0].message.content)
             
-            # Валидация плана
+            # Plan validation
             if not plan.get("agents") or not plan.get("steps"):
-                raise ValueError("План должен содержать агентов и шаги")
+                raise ValueError('The plan should contain agents and steps')
             
-            logger.info(f"✅ План создан: {len(plan.get('steps', []))} шагов, {len(plan.get('agents', []))} агентов")
+            logger.info(f"✅ Plan established: {len(plan.get('steps', []))} Steps, {len(plan.get('agents', []))} Agents")
             return plan
             
         except Exception as e:
-            logger.error(f"❌ Ошибка планирования: {e}")
-            # Базовый план
+            logger.error(f"❌ Error of planning: {e}")
+            # Basic plan
             return {
                 "approach": "standard",
                 "strategy_type": "delegation", 
-                "execution_sequence": ["Анализ", "Планирование", "Выполнение"],
+                "execution_sequence": ['Analysis', 'Planning', 'Implementation'],
                 "human_assignments": [],
-                "tool_assignments": [{"tool_type": "generic_tool", "task": "Выполнить задачу", "priority": "medium"}],
-                "estimated_timeline": "2-4 часа",
+                "tool_assignments": [{"tool_type": "generic_tool", "task": 'Do the task', "priority": "medium"}],
+                "estimated_timeline": '2-4 hours',
                 "error": str(e)
             }
     
     async def _coordinate_execution(self, task_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Координация выполнения через Task Distributor"""
+        'Coordination of implementation through Task Distributor'
         try:
             plan = task_data["plan"]
             request = task_data["request"]
             
-            # Делегирование задач агентам
+            # Delegation of tasks to agents
             execution_results = []
             active_agents = []
             
             for step in plan.get("steps", []):
                 agent_type = step.get("agent")
                 if agent_type:
-                    # Создание назначения инструменту
+                    # Creation of a tool appointment
                     subtask = TaskAssignment(
                         task_id=task_data["id"],
                         assignment_type="tool",
@@ -510,10 +510,10 @@ class MasterAgent:
                         goal=step.get("description", request.goal),
                         context=request.context,
                         priority=request.priority,
-                        estimated_time=step.get("estimated_time", "1 час")
+                        estimated_time=step.get("estimated_time", '1 hour')
                     )
                     
-                    # Отправка задачи агенту
+                    # Sending a task to an agent
                     result = await self.task_distributor.delegate_task(subtask)
                     execution_results.append(result)
                     
@@ -527,17 +527,17 @@ class MasterAgent:
             }
             
         except Exception as e:
-            logger.error(f"❌ Ошибка координации: {e}")
+            logger.error(f"❌ Error of coordination: {e}")
             return {"error": str(e), "active_agents": []}
     
     async def _evaluate_results(self, task_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Оценка результатов выполнения"""
+        'Performance evaluation'
         try:
-            # Сбор результатов от всех агентов
+            # Collection of results from all agents
             task_id = task_data["id"]
             agent_results = await self.task_distributor.collect_results(task_id)
             
-            # Анализ качества
+            # Quality analysis
             quality_metrics = await self.quality_controller.evaluate_task_quality(task_data, agent_results)
             
             return {
@@ -547,44 +547,44 @@ class MasterAgent:
             }
             
         except Exception as e:
-            logger.error(f"❌ Ошибка оценки: {e}")
+            logger.error(f"❌ Error of assessment: {e}")
             return {"error": str(e), "overall_success": False}
     
     async def _make_final_decision(self, task_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Принятие финального решения"""
+        'Final decision'
         try:
             evaluation = task_data.get("evaluation", {})
             
             if evaluation.get("overall_success", False):
                 return {
                     "success": True,
-                    "message": "Задача выполнена успешно",
-                    "next_actions": ["Уведомить заказчика", "Сохранить результаты"]
+                    "message": 'Achieved successfully',
+                    "next_actions": ['Notify customer', 'Save Results']
                 }
             else:
                 return {
                     "success": False,
-                    "message": "Задача выполнена с ошибками",
-                    "next_actions": ["Эскалация", "Повторная попытка"]
+                    "message": 'The task is done with errors',
+                    "next_actions": ['Escalation', 'Retry']
                 }
                 
         except Exception as e:
-            logger.error(f"❌ Ошибка принятия решения: {e}")
-            return {"success": False, "message": f"Ошибка: {e}"}
+            logger.error(f"❌ Error in decision making: {e}")
+            return {"success": False, "message": f"mistake: {e}"}
     
     async def _restore_state(self):
-        """Восстановление состояния из памяти"""
+        'Restoration of memory'
         try:
             saved_state = await self.memory_manager.get_master_memory()
             if saved_state:
                 self.active_tasks = saved_state.active_tasks
                 self.agent_statuses = saved_state.agent_statuses
-                logger.info("✅ Состояние восстановлено из памяти")
+                logger.info('✅ Restored from memory')
         except Exception as e:
-            logger.warning(f"⚠️ Не удалось восстановить состояние: {e}")
+            logger.warning(f"⚠️ Unable to recover: {e}")
     
     async def _save_successful_strategy(self, task_data: Dict[str, Any]):
-        """Сохранение успешной стратегии в память"""
+        'Keeping a successful strategy in memory'
         try:
             strategy = {
                 "goal_pattern": task_data["request"].goal,
@@ -595,11 +595,11 @@ class MasterAgent:
             }
             await self.memory_manager.save_successful_strategy(strategy)
         except Exception as e:
-            logger.error(f"❌ Ошибка сохранения стратегии: {e}")
+            logger.error(f"❌ Mistake of Strategy Maintenance: {e}")
     
     def _update_performance_metrics(self, completion_time: float, success: bool):
-        """Обновление метрик производительности"""
-        # Обновление среднего времени выполнения
+        'Update productivity metrics'
+        # Update of average implementation time
         total_completed = self.stats["completed_tasks"]
         if total_completed > 0:
             current_avg = self.stats["average_completion_time"]
@@ -610,7 +610,7 @@ class MasterAgent:
             self.stats["average_completion_time"] = completion_time
     
     async def get_status(self) -> Dict[str, Any]:
-        """Получение статуса Master Agent"""
+        'Taking Master Agency status'
         uptime = (datetime.now() - self.stats["uptime_start"]).total_seconds()
         
         return {
@@ -624,19 +624,19 @@ class MasterAgent:
         }
     
     async def handle_conversation(self, message: ConversationMessage) -> ConversationMessage:
-        """Обработка сообщения в диалоге"""
+        'Processing of communication in dialogue'
         try:
-            # Обновление контекста диалога
+            # Updating the dialogue context
             conversation_id = message.conversation_id
             if conversation_id not in self.conversation_contexts:
                 self.conversation_contexts[conversation_id] = []
             
             self.conversation_contexts[conversation_id].append(message)
             
-            # Генерация ответа
+            # Response generation
             response_content = await self._generate_conversation_response(message)
             
-            # Создание ответного сообщения
+            # Establishment of a response message
             response = ConversationMessage(
                 message_id=f"msg_{uuid.uuid4().hex[:8]}",
                 sender="master_agent",
@@ -651,59 +651,59 @@ class MasterAgent:
             return response
             
         except Exception as e:
-            logger.error(f"❌ Ошибка обработки диалога: {e}")
+            logger.error(f"❌ Error in dialogue processing: {e}")
             return ConversationMessage(
                 message_id=f"msg_error_{uuid.uuid4().hex[:8]}",
                 sender="master_agent",
                 recipient=message.sender,
-                content=f"Извините, произошла ошибка: {e}",
+                content=f"Sorry, there was an error: {e}",
                 channel=message.channel,
                 conversation_id=message.conversation_id
             )
     
     async def _generate_conversation_response(self, message: ConversationMessage) -> str:
-        """Генерация ответа в диалоге"""
+        'Generating the response in the dialogue'
         try:
-            # Контекст диалога
+            # Context of the dialogue
             conversation_history = self.conversation_contexts.get(message.conversation_id, [])
             history_text = "\n".join([
                 f"{msg.sender}: {msg.content}" 
-                for msg in conversation_history[-10:]  # Последние 10 сообщений
+                for msg in conversation_history[-10:]  # Last 10 communications
             ])
             
-            # Контекст организации
+            # Context of the organization
             org_context = await self.org_context.get_context()
             
             conversation_prompt = f"""
-Ты - РЕКС, AI директор компании "{org_context.company_name}".
-Ты управляешь всеми отделами и принимаешь стратегические решения.
+You're REX, AI's director of the company.{org_context.company_name}\".
+You run all departments and make strategic decisions.
 
-КОНТЕКСТ ОРГАНИЗАЦИИ:
-- Отрасль: {org_context.industry}
-- Размер: {org_context.company_size}
-- Стиль управления: {org_context.communication_style}
-- Отделы под управлением: {', '.join([dept.get('name', '') for dept in org_context.departments])}
+CONTEXT OF THE UNITED NATIONS:
+- Industry: {org_context.industry}
+- Size: {org_context.company_size}
+- Control style: {org_context.communication_style}
+- Divisions managed by: {', '.join([dept.get('name', '') for dept in org_context.departments])}
 
-ИСТОРИЯ ДИАЛОГА:
+HISTORY OF THE DIALOGUE:
 {history_text}
 
-НОВОЕ СООБЩЕНИЕ ОТ {message.sender}:
+NEW COMMUNICATION FROM {message.sender}:
 {message.content}
 
-Ответь как опытный директор:
-1. Авторитетно, но дружелюбно
-2. Предложи конкретные решения и действия
-3. Задействуй нужные отделы если требуется
-4. Поставь задачи людям или инструментам если нужно
-5. Запроси дополнительную информацию если неясно
+Answer as an experienced director:
+1. Authoritative, but friendly
+2. Offer concrete solutions and actions
+3. Use the right divisions if required
+4. Set challenges for people or tools if you need them
+5. Request additional information if unclear
 
-Ответ должен быть как от руководителя с полными полномочиями.
+The answer should be as a manager with full authority.
 """
             
             response = await self.llm_client.chat.completions.create(
                 model=self.fast_model,
                 messages=[
-                    {"role": "system", "content": "Ты директор компании с полными полномочиями управления всеми отделами."},
+                    {"role": "system", "content": "You're the director of a company with full authority to run all departments."},
                     {"role": "user", "content": conversation_prompt}
                 ],
                 temperature=0.7,
@@ -715,5 +715,5 @@ class MasterAgent:
             return response.choices[0].message.content
             
         except Exception as e:
-            logger.error(f"❌ Ошибка генерации ответа: {e}")
-            return f"Понял ваш запрос. Сейчас разберусь и отвечу. Возможны технические сложности: {e}"
+            logger.error(f"❌ Error of Generation of Answer: {e}")
+            return f"Got your request. I'm gonna figure this out and answer it. Possible technical complexities: {e}"

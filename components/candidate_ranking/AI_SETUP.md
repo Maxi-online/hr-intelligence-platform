@@ -1,118 +1,118 @@
-# 🤖 Настройка AI-анализа навыков
+# 🤖 A.I. Skills analysis settings
 
-## Обзор
+## Overview
 
-Candidate Analysis включает **AI-анализ навыков кандидатов** с использованием **OpenAI GPT-4.1-nano** (фиксированная модель). Это позволяет:
+Candidate Analysis includes **AI candidate skills analysis** using **OpenAI GPT-4.1-nano** (fixed model)). That's how it works:
 
-- **Автоматически анализировать** навыки кандидатов
-- **Оценивать релевантность** навыков для конкретной вакансии
-- **Определять уровень владения** (Junior/Middle/Senior/Expert)
-- **Сохранять результаты** в базе данных для повторного использования
+- **Automatic analysis** of candidates &apos; skills
+- **Assess relevance** of skills for a particular vacancy
+- **Determine the level of ownership** (Junior/Middle/Senior/Expert)
+- **Keep the results** in the database for reuse
 
-## 🚀 Быстрая настройка
+## 🚀 Rapid settings
 
-### 1. Получение OpenAI API ключа
+### 1. OpenAI API Key
 
-1. **Зарегистрируйтесь** на [OpenAI Platform](https://platform.openai.com/)
-2. **Перейдите** в раздел [API Keys](https://platform.openai.com/api-keys)
-3. **Создайте новый ключ** с правами на GPT-4.1-nano
-4. **Скопируйте ключ** (начинается с `sk-`)
+1. **Register** to [openAI Platform](https://platform.openai.com)/)
+2. **Go to [API Keys](https://platform.openai.com/api-keys))
+3. ** Create a new key** with rights to GPT-4.1-nano
+4. ** Copy key** (starts with `sk-`)
 
-### 2. Настройка переменных окружения
+### 2. Settings of the environment variables
 
-#### Для Docker Compose:
+#### For Docker Compose:
 
-Создайте файл `.env` в корне проекта:
+Create the `.env` file at the root of the project:
 
 ```bash
 # OpenAI API
 OPENAI_API_KEY=sk-your-openai-api-key-here
 
-# HeadHunter API (уже настроены)
+# HeadHunter API (already set)
 HH_CLIENT_ID=your_hh_client_id_here
 HH_CLIENT_SECRET=your_hh_client_secret_here
 ```
 
-#### Для локальной установки:
+#### For local installation:
 
 ```bash
 export OPENAI_API_KEY="sk-your-openai-api-key-here"
 ```
 
-### 3. Запуск системы
+### 3. Start the system
 
 ```bash
-# Остановите существующие сервисы
+# Stop existing services
 docker-compose down
 
-# Запустите с новыми сервисами
+# Run with new services.
 docker-compose up -d
 ```
 
-## 🔧 Конфигурация AI-анализа
+## 🔧 AI analysis configuration
 
-### Настройки в `config/settings.yaml`:
+### `config/settings.yaml` settings:
 
 ```yaml
 ai_analysis:
-  openai_api_key: ""  # Заполняется из переменных окружения
-  model: "gpt-4.1-nano" # Модель OpenAI
-  max_tokens: 2000    # Максимальное количество токенов
-  temperature: 0.3    # Креативность (0.0-1.0)
-  timeout: 60         # Таймаут запроса в секундах
-  retry_attempts: 3   # Количество повторных попыток
+  openai_api_key: "" # To be filled in from variable environments
+  model: "gpt-4.1-nano" # OpenAI model
+  max_tokens: 2000 # Maximum number of currents
+  temperature: 0.3 # Creativeity (0.0-1.0)
+  timeout: 60 # Request times in seconds
+  retry_attempts: 3 # Number of repeated attempts
   
-  # Промпты для анализа
+  # Analysis gaps
   prompts:
     skill_analysis: |
-      Проанализируй навыки кандидата для вакансии "{job_title}".
+      "{job_title)}".
       
-      Навыки кандидата: {skills}
-      Описание опыта: {experience}
-      Поисковый запрос: {search_query}
+      Candidates &apos; skills: {skills}
+      Description of experience: {experience}
+      Search request: {search_query}
       
-      Для каждого навыка оцени:
-      1. Релевантность для вакансии (0-1)
-      2. Уровень владения (Junior/Middle/Senior/Expert)
-      3. Годы опыта (если можно определить)
-      4. Уверенность в оценке (0-1)
+      For each skill, rate:
+      1. Vacancy relevance (0-1)
+      2. Level of ownership (Junior/Middle/Senior/Expert)
+      3. Years of experience (if possible)
+      4. Confidence in evaluation (0-1)
       
-      Формат ответа: JSON массив объектов с полями skill_name, relevance_score, proficiency_level, years_experience, ai_confidence
+      Response format: JSON array of objects with fields skill_name, relevance_score, proficiency_level, years_experience,ai_confidence
     
     overall_assessment: |
-      Оцени общую пригодность кандидата для вакансии "{job_title}".
+      Assess the overall suitability of the candidate for the vacancy. &quot; {job_title}".
       
-      Анализ навыков: {skill_analysis}
-      Поисковый запрос: {search_query}
+      Skills analysis: {skill_analysis}
+      Search request: {search_query}
       
-      Дай общую оценку (0-1) и краткое резюме (2-3 предложения).
+      Give an overall assessment (0-1) and a brief summary (2-3 proposals)).
       
-      Формат ответа: JSON объект с полями overall_score, summary
+      Response format: JSON object with overall_score fields, submary
 ```
 
-## 📊 Как работает AI-анализ
+## 📊 How AI analysis works
 
-### 1. Процесс анализа
+### 1. Analysis process
 
-1. **Поиск кандидатов** в HeadHunter API
-2. **Проверка** наличия в базе данных
-3. **AI-анализ** новых кандидатов (если не проанализированы)
-4. **Сохранение** результатов в БД
-5. **Ранжирование** с учетом AI-оценки
+1. ** Search for candidates** on HeadHunter API
+2. ** Check** available in the database
+3. **AI analysis** new candidates (if not analysed))
+4. ** Conservation** of database results
+5. ** Earning** based on AI assessment
 
-### 2. Анализируемые параметры
+### 2. The parameters to be analysed
 
-#### Навыки:
-- **Релевантность** (0-1) - насколько навык подходит для вакансии
-- **Уровень владения** - Junior/Middle/Senior/Expert
-- **Годы опыта** - оценка опыта работы с навыком
-- **Уверенность AI** (0-1) - насколько AI уверен в оценке
+#### Skills:
+- **Relevancy** (0-1) - how much skill is suitable for a vacancy
+- ** Level of ownership** - Junior/Middle/Senior/Expert
+- ** Years of experience** - evaluation of experience with skills
+- ** AI** (0-1) - how sure AI is of the evaluation
 
-#### Общая оценка:
-- **Общий балл** (0-1) - общая пригодность кандидата
-- **Резюме** - краткое описание сильных и слабых сторон
+#### Overall assessment:
+- ** Total **/ (0-1) - Total suitability
+- ** Summary** - Brief description of strengths and weaknesses
 
-### 3. Пример результата
+### 3. Example of result
 
 ```json
 {
@@ -136,124 +136,124 @@ ai_analysis:
     }
   ],
   "overall_score": 0.82,
-  "analysis_summary": "Кандидат имеет сильный опыт в Python разработке с глубокими знаниями фреймворков. Подходит для senior позиции.",
+  "analysis_summary": "The candidate has a strong experience in Python development with a deep knowledge of the framework. Suitable for a senior position.",
   "processing_time": 2.3
 }
 ```
 
-## 🎯 Ранжирование с AI
+## 🎯 A.I. Ran
 
-### Новый алгоритм ранжирования:
+### New ranking algorithm:
 
-1. **AI-оценка навыков** (40%) - оценка GPT-4.1-nano
-2. **Соответствие фильтрам** (30%) - география, опыт, зарплата
-3. **Актуальность** (20%) - свежесть резюме
-4. **Полнота профиля** (10%) - наличие фото, описания и т.д.
+1. **AI Skills Assessment** (40%) - GPT-4.1-nano
+2. **Filter compliance** (30%) - geography, experience, salary
+3. ** Actuariality** (20%) - freshness of summary
+4. **Profile completeness** (10%) - photo, description, etc.
 
-### Формула расчета:
+### Calculation formula:
 
 ```
-Общий балл = (AI_оценка × 0.4) + (Фильтры × 0.3) + (Актуальность × 0.2) + (Полнота × 0.1)
+Total= (AI_evaluation× 0.4) + (Filters× 0.3) + (Relevance× 0.2) + (Fullness× 0.1)
 ```
 
-## 📈 Статистика и мониторинг
+## 📈 Statistics and monitoring
 
-### Доступная статистика:
+### Available statistics:
 
-- **Общее количество кандидатов** в базе
-- **Количество проанализированных** кандидатов
-- **Покрытие AI-анализом** (процент)
-- **Средняя AI-оценка** по всем кандидатам
-- **Общее количество навыков** в базе
+- ** Total number of candidates** in the database
+- **Number of candidates analysed**
+- ** Covering AI analysis** (per cent)
+- ** Average AI rating** for all candidates
+- ** Total skills** in the database
 
-### Просмотр статистики:
+### View statistics:
 
-1. Откройте веб-интерфейс: http://localhost:8501
-2. В боковой панели найдите раздел "📊 Статистика БД"
-3. Просмотрите метрики и прогресс-бар покрытия
+1. Open a web interface: http://localhost:8501
+2. In the side panel, find the section on database statistics.
+3. Look at the metrics and the progress bar.
 
-## 🔍 Отладка и мониторинг
+## 🔍 Debugging and monitoring
 
-### Проверка работы AI-анализа:
+### Audit of AI analysis:
 
 ```bash
-# Проверка здоровья AI-сервиса
+# Health audit of AI service
 curl http://localhost:8005/health
 
-# Проверка конфигурации
+# The configuration check
 curl http://localhost:8005/config
 
-# Тестовый анализ (через API Gateway)
+# Test analysis (through API Gateway)
 curl -X POST http://localhost:8000/ai-analysis/analyze \
   -H "Content-Type: application/json" \
   -d '{
     "candidate_id": "test",
-    "search_query": "Python разработчик",
+    "search_query": "Python Developer",
     "skills": ["Python", "Django", "PostgreSQL"],
-    "experience_description": "5 лет опыта разработки"
+    "experience_description": "5 Years of development experience"
   }'
 ```
 
-### Логи AI-сервиса:
+### AI service logs:
 
 ```bash
 # Docker
 docker logs hrhelp-ai_analysis-1
 
-# Локально
+# Local
 tail -f logs/ai-analysis-service.log
 ```
 
-### Проблемы и решения:
+### Challenges and solutions:
 
-#### 1. "OPENAI_API_KEY не установлен"
+#### 1. "OPENAI_API_KEY not installed"
 ```bash
-# Проверьте переменную окружения
+# Check the variable environment
 echo $OPENAI_API_KEY
 
-# Убедитесь, что ключ начинается с sk-
+# Make sure the key starts with the sk--
 ```
 
 #### 2. "Rate limit exceeded"
 ```bash
-# Увеличьте интервалы между запросами
-# В config/settings.yaml:
+# Zoom in the interval between requests
+# In config/settings.yaml:
 ai_analysis:
-  timeout: 120  # Увеличьте таймаут
+  timeout: 120 # Increase timeout
 ```
 
 #### 3. "Model not found"
 ```bash
-# Проверьте доступность модели
-# Убедитесь, что у вас есть доступ к GPT-4.1-nano
+# Check the model's accessibility
+# Make sure you have access to GPT-4.1-nano
 ```
 
-## 💰 Стоимость использования
+## 💰 Value of use
 
-### OpenAI API тарифы (на 2025 год):
+### OpenAI API tariffs (2025):
 
-- **GPT-4.1-nano**: ~$0.01 за 1K токенов (вход) + ~$0.02 за 1K токенов (выход)
-- **Средний анализ**: ~1000-2000 токенов на кандидата
-- **Стоимость анализа**: ~$0.015-0.03 на кандидата
+- **GPT-4.1-nano**: ~ $0.01 for 1K currents (entry) + ~$0.02 for the 1K currents)
+- **Medical analysis**: ~1000-2000 currents for candidate
+- ** Cost of analysis**: ~ $0.015-0.03 for candidate
 
-### Оптимизация затрат:
+### Cost optimization:
 
-1. **Кэширование результатов** - анализ выполняется только для новых кандидатов
-2. **Настройка max_tokens** - ограничьте длину ответа
-3. **Batch анализ** - группируйте запросы для экономии
+1. **Cashing of results** - analysis performed only for new candidates
+2. ** Settings max_tokens** - Limit the response length
+3. **Batch analysis** - group requests for savings
 
-## 🔮 Планы развития
+## 🔮 Development plans
 
-### Будущие улучшения:
+### Future improvements:
 
-- [ ] **Поддержка других AI моделей** (Claude, Gemini)
-- [ ] **Анализ резюме** (извлечение навыков из текста)
-- [ ] **Машинное обучение** для улучшения оценок
-- [ ] **Персонализация** под конкретные компании
-- [ ] **Анализ soft skills** (коммуникация, лидерство)
-- [ ] **Интеграция с ATS** (Applicant Tracking Systems)
+- [ ] ** Support to other AI models** (Claude, Gemini)
+- [ ] **Summary Analysis** (extracting skills from the text)
+- [ ] ** Machine training** to improve ratings
+- [ ] **Personalization** for specific companies
+- [ ] **Analysis soft scills** (communications, leadership)
+- [ ] ** Integration with ATS** (Applicant Trading Systems)
 
-## 📚 Дополнительные ресурсы
+## 📚 Additional resources
 
 - [OpenAI API Documentation](https://platform.openai.com/docs)
 - [GPT-4 Technical Report](https://arxiv.org/abs/2303.08774)
@@ -261,4 +261,4 @@ ai_analysis:
 
 ---
 
-**AI-анализ навыков** делает Candidate Analysis умной системой поиска кандидатов! 🚀
+**AI skills analysis** makes Candidate Analysis a smart system for finding candidates! 🚀

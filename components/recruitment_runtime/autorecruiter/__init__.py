@@ -1,8 +1,8 @@
 """
 Recruitment Runtime
 
-Автономный AI агент для пассивного рекрутинга который использует
-LLM для автономного планирования и принятия решений.
+Autonomous AI agent for passive recruitment that uses
+LLM for autonomous planning and decision-making.
 
 Author: Candidate Analysis Team
 Version: 2.0.0

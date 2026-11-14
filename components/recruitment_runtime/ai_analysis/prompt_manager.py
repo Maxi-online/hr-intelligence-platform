@@ -1,6 +1,6 @@
 """
-Менеджер промптов для мульти-агентной системы
-Загружает промпты из YAML файлов и предоставляет их агентам
+Project Manager for the Multi-Agent System
+Uploads prompts from YAML files and provides them to agents
 """
 
 import yaml
@@ -41,7 +41,7 @@ def _resolve_settings_env(value):
 logger = setup_logging("prompt-manager")
 
 class PromptManager:
-    """Менеджер промптов для агентов"""
+    'Representative Manager for Agents'
     
     def __init__(self, prompts_file: str = "agent_prompts.yaml", configs_file: str = "agent_configs.yaml"):
         self.current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -55,54 +55,54 @@ class PromptManager:
         self._load_configs()
     
     def _load_prompts(self):
-        """Загружает промпты из YAML файла"""
+        'Uploads prompts from YAML file'
         try:
             if os.path.exists(self.prompts_file):
                 with open(self.prompts_file, 'r', encoding='utf-8') as f:
                     self.prompts = yaml.safe_load(f)
-                logger.info(f"✅ Промпты загружены из {self.prompts_file}")
+                logger.info(f"✅ Prompts loaded from {self.prompts_file}")
             else:
-                logger.warning(f"⚠️ Файл промптов не найден: {self.prompts_file}")
+                logger.warning(f"⚠️ No props file found: {self.prompts_file}")
                 self.prompts = {}
         except Exception as e:
-            logger.error(f"❌ Ошибка загрузки промптов: {e}")
+            logger.error(f"❌ Error of Prometheus Loading: {e}")
             self.prompts = {}
     
     def _load_configs(self):
-        """Загружает конфигурации из YAML файла"""
+        'Uploads configuration from YAML file'
         try:
             if os.path.exists(self.configs_file):
                 with open(self.configs_file, 'r', encoding='utf-8') as f:
                     self.configs = _resolve_settings_env(yaml.safe_load(f))
-                logger.info(f"✅ Конфигурации загружены из {self.configs_file}")
+                logger.info(f"✅ The configurations are downloaded from {self.configs_file}")
             else:
-                logger.warning(f"⚠️ Файл конфигураций не найден: {self.configs_file}")
+                logger.warning(f"⚠️ No configuration file found: {self.configs_file}")
                 self.configs = {}
         except Exception as e:
-            logger.error(f"❌ Ошибка загрузки конфигураций: {e}")
+            logger.error(f"❌ Configuration Error: {e}")
             self.configs = {}
     
     def get_prompt(self, agent_name: str, prompt_type: str = "system_prompt") -> Optional[str]:
-        """Получает промпт для указанного агента"""
+        'Receives a prop for the specified agent'
         try:
-            # Сначала ищем точное имя (для master_coordinator)
+            # First we look for the exact name (for master_coordinator)
             agent_prompts = self.prompts.get(agent_name, {})
             if prompt_type in agent_prompts:
                 return agent_prompts[prompt_type]
             
-            # Потом ищем с суффиксом _agent (для обычных агентов)
+            # Then we're looking for a souffix.
             agent_prompts = self.prompts.get(f"{agent_name}_agent", {})
             if prompt_type in agent_prompts:
                 return agent_prompts[prompt_type]
             
-            logger.warning(f"⚠️ Промпт {prompt_type} не найден для агента {agent_name}")
+            logger.warning(f"⚠️ Prompte {prompt_type} not found for an agent {agent_name}")
             return None
         except Exception as e:
-            logger.error(f"❌ Ошибка получения промпта для {agent_name}: {e}")
+            logger.error(f"❌ Error in receiving a proof for {agent_name}: {e}")
             return None
     
     def get_config(self, config_path: str) -> Any:
-        """Получает конфигурацию по пути (например: 'agents.requirements_agent.timeout')"""
+        "Receives configuration along the way (e.g.: 'agents.requirements_agent.timeout')"
         try:
             keys = config_path.split('.')
             current = self.configs
@@ -111,63 +111,63 @@ class PromptManager:
                 if isinstance(current, dict) and key in current:
                     current = current[key]
                 else:
-                    logger.warning(f"⚠️ Конфигурация не найдена: {config_path}")
+                    logger.warning(f"⚠️ No configuration found: {config_path}")
                     return None
             
             return current
         except Exception as e:
-            logger.error(f"❌ Ошибка получения конфигурации {config_path}: {e}")
+            logger.error(f"❌ Error of Configuration {config_path}: {e}")
             return None
     
     def get_agent_config(self, agent_name: str) -> Dict[str, Any]:
-        """Получает полную конфигурацию агента"""
+        'Receives full agent configuration'
         agent_config = self.get_config(f"agents.{agent_name}_agent")
         return agent_config if agent_config else {}
     
     def get_position_config(self, position_type: str) -> Dict[str, Any]:
-        """Получает конфигурацию для типа позиции"""
+        'Receives configuration for type of position'
         position_config = self.get_config(f"position_configs.{position_type}")
         return position_config if position_config else {}
     
     def get_common_settings(self) -> Dict[str, Any]:
-        """Получает общие настройки"""
+        'Receives general settings'
         return self.prompts.get("common_settings", {})
     
     def get_industry_focus(self, industry: str) -> Optional[Dict[str, Any]]:
-        """Получает фокусные области для индустрии"""
+        'Receives focus areas for industry'
         industry_config = self.prompts.get("industry_specific", {}).get(industry)
         return industry_config
     
     def format_analysis_prompt(self, agent_name: str, **kwargs) -> Optional[str]:
-        """Форматирует analysis_prompt с переданными параметрами"""
+        'Formats analysis_prompt with transmitted parameters'
         try:
             analysis_prompt = self.get_prompt(agent_name, "analysis_prompt")
             if analysis_prompt:
                 return analysis_prompt.format(**kwargs)
             return None
         except KeyError as e:
-            logger.error(f"❌ Отсутствует параметр для форматирования промпта {agent_name}: {e}")
+            logger.error(f"❌ No option for prompt formatting {agent_name}: {e}")
             return None
         except Exception as e:
-            logger.error(f"❌ Ошибка форматирования промпта {agent_name}: {e}")
+            logger.error(f"❌ Errors in Prometheus Formatting {agent_name}: {e}")
             return None
     
     def reload_prompts(self):
-        """Перезагружает промпты и конфигурации"""
-        logger.info("🔄 Перезагрузка промптов и конфигураций...")
+        'Reloading Prompts and configurations'
+        logger.info('🔄 Rebooting Prompts and configurations...')
         self._load_prompts()
         self._load_configs()
     
     def get_master_coordinator_config(self) -> Dict[str, Any]:
-        """Получает конфигурацию мастер-координатора"""
+        'Receives Master Coordinator configuration'
         return self.get_config("master_coordinator") or {}
     
     def get_monitoring_config(self) -> Dict[str, Any]:
-        """Получает конфигурацию мониторинга"""
+        'Receives monitoring configuration'
         return self.get_config("monitoring") or {}
     
     def validate_config(self) -> Dict[str, Any]:
-        """Валидирует конфигурацию и возвращает отчет"""
+        'Validate configuration and return report'
         validation_report = {
             "status": "healthy",
             "issues": [],
@@ -177,40 +177,40 @@ class PromptManager:
         }
         
         try:
-            # Проверяем агентов
+            # Checking agents.
             agents_config = self.get_config("agents")
             if agents_config:
                 validation_report["loaded_agents"] = len(agents_config)
             else:
-                validation_report["issues"].append("Конфигурация агентов не найдена")
+                validation_report["issues"].append('No agent configuration found')
                 validation_report["status"] = "unhealthy"
             
-            # Проверяем промпты
+            # Checking prompts.
             agent_prompts = [key for key in self.prompts.keys() if key.endswith("_agent")]
             validation_report["loaded_prompts"] = len(agent_prompts)
             
             if validation_report["loaded_prompts"] == 0:
-                validation_report["issues"].append("Промпты агентов не найдены")
+                validation_report["issues"].append('No agent proms found.')
                 validation_report["status"] = "unhealthy"
             
-            # Проверяем соответствие промптов и конфигураций
+            # Checking to match prompts and configurations
             if agents_config:
                 for agent_name in agents_config.keys():
                     if f"{agent_name}" not in self.prompts:
-                        validation_report["warnings"].append(f"Промпт для {agent_name} не найден")
+                        validation_report["warnings"].append(f"Prompt for {agent_name} not found")
             
-            logger.info(f"✅ Валидация конфигурации завершена: {validation_report['status']}")
+            logger.info(f"✅ The configuration validation has been completed: {validation_report['status']}")
             
         except Exception as e:
             validation_report["status"] = "error"
-            validation_report["issues"].append(f"Ошибка валидации: {str(e)}")
-            logger.error(f"❌ Ошибка валидации конфигурации: {e}")
+            validation_report["issues"].append(f"Validation errors: {str(e)}")
+            logger.error(f"❌ Configuration errors: {e}")
         
         return validation_report
 
-# Глобальный экземпляр промпт-менеджера
+# Global copy of the assistant manager
 prompt_manager = PromptManager()
 
 def get_prompt_manager() -> PromptManager:
-    """Возвращает глобальный экземпляр промпт-менеджера"""
+    'Returns a global copy of the prompt manager'
     return prompt_manager
