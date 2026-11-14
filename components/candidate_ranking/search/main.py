@@ -1,22 +1,22 @@
 """
 Candidate Analysis - Search Service
 
-Основной сервис поиска и оркестрации кандидатов.
+The main search and orchestra service.
 
-Этот модуль является центральным компонентом системы Candidate Analysis, который:
-- Организует поиск кандидатов через HeadHunter API
-- Координирует AI-анализ резюме в истинно параллельном режиме
-- Интегрирует результаты поиска, ранжирования и анализа
-- Предоставляет API для frontend'а с детальной статистикой
+This module is the central component of the Candidate Anallysis system, which:
+- Organizes the search for candidates through HeadHunter API
+- Coordinates AI analysis of the summary in true parallel mode
+- Integration of search, ranking and analysis results
+- Provides API for Frentend'a with detailed statistics
 
-Основные возможности:
-- Интеграция с HeadHunter.ru API для поиска кандидатов
-- Многопоточная обработка резюме для высокой производительности
-- Батчевая отправка кандидатов на AI-анализ
-- Сбор и предоставление статистики HH API (429/503 ошибки)
-- Кэширование и оптимизация запросов
+Main opportunities:
+Integration with HeadHunter.ru API to identify candidates
+- Multi-track summary processing for high productivity
+- Batch dispatch of candidates for AI analysis
+- Collect and provide HH API statistics (429/503 errors))
+- Cashing and optimization of requests
 
-Архитектура:
+Architecture:
     SearchService -> HH API Service -> HeadHunter.ru
                   -> AI Analysis Service -> OpenAI GPT-4.1-nano
                   -> Database Service -> ClickHouse
@@ -38,7 +38,7 @@ from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import time
 
-# Добавляем родительскую директорию в путь для импорта shared модулей
+# Add the parent directory to the route to import the used modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from shared.models import (
@@ -57,13 +57,13 @@ from shared.models import (
 )
 from shared.utils import setup_logging, load_config
 
-# Настройка логирования
+# Logging settings
 logger = setup_logging("search-service")
 
-# --- FastAPI приложение ---
+# ----FastAPI app ----
 app = FastAPI(
     title="Search Service",
-    description="Сервис для поиска кандидатов, orchestrating HH.ru API, AI Analysis, and Database services.",
+    description='Search for candidates, orchesstrating HH.ru API, AI Analysis, and Database Services.',
     version="1.0.0"
 )
 
@@ -78,36 +78,36 @@ app.add_middleware(
 
 class SearchService:
     """
-    Основной класс сервиса поиска и оркестрации кандидатов.
+    The main class of the search and orchestra service.
     
-    Координирует взаимодействие между различными микросервисами для обеспечения
-    полного цикла поиска, анализа и ранжирования кандидатов.
+    Coordinates interaction between different microservices to ensure
+    Full-cycle search, analysis and ranking of candidates.
     
-    Архитектурные особенности:
-    - Ленивая инициализация URL сервисов для поддержки Docker и локального окружения
-    - Батчевая обработка кандидатов для оптимизации производительности
-    - Детальный сбор статистики HH API для мониторинга
-    - Graceful handling ошибок и recovery механизмы
+    Architectural features:
+    - Linear initialization of URL services to support Docker and the local environment
+    - Batch processing of candidates to optimize productivity
+    - Detailed collection of HH API statistics for monitoring
+    - Graceful handling errors and recovery mechanisms
     
     Attributes:
-        config (dict): Конфигурация из settings.yaml
-        services_config (dict): Конфигурация микросервисов
-        logger: Логгер для отслеживания операций
-        _hh_api_url (str): URL HeadHunter API сервиса (lazy)
-        _ai_analysis_url (str): URL AI Analysis сервиса (lazy) 
-        _database_url (str): URL Database сервиса (lazy)
+        config (dict): configuration from settings.yaml
+        services_config (dict): Microservice configuration
+        logger: Logger to track transactions
+        _hh_api_url (str): URL HeadHunter API service (lazy)
+        _ai_analysis_url (str): URL AI Analysis service (lazy) 
+        _database_url (str): URL Database service (lazy)
     """
     
     def __init__(self):
         """
-        Инициализация сервиса поиска.
+        Initialization of Search Service.
         
-        Загружает конфигурацию и подготавливает lazy-инициализацию URL сервисов.
+        Download configuration and prepares lazy-initialization of URL services.
         """
         self.config = load_config()
         self.services_config = self.config.get("services", {})
         self.logger = logger
-        # Инициализация URL будет происходить по требованию
+        # Initialization of the URL will take place on request
         self._hh_api_url = None
         self._ranking_url = None
         self._ai_analysis_url = None
@@ -115,26 +115,26 @@ class SearchService:
 
     def _get_service_url(self, service_name: str, is_docker: bool) -> str:
         """
-        Получение URL микросервиса с поддержкой Docker и локального окружения.
+        URL microservice with Docker support and local environment.
         
         Args:
-            service_name (str): Имя сервиса (hh_api, ai_analysis, database)
-            is_docker (bool): Флаг Docker окружения
+            service_name (str): Service name (hh_api, ai_analysis, database))
+            is_docker (bool): Docker Environment Flag
             
         Returns:
-            str: Полный URL сервиса (http://host:port)
+            : Full URL service (http://host:port)
             
         Raises:
-            ValueError: Если порт для сервиса не настроен
+            ValueError: If the service port is not set
             
         Note:
-            В Docker используется docker_host, локально - host (localhost)
+            Docker uses docker_host, local - host (localhost))
         """
         conf = self.services_config.get(service_name, {})
         host = conf.get('docker_host') if is_docker else conf.get('host', 'localhost')
         port = conf.get('port')
         if not port:
-            raise ValueError(f"Порт для сервиса {service_name} не настроен")
+            raise ValueError(f"Port for service {service_name} I'm not in the mood.")
         return f"http://{host}:{port}"
 
     @property
@@ -144,7 +144,7 @@ class SearchService:
             self._hh_api_url = self._get_service_url("hh_api", is_docker)
         return self._hh_api_url
 
-    # ranking_url больше не нужен - используем только AI ранжирование
+    # ranking_url no longer required - only AI ranking used
 
     @property
     def ai_analysis_url(self):
@@ -169,39 +169,39 @@ class SearchService:
 
     def _get_full_resume_data(self, candidate_id: str) -> Tuple[Optional[Dict], Dict[str, Any]]:
         """
-        Получение детальных данных резюме из HeadHunter API с умной retry логикой.
+        Getting detailed summary data from HeadHunter API with smart retri logic.
         
-        Этот метод обеспечивает устойчивое получение полных данных резюме с:
-        - Экспоненциальными повторами при ошибках 429 (Too Many Requests)
-        - Анализом качества полученных данных
-        - Детальной статистикой для мониторинга HH API
+        This method ensures that the complete summary c is obtained in a sustainable manner:
+        - Exponential Repeats in Errors 429 (Too Many Requests))
+        - Analysis of the quality of the data obtained
+        - Detailed statistics for HH API monitoring
         
         Args:
-            candidate_id (str): Уникальный идентификатор кандидата в HH
+            candidate_id (str): A unique HH candidate identifier
             
         Returns:
             Tuple[Optional[Dict], Dict[str, Any]]:
-                - Optional[Dict]: Полные данные резюме или None при ошибке
-                - Dict[str, Any]: Статус API запроса с детальной информацией
+                - Optional[Dict]: Complete summary data or None in case of error
+                - Dict[str, Any]: Status of API Request with Detailed Information
                 
-        API Status Dict содержит:
-            - success (bool): Успешность запроса
-            - status_code (int): HTTP статус код ответа
-            - attempts (int): Количество попыток
-            - error_message (str): Сообщение об ошибке (если есть)
-            - data_quality (str): Качество данных (good/partial/poor/unknown)
+        API Status Dict contains:
+            - Access (bool): Successful request
+            - status_code (int): HTTP response code status
+            - attempts (int): Number of attempts
+            - error_message (str): Error message (if there is)
+            - data_quality (str): Data quality (good/partial/poor/unknown))
             
         Data Quality Assessment:
-            - "good": Есть "О себе", опыт и образование
-            - "partial": Есть некоторые из ключевых полей
-            - "poor": Только базовая информация
-            - "unknown": Ошибка при оценке качества
+            - Good: There's self, experience and education.
+            - "Partial": There are some of the key fields
+            - Poor: Basic information only
+            - "Unknown: Error in Quality Assessment
             
         Retry Strategy:
-            - Максимум 3 попытки
-            - Экспоненциальная задержка: 1s, 2s, 4s
-            - Jitter для избежания thundering herd
-            - Graceful handling 429/503/500 ошибок
+            - No more than 3 attempts.
+            - Explicit delay: 1s, 2s, 4s
+            - Jitter to avoid thundering herd
+            - Graceful handling 429/503/500 errors
         """
         import random
         import time
@@ -220,12 +220,12 @@ class SearchService:
             api_status["attempts"] = attempt + 1
             try:
                 if attempt > 0:
-                    # Экспоненциальная задержка с jitter для избежания 429
+                    # Explicit delay with jitter to avoid 429
                     delay = base_delay * (2 ** (attempt - 1)) + random.uniform(0.1, 0.5)
-                    self.logger.warning(f"🔄 Попытка {attempt + 1}/{max_retries} для {candidate_id}, ждем {delay:.1f}с")
+                    self.logger.warning(f"🔄 Attempted {attempt + 1}/{max_retries} for {candidate_id}We're waiting. {delay:.1f}c")
                     time.sleep(delay)
                 
-                self.logger.info(f"🔍 Запрос полных данных резюме: {candidate_id} (попытка {attempt + 1})")
+                self.logger.info(f"🔍 Request for complete executive summaries: {candidate_id} (attempted) {attempt + 1})")
                 
                 url = f"{self.hh_api_url}/resume/{candidate_id}"
                 response = requests.get(url, timeout=15)
@@ -234,9 +234,9 @@ class SearchService:
                 if response.status_code == 200:
                     try:
                         full_data = response.json()
-                        self.logger.info(f"✅ Данные получены для {candidate_id}: {len(str(full_data))} символов")
+                        self.logger.info(f"✅ Data received for {candidate_id}: {len(str(full_data))} Symbols")
                         
-                        # ПРОВЕРЯЕМ КАЧЕСТВО ДАННЫХ
+                        # VERIFICATION OF DATA QUALITY
                         if isinstance(full_data, dict):
                             has_about = bool(full_data.get('about', ''))
                             has_experience = bool(full_data.get('experience', []))
@@ -244,39 +244,39 @@ class SearchService:
                             
                             if has_about or has_experience or has_education:
                                 api_status["data_quality"] = "good"
-                                self.logger.info(f"📊 Качественные данные для {candidate_id}: about={has_about}, exp={has_experience}, edu={has_education}")
+                                self.logger.info(f"📊 Qualitative data for {candidate_id}: about={has_about}, exp={has_experience}, edu={has_education}")
                             else:
                                 api_status["data_quality"] = "partial"
-                                self.logger.warning(f"⚠️ Данные неполные для {candidate_id}, но используем что есть")
+                                self.logger.warning(f"⚠️ Data incomplete for {candidate_id}but we use what we have.")
                         
                         api_status["success"] = True
                         return full_data, api_status
                         
                     except Exception as json_error:
-                        api_status["error_message"] = f"JSON ошибка: {json_error}"
-                        self.logger.error(f"❌ JSON ошибка для {candidate_id}: {json_error}")
+                        api_status["error_message"] = f"JSON error: {json_error}"
+                        self.logger.error(f"❌ JSON error for {candidate_id}: {json_error}")
                         if attempt == max_retries - 1:
                             return None, api_status
                         continue
                         
                 elif response.status_code == 429:
                     api_status["error_message"] = "Rate limit exceeded"
-                    self.logger.warning(f"🚫 HH API лимит для {candidate_id} (429), retry через {base_delay * (2 ** attempt)}s")
+                    self.logger.warning(f"🚫 HH API limit for {candidate_id} (429), retrie through {base_delay * (2 ** attempt)}s")
                     if attempt == max_retries - 1:
-                        self.logger.error(f"💥 Не удалось получить данные {candidate_id} после {max_retries} попыток")
+                        self.logger.error(f"💥 Unable to obtain data {candidate_id} after {max_retries} attempts")
                         return None, api_status
                     continue
                     
                 else:
-                    api_status["error_message"] = f"HH API ошибка {response.status_code}"
-                    self.logger.error(f"🚨 HH API ошибка {response.status_code} для {candidate_id}")
+                    api_status["error_message"] = f"HH API error {response.status_code}"
+                    self.logger.error(f"🚨 HH API error {response.status_code} for {candidate_id}")
                     if attempt == max_retries - 1:
                         return None, api_status
                     continue
                 
             except Exception as e:
-                api_status["error_message"] = f"Сетевая ошибка: {e}"
-                self.logger.error(f"❌ Сетевая ошибка для {candidate_id}: {e}")
+                api_status["error_message"] = f"Network error: {e}"
+                self.logger.error(f"❌ Network error for {candidate_id}: {e}")
                 if attempt == max_retries - 1:
                     return None, api_status
                 continue
@@ -284,27 +284,27 @@ class SearchService:
         return None, api_status
 
     def _get_vacancy_responses(self, vacancy_url: str) -> Dict[str, Any]:
-        """Прокси к hh_api для получения откликов по ссылке вакансии"""
+        'Proxie to hh_api to receive feedback on a vacancy reference'
         try:
             response = requests.post(f"{self.hh_api_url}/vacancy/responses", json={"vacancy_url": vacancy_url}, timeout=120)
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            self.logger.error(f"Ошибка получения откликов по вакансии: {e}")
-            raise HTTPException(status_code=500, detail="Ошибка получения откликов по вакансии")
+            self.logger.error(f"Error in getting answers on vacancies: {e}")
+            raise HTTPException(status_code=500, detail='Error in getting answers on vacancies')
 
     def _get_vacancy_details(self, vacancy_url: str) -> Dict[str, Any]:
-        """Прокси к hh_api для получения детальной информации о вакансии"""
+        'Proxie to hh_api for detailed vacancy information'
         try:
             response = requests.post(f"{self.hh_api_url}/vacancy/details", json={"vacancy_url": vacancy_url}, timeout=60)
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            self.logger.error(f"Ошибка получения вакансии: {e}")
-            raise HTTPException(status_code=500, detail="Ошибка получения вакансии")
+            self.logger.error(f"Error in getting a vacation: {e}")
+            raise HTTPException(status_code=500, detail='Error in getting a vacation')
 
     def _resume_to_candidate(self, resume_data: Dict[str, Any]) -> Candidate:
-        """Локальная конвертация ответа HH /resume в модель Candidate (минимально совместимая)."""
+        'Local conversion of HH / resume to Candidate (minimum compatible)).'
         from shared.utils import parse_date, parse_salary
         resume_id = resume_data.get("id", "")
         title = resume_data.get("title", "")
@@ -313,7 +313,7 @@ class SearchService:
         salary_data = resume_data.get("salary")
         updated_at = parse_date(resume_data.get("updated_at", ""))
 
-        name = "Кандидат"
+        name = 'Candidature'
         age = resume_data.get("age")
 
         skills: List[str] = []
@@ -367,7 +367,7 @@ class SearchService:
             languages_response = requests.get(f"{self.hh_api_url}/languages", timeout=30)
             languages = languages_response.json() if languages_response.status_code == 200 else []
             
-            # Получаем все справочники одним запросом (если доступно)
+            # We receive all the handbooks with the same request (if available)
             dictionaries_response = requests.get(f"{self.hh_api_url}/dictionaries", timeout=30)
             dictionaries = dictionaries_response.json() if dictionaries_response.status_code == 200 else {}
             
@@ -378,31 +378,31 @@ class SearchService:
                 "dictionaries": dictionaries
             }
         except Exception as e:
-            self.logger.error(f"Ошибка при получении справочников: {e}")
+            self.logger.error(f"Error in receiving guidelines: {e}")
             return {}
 
     def _process_single_candidate(self, candidate: Candidate, search_request: SearchRequest) -> Tuple[CandidateProfile, bool]:
-        """Обрабатывает одного кандидата (может выполняться параллельно)"""
+        'Processing of one candidate (may be done in parallel))'
         try:
             candidate_start_time = time.time()
             import threading
             thread_id = threading.current_thread().ident
             
-            print(f"🎯 DEBUG PRINT: ВХОД в _process_single_candidate для кандидата {candidate.id} [Thread-{thread_id}]")
-            self.logger.info(f"🎯 ПАРАЛЛЕЛЬНЫЙ ПОТОК {thread_id}: НАЧАЛО обработки кандидата {candidate.id}")  # ОТЛАДОЧНЫЙ ЛОГ
-            # ПОЛУЧАЕМ ПОЛНЫЕ ДАННЫЕ РЕЗЮМЕ ИЗ HH.RU API ДЛЯ КАЖДОГО КАНДИДАТА!
-            self.logger.info(f"🔍 DEBUG: Вызываем _get_full_resume_data для {candidate.id}")
+            print(f"🎯 DEBUG PRINT: Input to _process_single_candidate for candidate {candidate.id} [Thread-{thread_id}]")
+            self.logger.info(f"🎯 PARALLEL FLOWS {thread_id}:: PROCESSING OBJECT {candidate.id}")  # FLAMMABLE PLAYING
+            # FULL DATA FROM HH.RU API FOR EVER CANDIDATE!
+            self.logger.info(f"🔍 DEBUG: Call _get_ful_resource_data for {candidate.id}")
             full_resume_data, api_status = self._get_full_resume_data(candidate.id)
-            self.logger.info(f"🔍 DEBUG: Результат _get_full_resume_data: {bool(full_resume_data)}, API статус: {api_status}")
-            print(f"🔍 DEBUG PRINT: Результат _get_full_resume_data: {bool(full_resume_data)}, API статус: {api_status}")
+            self.logger.info(f"🔍 DEBUG: Result _get_full_resume_data: {bool(full_resume_data)}API status: {api_status}")
+            print(f"🔍 DEBUG PRINT: Result _get_full_resume_data: {bool(full_resume_data)}API status: {api_status}")
             
-            # Проверяем есть ли кандидат в базе с завершённым анализом
+            # Checking if there's a candidate in the database with the final analysis
             db_candidate = self._get_candidate_from_db(candidate.id)
             
             if db_candidate and db_candidate.profile.analysis_status == 'completed':
                 return db_candidate.profile, True
             
-            # ИСПРАВЛЕНИЕ: Создаем профиль без AI анализа (AI анализ будет в batch)
+            # CORRIGENDUM: Create a profile without AI analysis (AI analysis will be in batch)
                 candidate.score = 0.0
                 
                 profile = CandidateProfile(
@@ -410,26 +410,26 @@ class SearchService:
                     hh_data=candidate,
                     skill_analysis=[],
                     overall_ai_score=0.0,
-                analysis_status='pending'  # Ожидает batch анализа
+                analysis_status='pending'  # Waiting for batch analysis
                 )
-            success = True  # Успешно подготовили данные
+            success = True  # Successfully produced data
             
-            # Сохраняем в базу данных
+            # Keep it in the database.
             self._save_candidate_to_db(profile)
             
-            # КРИТИЧЕСКОЕ ЛОГИРОВАНИЕ: Время завершения обработки кандидата
+            # CRITICAL LOIGRATION: Time for the completion of the candidate &apos; s processing
             candidate_time = time.time() - candidate_start_time
-            self.logger.info(f"✅ ПОТОК {thread_id}: ЗАВЕРШЕН кандидат {candidate.id} за {candidate_time:.2f}s, успех: {success}")
-            print(f"✅ DEBUG PRINT: ЗАВЕРШЕН {candidate.id} [Thread-{thread_id}] за {candidate_time:.2f}s")
+            self.logger.info(f"✅ FLOWS {thread_id}:: Completed candidate {candidate.id} for {candidate_time:.2f}s, success: {success}")
+            print(f"✅ DEBUG PRINT: COMPLETE {candidate.id} [Thread-{thread_id}] for {candidate_time:.2f}s")
             
             return profile, success
             
         except Exception as e:
             candidate_time = time.time() - candidate_start_time
-            self.logger.error(f"❌ ПОТОК {thread_id}: ОШИБКА в кандидате {candidate.id} за {candidate_time:.2f}s: {e}")
-            print(f"❌ DEBUG PRINT: ОШИБКА {candidate.id} [Thread-{thread_id}] за {candidate_time:.2f}s")
+            self.logger.error(f"❌ FLOWS {thread_id}: Errors in the candidate {candidate.id} for {candidate_time:.2f}s: {e}")
+            print(f"❌ Debug Print: Error {candidate.id} [Thread-{thread_id}] for {candidate_time:.2f}s")
             
-            # Создаем профиль без AI анализа
+            # Create profile without AI analysis
             profile = CandidateProfile(
                 id=candidate.id,
                 hh_data=candidate,
@@ -442,76 +442,76 @@ class SearchService:
 
     def search_candidates(self, search_request: SearchRequest) -> Tuple[List[Candidate], Dict[str, Any]]:
         """
-        Основной метод поиска и анализа кандидатов с истинно параллельной обработкой.
+        Basic method of identifying and analysing candidates with true parallel processing.
         
-        Выполняет полный цикл обработки кандидатов:
-        1. Поиск базовых данных через HeadHunter API
-        2. Параллельное получение детальных данных резюме 
-        3. Батчевая отправка на AI-анализ для максимальной эффективности
-        4. Сбор подробной статистики HH API для мониторинга
+        Performs the full processing cycle:
+        1. Search for basic data via HeadHunter API
+        2. Simultaneous collection of detailed summary data 
+        3. Batch to AI analysis for maximum efficiency
+        4. Collection of detailed HH API statistics for monitoring
         
         Args:
-            search_request (SearchRequest): Параметры поиска (текст, регион, опыт и т.д.)
+            search_request (SearchRequest): Search parameters (text, region, experience, etc.).)
             
         Returns:
             Tuple[List[Candidate], Dict[str, Any]]: 
-                - List[Candidate]: Список проанализированных кандидатов с AI оценками
-                - Dict[str, Any]: Статистика HH API (успешные/неудачные запросы, ошибки)
+                - List [Candidate]: List of evaluated candidates with AI estimates
+                - Dict[str, Any]: HH API statistics (successful/ failure requests, errors))
                 
         Raises:
-            HTTPException: При ошибках HH API или AI Analysis
+            HTTPException: HH API or AI Analysis errors
             
         Algorithm Flow:
-            1. HH API Search → получение списка кандидатов
-            2. Parallel Resume Fetch → детальные данные каждого резюме
-            3. Batch AI Analysis → все кандидаты обрабатываются параллельно
-            4. Results Integration → объединение данных и статистики
+            1. HH API Search ♪ To receive the list of candidates
+            2. Parallel Resume Fetch ♪ The details of each summary
+            3. Batch AI Analysis ♪ All candidates are processed in parallel
+            4. Results Integration ♪ Data and Statistics Combination
             
         Performance Features:
-            - Батчевая обработка по 10 кандидатов для оптимизации
-            - Истинно параллельный AI анализ через AsyncOpenAI
-            - Детальная статистика ошибок (429, 503, 500) для диагностики
-            - Graceful degradation при проблемах с HH API
+            - Batch processing of 10 candidates for optimization
+            - Really parallel AI analysis through AsyncOpenAI
+            - Detailed error statistics (429, 503, 500) for diagnosis
+            - Graceful demobilization for HH API problems
             
         HH API Statistics Tracking:
-            - total_requests: Общее количество запросов к HH API
-            - successful_requests: Успешные запросы (200 OK)
-            - status_429_errors: Ошибки превышения лимита
-            - status_503_errors: Ошибки недоступности сервиса
-            - rate_limit_exceeded: Общее количество превышений лимитов
-            - good_data_count: Резюме с полными данными
-            - partial_data_count: Резюме с частичными данными
+            - total_requests: Total number of requests for HH API
+            - successful_requests: Successful requests (200 OK)
+            - status_429_errors: Errors over the limit
+            - status_503_errors: Service unavailability errors
+            - rate_limit_exceeded: Total excess limits
+            - good_data_count: Summary with full data
+            - partial_data_count: Summary with partial data
         """
         try:
-            # 1. Поиск в HH API
+            # 1. HH API Search
             search_params = search_request.model_dump(exclude_none=True)
-            self.logger.info(f"Отправляем запрос к HH API с параметрами: {search_params}")
+            self.logger.info(f"Send a request to HH API with parameters: {search_params}")
             
             hh_response = requests.get(f"{self.hh_api_url}/search", params=search_params, timeout=120)
             
             if hh_response.status_code != 200:
-                raise HTTPException(status_code=hh_response.status_code, detail=f"Ошибка HH API: {hh_response.text}")
+                raise HTTPException(status_code=hh_response.status_code, detail=f"Error: The HH API: {hh_response.text}")
             
             hh_data = hh_response.json()
-            self.logger.info(f"Получен ответ от HH API: {len(hh_data.get('candidates', []))} кандидатов")
+            self.logger.info(f"Response received from HH API: {len(hh_data.get('candidates', []))} Candidates")
             
             hh_candidates = [Candidate(**item) for item in hh_data.get("candidates", [])]
-            self.logger.info(f"Обработано {len(hh_candidates)} кандидатов")
+            self.logger.info(f"Processed {len(hh_candidates)} Candidates")
             
-            # 2. ПАРАЛЛЕЛЬНАЯ ОБРАБОТКА КАНДИДАТОВ БАТЧАМИ ПО 10 🚀
+            # 2. PARALLEL PROCESSING OF BATCH CANDIDATES FOR 10 🚀
             start_time = time.time()
-            self.logger.info(f"🚀 Начинаем параллельную обработку {len(hh_candidates)} кандидатов батчами по 10...")
-            print(f"🔍 DEBUG ПОСЛЕ ЛОГГЕРА: len(hh_candidates)={len(hh_candidates)}")
+            self.logger.info(f"🚀 Commence parallel processing {len(hh_candidates)} 10 booth candidates...")
+            print(f"🔍 DEBUG after Logger: Len(hh_candidates))={len(hh_candidates)}")
             
-            # Разбиваем кандидатов на батчи по 10
+            # We'll break up the Batch candidates at 10.
             batch_size = 10
             batches = [hh_candidates[i:i + batch_size] for i in range(0, len(hh_candidates), batch_size)]
-            self.logger.info(f"📦 Разбили на {len(batches)} батчей по {batch_size} кандидатов")
+            self.logger.info(f"📦 Smashed on {len(batches)} Fathers for the {batch_size} Candidates")
             
             processed_profiles: List[CandidateProfile] = []
             successful_ai_analyses = 0
             
-            # Отслеживание статуса HH API
+            # HH API status tracking
             hh_api_stats = {
                 "total_requests": 0,
                 "successful_requests": 0,
@@ -525,26 +525,26 @@ class SearchService:
                 "failed_candidates": []
             }
             
-            # НАСТОЯЩАЯ ПАРАЛЛЕЛЬНОСТЬ: Собираем ВСЕХ кандидатов и отправляем ОДНИМ batch запросом
+            # REAL PARALLELITY: Gather all candidates and send a one-man batch request
             all_candidates = []
             all_requests = []
             
             for batch_num, batch in enumerate(batches, 1):
-                self.logger.info(f"🔄 Подготавливаем батч {batch_num}/{len(batches)} ({len(batch)} кандидатов)")
+                self.logger.info(f"🔄 We're getting the booth ready {batch_num}/{len(batches)} ({len(batch)} of candidates)")
                 
-                # Подготавливаем данные для каждого кандидата (без AI анализа)
+                # Prepare data for each candidate (without AI analysis))
                 for idx, candidate in enumerate(batch):
                     try:
-                        # Небольшая задержка между кандидатами для избежания 429 при массовой обработке
-                        if idx > 0:  # Не делаем задержку для первого кандидата
+                        # Slight delay between candidates to avoid 429 mass processing
+                        if idx > 0:  # Do not delay the first candidate
                             import random
-                            delay = random.uniform(0.2, 0.5)  # 200-500мс задержка
+                            delay = random.uniform(0.2, 0.5)  # 200-500ms delay
                             time.sleep(delay)
                         
-                        # Получаем полные данные резюме
+                        # Get full summary data.
                         full_resume_data, api_status = self._get_full_resume_data(candidate.id)
                         
-                        # Обновляем статистику HH API
+                        # Update HH API statistics
                         hh_api_stats["total_requests"] += 1
                         if api_status["success"]:
                             hh_api_stats["successful_requests"] += 1
@@ -569,13 +569,13 @@ class SearchService:
                                 hh_api_stats["status_503_errors"] += 1
                                 hh_api_stats["rate_limit_exceeded"] += 1
                         
-                        # Проверяем есть ли кандидат в базе с завершённым анализом
+                        # Checking if there's a candidate in the database with the final analysis
                         db_candidate = self._get_candidate_from_db(candidate.id)
                         
                         if db_candidate and hasattr(db_candidate, 'analysis_status') and db_candidate.analysis_status == "completed":
-                            # Используем готовый анализ из БД
+                            # We're going to use a ready-made database analysis.
                             profile = CandidateProfile(
-                                id=candidate.id,  # ИСПРАВЛЕНИЕ: Добавляем обязательное поле id
+                                id=candidate.id,  # CORRIGENDUM: Add mandatory field id
                                 hh_data=candidate,
                                 overall_ai_score=db_candidate.overall_ai_score,
                                 skill_analysis=db_candidate.skill_analysis,
@@ -591,9 +591,9 @@ class SearchService:
                             )
                             processed_profiles.append(profile)
                             successful_ai_analyses += 1
-                            self.logger.info(f"✅ Использован готовый анализ из БД для кандидата {candidate.id}")
+                            self.logger.info(f"✅ Used ready-made database analysis for candidate {candidate.id}")
                         else:
-                            # Подготавливаем запрос для AI анализа
+                            # Request for AI analysis
                             position_type = self._determine_position_type(search_request.text or "")
                             position_requirements = self._extract_position_requirements(search_request)
                             
@@ -618,40 +618,40 @@ class SearchService:
                             all_requests.append(multi_agent_request)
                             
                     except Exception as e:
-                        self.logger.error(f"Ошибка подготовки кандидата {candidate.id}: {e}")
+                        self.logger.error(f"Error of candidate preparation {candidate.id}: {e}")
             
-            # НАСТОЯЩАЯ ПАРАЛЛЕЛЬНОСТЬ: Отправляем ВСЕХ кандидатов ОДНИМ batch запросом
+            # REAL PARALLELITY: Send all candidates by request
             if all_requests:
-                self.logger.info(f"🚀 НАСТОЯЩАЯ ПАРАЛЛЕЛЬНОСТЬ: Отправляем {len(all_requests)} кандидатов ОДНИМ batch запросом!")
+                self.logger.info(f"🚀 THIS PARALLELITY: Sending {len(all_requests)} I'm asking you for one piece of evidence.")
                 
                 try:
                     response = requests.post(
                         f"{self.ai_analysis_url}/multi-agent/batch", 
                         json=[req.model_dump(mode='json') for req in all_requests],
-                        timeout=3600  # 1 час для обработки 200-300 кандидатов
+                        timeout=3600  # 1 hour to process 200-300 candidates
                     )
                     response.raise_for_status()
                     
-                    # Обрабатываем результаты batch
+                    # Processing the batch results
                     batch_responses = response.json()
                     for i, batch_response in enumerate(batch_responses):
                         try:
                             multi_agent_response = MultiAgentAnalysisResponse(**batch_response)
                             candidate = all_candidates[i]
                             
-                            # Рассчитываем итоговый скор
+                            # Calculate the final score
                             final_score = self._calculate_relevance_score(
                                 candidate, 
                                 search_request.text or "",
                                 multi_agent_response.master_report.overall_score
                             )
                             
-                            # Создаем профиль кандидата
+                            # Create a candidate profile
                             profile = CandidateProfile(
-                                id=candidate.id,  # ИСПРАВЛЕНИЕ: Добавляем обязательное поле id
+                                id=candidate.id,  # CORRIGENDUM: Add mandatory field id
                                 hh_data=candidate,
                                 overall_ai_score=final_score,
-                                skill_analysis=[],  # Пока оставляем пустым, данные в agent_reports
+                                skill_analysis=[],  # As long as we're empty, agent_reports data
                                 analysis_status="completed",
                                 keyword_relevance_score=final_score,
                                 filter_match_score=0.0,
@@ -666,22 +666,22 @@ class SearchService:
                             processed_profiles.append(profile)
                             successful_ai_analyses += 1
                             
-                            # Сохраняем в БД
+                            # Saved in database
                             self._save_candidate_to_db(profile)
                             
-                            self.logger.info(f"✅ Кандидат {candidate.id}: AI оценка {final_score:.1f}%")
+                            self.logger.info(f"✅ Candidature {candidate.id}: AI Evaluation {final_score:.1f}%")
                             
                         except Exception as e:
-                            self.logger.error(f"Ошибка обработки результата для кандидата {all_candidates[i].id}: {e}")
+                            self.logger.error(f"Error in processing results for the candidate {all_candidates[i].id}: {e}")
                     
-                    self.logger.info(f"✅ НАСТОЯЩАЯ ПАРАЛЛЕЛЬНОСТЬ: Обработано {successful_ai_analyses} кандидатов из {len(all_requests)}")
+                    self.logger.info(f"✅ THIS PARALLELITY: PROCESSED {successful_ai_analyses} of candidates from {len(all_requests)}")
                     
                 except Exception as e:
-                    self.logger.error(f"Ошибка batch AI анализа: {e}")
-                    # В случае ошибки создаем профили без AI анализа
+                    self.logger.error(f"The Batch AI analysis error: {e}")
+                    # In case of error, we create profiles without AI analysis
                     for candidate in all_candidates:
                         profile = CandidateProfile(
-                            id=candidate.id,  # ИСПРАВЛЕНИЕ: Добавляем обязательное поле id
+                            id=candidate.id,  # CORRIGENDUM: Add mandatory field id
                             hh_data=candidate,
                             overall_ai_score=0.0,
                             skill_analysis=[],
@@ -690,97 +690,97 @@ class SearchService:
                             filter_match_score=0.0,
                             recency_score=0.0,
                             profile_completeness_score=0.0,
-                            analysis_summary="AI анализ не выполнен",
-                            reasoning="Ошибка AI анализа",
+                            analysis_summary='AI analysis not performed',
+                            reasoning='The error of analysis',
                             multi_agent_data={},
                             relevance_boost=0.0
                         )
                         processed_profiles.append(profile)
             
             processing_time = time.time() - start_time
-            self.logger.info(f"⚡ Параллельная обработка завершена за {processing_time:.2f}s. Успешных AI анализов: {successful_ai_analyses}/{len(hh_candidates)}")
+            self.logger.info(f"⚡ Parallel processing completed for {processing_time:.2f}s. Successful AI analyses: {successful_ai_analyses}/{len(hh_candidates)}")
 
-            self.logger.info(f"Обработано {len(processed_profiles)} профилей, успешных AI анализов: {successful_ai_analyses}")
+            self.logger.info(f"Processed {len(processed_profiles)} Profiles, successful AI analyses: {successful_ai_analyses}")
             
-            # Если нет успешных AI анализов, возвращаем fallback
+            # If there's no successful AI tests, we'll return the fallback.
             if successful_ai_analyses == 0:
-                self.logger.warning("AI анализ не работает, возвращаем первые 10 кандидатов без ранжирования")
+                self.logger.warning("AI analysis's not working, we're returning the first 10 candidates without ranking")
                 return hh_candidates[:10]
             
-            # 3. AI ранжирование (замена алгоритмического ранжирования)
+            # 3. AI ranking (replacement of algorithmic ranking))
             if not processed_profiles:
-                self.logger.warning("Нет профилей для ранжирования")
+                self.logger.warning('No profile for ranking')
                 return []
 
             try:
-                # Создаем кандидатов с полным AI анализом
+                # Create candidates with full AI analysis
                 ai_ranked_candidates = []
                 for profile in processed_profiles:
                     candidate_data = profile.hh_data.model_dump()
                     candidate_data['score'] = profile.overall_ai_score
-                    # Добавляем AI анализ навыков 
+                    # Add AI skills analysis 
                     candidate_data['skill_analysis'] = [skill.model_dump() for skill in profile.skill_analysis]
                     candidate_data['analysis_status'] = profile.analysis_status
-                    # Добавляем детальные поля AI анализа для объяснения оценки
+                    # Add detailed AI analysis fields to explain the estimate
                     candidate_data['keyword_relevance_score'] = profile.keyword_relevance_score
                     candidate_data['filter_match_score'] = profile.filter_match_score
                     candidate_data['recency_score'] = profile.recency_score
                     candidate_data['profile_completeness_score'] = profile.profile_completeness_score
                     candidate_data['analysis_summary'] = profile.analysis_summary
                     candidate_data['reasoning'] = profile.reasoning
-                    # 🔥 КРИТИЧЕСКИ ВАЖНО: Добавляем мульти-агентные данные!
+                    # 🔥 CRITICAL IMPORTANT: Adding multi-agent data!
                     candidate_data['multi_agent_data'] = profile.multi_agent_data
                     candidate_data['relevance_boost'] = profile.relevance_boost
                     ai_ranked_candidates.append(Candidate(**candidate_data))
                 
-                # Сортируем по AI оценке (убывание)
+                # Sorted by AI estimate (dropping)
                 ai_ranked_candidates.sort(key=lambda x: x.score or 0.0, reverse=True)
                 
-                self.logger.info(f"AI ранжирование завершено: {len(ai_ranked_candidates)} кандидатов отсортированы по AI оценке")
+                self.logger.info(f"AI ranking completed: {len(ai_ranked_candidates)} Candidates graded according to AI evaluation")
                 
-                # Обновляем счетчик поиска в БД
+                # Update the database search counter
                 for candidate in ai_ranked_candidates:
                     self._update_search_count_in_db(candidate.id)
                     
-                # Логируем статистику HH API
-                self.logger.info(f"📊 Статистика HH API: {hh_api_stats['successful_requests']}/{hh_api_stats['total_requests']} успешных запросов")
+                # Logging HH API statistics
+                self.logger.info(f"📊 HH API statistics: {hh_api_stats['successful_requests']}/{hh_api_stats['total_requests']} successful requests")
                 if hh_api_stats['status_500_errors'] > 0:
-                    self.logger.warning(f"🚨 Ошибок 500: {hh_api_stats['status_500_errors']}")
+                    self.logger.warning(f"🚨 Error of 500: {hh_api_stats['status_500_errors']}")
                 if hh_api_stats['status_429_errors'] > 0:
-                    self.logger.warning(f"🚫 Ошибок 429: {hh_api_stats['status_429_errors']}")
+                    self.logger.warning(f"🚫 The errors 429: {hh_api_stats['status_429_errors']}")
                 if hh_api_stats['status_503_errors'] > 0:
-                    self.logger.warning(f"🔴 Ошибок 503 (лимит исчерпан): {hh_api_stats['status_503_errors']}")
+                    self.logger.warning(f"🔴 error 503 (limit exhausted)): {hh_api_stats['status_503_errors']}")
                 if hh_api_stats['rate_limit_exceeded'] > 0:
-                    self.logger.warning(f"⚡ Всего превышений лимита: {hh_api_stats['rate_limit_exceeded']}")
+                    self.logger.warning(f"⚡ Total excess limit: {hh_api_stats['rate_limit_exceeded']}")
                     
                 return ai_ranked_candidates, hh_api_stats
                 
             except Exception as e:
-                self.logger.error(f"Ошибка AI ранжирования: {e}")
-                # В случае ошибки возвращаем первые 10 кандидатов
-                self.logger.warning(f"📊 Статистика HH API (с ошибкой): {hh_api_stats['successful_requests']}/{hh_api_stats['total_requests']} успешных запросов")
+                self.logger.error(f"Error in ranking: {e}")
+                # In case of error, the first 10 candidates are returned
+                self.logger.warning(f"📊 HH API statistics (with error)): {hh_api_stats['successful_requests']}/{hh_api_stats['total_requests']} successful requests")
                 return hh_candidates[:10], hh_api_stats
 
         except requests.exceptions.RequestException as e:
-            self.logger.error(f"Ошибка сети при поиске: {e}")
-            raise HTTPException(status_code=503, detail=f"Сетевая ошибка: {e}")
+            self.logger.error(f"Network errors in search: {e}")
+            raise HTTPException(status_code=503, detail=f"Network error: {e}")
         except Exception as e:
-            self.logger.error(f"Неизвестная ошибка при поиске: {e}", exc_info=True)
-            raise HTTPException(status_code=500, detail=f"Внутренняя ошибка сервера: {e}")
+            self.logger.error(f"Unknown error in search: {e}", exc_info=True)
+            raise HTTPException(status_code=500, detail=f"The internal server error: {e}")
 
     def build_top_for_vacancy(self, vacancy_url: str, limit: int = 10) -> VacancyTopResponse:
-        """Новый поток: вакансия → отклики → AI-анализ → ТОП кандидатов"""
-        # 1) Получаем отклики по вакансии
+        'New stream: vacancy rate \\\\responses \\AI-analysis \\TPR of candidates'
+        # (1) Receive feedback on the vacancy
         vacancy_details = self._get_vacancy_details(vacancy_url)
         responses_data = self._get_vacancy_responses(vacancy_url)
         vacancy_id = responses_data.get("vacancy_id", "")
         items = responses_data.get("items", [])
 
-        # Ожидаем, что items содержит массив резюме или их id
+        # We expect items to contain an array of summaries or their id.
         candidates: List[Candidate] = []
         for item in items:
             try:
-                # Унификация: если сразу есть резюме-объект, конвертим, если id — тянем детали
+                # Harmonization: If there is a summary object, convert, if id, pull the details
                 resume_id = item.get("resume_id") if isinstance(item, dict) else None
                 resume_obj = item.get("resume") if isinstance(item, dict) else None
                 if resume_obj:
@@ -793,18 +793,18 @@ class SearchService:
                     continue
                 candidates.append(candidate)
             except Exception as e:
-                self.logger.warning(f"Пропуск элемента отклика: {e}")
+                self.logger.warning(f"Response element missing: {e}")
 
         if not candidates:
             return VacancyTopResponse(vacancy_id=vacancy_id, total_responses=0, candidates=[])
 
-        # 2) Подтягиваем детальные данные + готовим батч мультиагентного анализа
+        # (2) Retracting detailed data + preparing a suite of multi-agent analysis
         all_candidates = []
         all_requests = []
         for candidate in candidates:
             full_resume_data, _ = self._get_full_resume_data(candidate.id)
             candidate_data = full_resume_data.get("resume", full_resume_data) if isinstance(full_resume_data, dict) else candidate.model_dump()
-            # Пытаемся извлечь требования из вакансии (название + ключевые слова)
+            # We try to extract requirements from the job (name + keywords))
             vacancy_title = (vacancy_details.get("name") or "") if isinstance(vacancy_details, dict) else ""
             position_type = self._determine_position_type(vacancy_title or candidate.title or "")
             position_requirements = self._extract_position_requirements(SearchRequest(text=vacancy_title, page=1, per_page=1))
@@ -818,7 +818,7 @@ class SearchService:
                 search_filters={}
             ))
 
-        # 3) Отправляем батч в AI Analysis
+        # (3) Send the booth to AI Analysis
         try:
             response = requests.post(
                 f"{self.ai_analysis_url}/multi-agent/batch",
@@ -828,15 +828,15 @@ class SearchService:
             response.raise_for_status()
             batch_responses = response.json()
         except Exception as e:
-            self.logger.error(f"Ошибка AI анализа откликов: {e}")
-            # Если AI недоступен — вернуть без сортировки
+            self.logger.error(f"Failure in response analysis: {e}")
+            # If AI is not available, return without sorting
             return VacancyTopResponse(
                 vacancy_id=vacancy_id,
                 total_responses=len(all_candidates),
                 candidates=all_candidates[:limit]
             )
 
-        # 4) Считаем финальные баллы и сортируем
+        # (4) Consider the final points and sort them
         tops: List[Candidate] = []
         for i, br in enumerate(batch_responses):
             try:
@@ -847,10 +847,10 @@ class SearchService:
                 candidate.score = round(final_score, 3)
                 tops.append(candidate)
             except Exception as e:
-                self.logger.warning(f"Ошибка сборки результата для кандидата {all_candidates[i].id}: {e}")
+                self.logger.warning(f"Errors of the result collection for the candidate {all_candidates[i].id}: {e}")
 
         tops.sort(key=lambda c: c.score or 0, reverse=True)
-        # Финальная сортировка через сервис ранжирования (AI-first, по score)
+        # Final sorting via ranking service (AI-first, score))
         try:
             rank_payload = RankingRequest(candidates=tops, search_request=SearchRequest(text=vacancy_title or "", page=1, per_page=len(tops)))
             resp = requests.post(f"{self.ranking_url}/rank", json=rank_payload.model_dump(mode='json'), timeout=60)
@@ -859,7 +859,7 @@ class SearchService:
             ranked_candidates = ranked_data.get("ranked_candidates", [])
             if limit:
                 ranked_candidates = ranked_candidates[:limit]
-            # Преобразуем в объекты Candidate при необходимости
+            # Transform to Candidate if necessary
             final_list = []
             for c in ranked_candidates:
                 if isinstance(c, dict):
@@ -868,7 +868,7 @@ class SearchService:
                     final_list.append(c)
             return VacancyTopResponse(vacancy_id=vacancy_id, total_responses=len(all_candidates), candidates=final_list)
         except Exception:
-            # Fallback на локальную сортировку
+            # Fallback for local sorting
             if limit:
                 tops = tops[:limit]
             return VacancyTopResponse(vacancy_id=vacancy_id, total_responses=len(all_candidates), candidates=tops)
@@ -880,46 +880,46 @@ class SearchService:
                 return DatabaseCandidate(**response.json())
             return None
         except Exception as e:
-            self.logger.warning(f"Не удалось получить кандидата {candidate_id} из БД: {e}")
+            self.logger.warning(f"Unable to obtain candidate {candidate_id} of database: {e}")
             return None
 
 
     
     def _determine_position_type(self, search_query: str) -> str:
-        """Определяет тип позиции на основе поискового запроса"""
+        'Determines the type of item based on a search request'
         query_lower = search_query.lower()
         
-        # Технические позиции
-        if any(tech in query_lower for tech in ["разработчик", "developer", "программист", "devops", "fullstack", "backend", "frontend"]):
+        # Technical positions
+        if any(tech in query_lower for tech in ['Developer', "developer", 'Programmer', "devops", "fullstack", "backend", "frontend"]):
             return "technical"
         
-        # Управленческие позиции  
-        if any(mgmt in query_lower for mgmt in ["менеджер", "manager", "руководитель", "директор", "тимлид", "lead"]):
+        # Management positions  
+        if any(mgmt in query_lower for mgmt in ['Manager', "manager", 'Head', 'Director', 'Tymlid', "lead"]):
             return "management"
         
-        # Продажи
-        if any(sales in query_lower for sales in ["продаж", "sales", "менеджер по продажам"]):
+        # Sales
+        if any(sales in query_lower for sales in ['sales', "sales", 'Sales manager']):
             return "sales"
         
         return "general"
     
     def _extract_position_requirements(self, search_request: SearchRequest) -> dict:
-        """Извлекает требования к позиции из поискового запроса"""
+        'Extract position requests from the search request'
         search_text = search_request.text or ""
         
-        # Извлекаем навыки из поискового запроса
+        # Improve skills from search requests
         required_skills = []
         
-        # Технологии из запроса
+        # Request technology
         tech_keywords = ["python", "java", "javascript", "react", "django", "spring", "nodejs", "golang", "kubernetes", "docker"]
         for tech in tech_keywords:
             if tech in search_text.lower():
                 required_skills.append(tech.title())
         
-        # УЛУЧШЕНО: Передаем ПОЛНУЮ информацию об опыте
+        # IMPROVED: Transmit full information on experiences
         experience_info = self._get_detailed_experience_requirements(getattr(search_request, 'experience', None))
         
-        # УЛУЧШЕНО: Передаем детальные требования из всех фильтров поиска
+        # IMPROVED: Transmit detailed requirements from all search filters
         return {
             "required_skills": required_skills,
             "min_experience_years": experience_info["min_years"],
@@ -941,99 +941,99 @@ class SearchService:
         }
     
     def _get_detailed_experience_requirements(self, experience_str) -> dict:
-        """Преобразует строку опыта HH.ru в детальную информацию о требованиях"""
+        'Transforms the HH.ru experience line into detailed requirements information'
         if not experience_str or experience_str == "noExperience":
             return {
                 "min_years": 0,
                 "max_years": 0,
-                "description": "Без опыта",
+                "description": 'Without experience',
                 "level": "noExperience"
             }
         elif experience_str == "between1And3":
             return {
                 "min_years": 1,
                 "max_years": 3,
-                "description": "От 1 года до 3 лет",
+                "description": '1 to 3 years',
                 "level": "between1And3"
             }
         elif experience_str == "between3And6":
             return {
                 "min_years": 3,
                 "max_years": 6,
-                "description": "От 3 до 6 лет",
+                "description": '3 to 6 years',
                 "level": "between3And6"
             }
         elif experience_str == "moreThan6":
             return {
                 "min_years": 6,
                 "max_years": None,
-                "description": "Более 6 лет",
+                "description": 'Over 6 years',
                 "level": "moreThan6"
             }
         else:
-            # Если передано число, возвращаем его
+            # If the number is transferred, we return it.
             try:
                 years = int(experience_str)
                 return {
                     "min_years": years,
                     "max_years": years,
-                    "description": f"Ровно {years} лет",
+                    "description": f"Exactly. {years} years",
                     "level": "custom"
                 }
             except (ValueError, TypeError):
                 return {
                     "min_years": 0,
                     "max_years": None,
-                    "description": "Требования к опыту не указаны",
+                    "description": 'No experience requirements specified',
                     "level": "unknown"
                 }
 
     def _convert_experience_to_years(self, experience_str) -> int:
-        """Преобразует строку опыта HH.ru в минимальные годы (совместимость)"""
+        'Transforms the HH.ru experience line into minimum years (compatibility))'
         experience_info = self._get_detailed_experience_requirements(experience_str)
         return experience_info["min_years"]
     
     def _calculate_relevance_score(self, candidate: Candidate, search_query: str, base_score: float) -> float:
-        """Рассчитывает финальный скор с учетом релевантности поискового запроса"""
+        'Calculates the final speed given the relevance of the search request'
         if not search_query:
             return base_score
         
         relevance_boost = 0.0
         query_words = search_query.lower().split()
         
-        # Проверяем соответствие названия должности
+        # Checking to match the title of the post
         candidate_title = (candidate.title or "").lower()
         for word in query_words:
             if word in candidate_title:
-                relevance_boost += 15.0  # Большой бонус за соответствие названию
+                relevance_boost += 15.0  # Big bonus for matching the name
         
-        # Проверяем соответствие навыков
+        # Checking to match skills.
         candidate_skills = [skill.lower() for skill in (candidate.skills or [])]
         for word in query_words:
             for skill in candidate_skills:
                 if word in skill:
-                    relevance_boost += 5.0  # Бонус за соответствие навыкам
+                    relevance_boost += 5.0  # Bonus for Competency
         
-        # Проверяем описание опыта
+        # Check out the experience profile.
         candidate_experience = (getattr(candidate, 'experience_text', '') or '').lower()
         for word in query_words:
             if word in candidate_experience:
-                relevance_boost += 2.0  # Небольшой бонус за упоминание в опыте
+                relevance_boost += 2.0  # A little bonus for mentioning experience.
         
-        # Ограничиваем максимальный буст
+        # Limiting the maximum bass
         relevance_boost = min(relevance_boost, 25.0)
         
         return min(100.0, base_score + relevance_boost)
 
     def _save_candidate_to_db(self, profile: CandidateProfile):
         try:
-            # Database API ожидает объект Candidate и отдельно ai_analysis
+            # Database API is awaiting Candidate and ai_analysis separately
             candidate_data = profile.hh_data.model_dump(mode='json')
             
-            # Формируем AI Analysis если есть
+            # Form an AI Analysis if you have
             ai_analysis_data = None
             if profile.skill_analysis and profile.overall_ai_score > 0:
-                # Правильно сериализуем объекты SkillAnalysis
+                # SkillAnalysis objects are correctly serilled
                 skill_analysis_data = []
                 if isinstance(profile.skill_analysis, list):
                     skill_analysis_data = [
@@ -1045,11 +1045,11 @@ class SearchService:
                     "candidate_id": profile.id,
                     "skill_analysis": skill_analysis_data,
                     "overall_score": profile.overall_ai_score,
-                    "analysis_summary": f"Анализ завершен со статусом: {profile.analysis_status}",
+                    "analysis_summary": f"Analysis completed with status: {profile.analysis_status}",
                     "processing_time": 1.0
                 }
             
-            # Отправляем согласно API database
+            # Sent according to API database
             payload = {
                 "candidate": candidate_data,
                 "ai_analysis": ai_analysis_data
@@ -1057,20 +1057,20 @@ class SearchService:
             
             requests.post(f"{self.database_url}/candidates", json=payload, timeout=120).raise_for_status()
         except Exception as e:
-            self.logger.error(f"Не удалось сохранить кандидата {profile.id} в БД: {e}")
+            self.logger.error(f"Unable to retain candidate {profile.id} to database: {e}")
 
     def _update_search_count_in_db(self, candidate_id: str):
         try:
             requests.put(f"{self.database_url}/candidates/{candidate_id}/search", timeout=60).raise_for_status()
         except Exception as e:
-            self.logger.warning(f"Не удалось обновить счетчик поиска для {candidate_id}: {e}")
+            self.logger.warning(f"Unable to update search counter for {candidate_id}: {e}")
 
 
 search_service = SearchService()
 
 @app.get("/ping")
 async def ping():
-    """Простая проверка доступности search сервиса"""
+    'A simple test of the availability of a search service'
     return {"status": "ok", "timestamp": datetime.now().isoformat()}
 
 @app.get("/health", response_model=HealthResponse, tags=["Health"])
@@ -1087,42 +1087,42 @@ def get_filters():
 
 @app.get("/dictionaries", tags=["Dictionaries"])
 def get_dictionaries():
-    """Получение всех справочников"""
+    'Collection of all handbooks'
     try:
         result = search_service.get_dictionaries()
         if not result:
-            raise HTTPException(status_code=500, detail="Ошибка получения справочников")
+            raise HTTPException(status_code=500, detail='Error in receiving guidelines')
         return result
     except Exception as e:
-        logger.error(f"Ошибка получения справочников: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка получения справочников")
+        logger.error(f"Error in receiving guidelines: {e}")
+        raise HTTPException(status_code=500, detail='Error in receiving guidelines')
 
-# ===== НОВОЕ: Эндпоинт для ТОПа по ссылке вакансии =====
+# == sync, corrected by elderman == @elder_man
 @app.post("/vacancy/top", response_model=VacancyTopResponse)
 def build_vacancy_top(req: VacancyTopRequest):
     return search_service.build_top_for_vacancy(req.vacancy_url, req.limit or 10)
 
 def create_search_request_search(
-    text: Optional[str] = Query(None, description="Ключевые слова для поиска"),
-    search_field: Optional[str] = Query("everywhere", description="Область поиска"), 
-    area: Optional[List[int]] = Query(None, description="ID регионов"),
-    salary: Optional[int] = Query(None, description="Максимальная зарплата"),
-    experience: Optional[str] = Query(None, description="Опыт работы"),
-    employment: Optional[List[str]] = Query(None, description="Тип занятости"),
-    schedule: Optional[List[str]] = Query(None, description="График работы"),
-    professional_role: Optional[List[str]] = Query(None, description="Профессиональные роли"),
-    period: Optional[int] = Query(None, description="Период обновления в днях"),
-    age_from: Optional[int] = Query(None, description="Возраст от"),
-    age_to: Optional[int] = Query(None, description="Возраст до"), 
-    gender: Optional[str] = Query(None, description="Пол"),
-    language_id: Optional[str] = Query(None, description="ID языка"),
-    language_level: Optional[str] = Query(None, description="Минимальный уровень языка"),
-    page: int = Query(1, description="Номер страницы"),
-    per_page: int = Query(20, description="Количество на странице")
+    text: Optional[str] = Query(None, description='Keywords for Search'),
+    search_field: Optional[str] = Query("everywhere", description='Search Area'), 
+    area: Optional[List[int]] = Query(None, description='ID of the regions'),
+    salary: Optional[int] = Query(None, description='Maximum wage'),
+    experience: Optional[str] = Query(None, description='Experience'),
+    employment: Optional[List[str]] = Query(None, description='Type of employment'),
+    schedule: Optional[List[str]] = Query(None, description='Time schedule'),
+    professional_role: Optional[List[str]] = Query(None, description='Professional roles'),
+    period: Optional[int] = Query(None, description='Days update period'),
+    age_from: Optional[int] = Query(None, description='Age from'),
+    age_to: Optional[int] = Query(None, description='Age before'), 
+    gender: Optional[str] = Query(None, description='Gender'),
+    language_id: Optional[str] = Query(None, description='ID Language'),
+    language_level: Optional[str] = Query(None, description='Minimum language level'),
+    page: int = Query(1, description='Page number'),
+    per_page: int = Query(20, description='Number on page')
 ) -> SearchRequest:
-    """Создание SearchRequest из query параметров в Search сервисе"""
+    'Created SearchRequest from Query Options in Search Service'
     
-    # Обработка языковых требований
+    # Processing of language requirements
     language_requirements = None
     if language_id and language_level:
         from shared.models import LanguageRequirement, LanguageLevel
@@ -1132,7 +1132,7 @@ def create_search_request_search(
                 level=LanguageLevel(language_level)
             )]
         except ValueError:
-            # Если неверный уровень языка, игнорируем
+            # If the language is wrong, ignore it.
             language_requirements = None
     
     return SearchRequest(
@@ -1155,16 +1155,16 @@ def create_search_request_search(
 
 @app.get("/search", tags=["Search"])
 def search(search_request: SearchRequest = Depends(create_search_request_search)):
-    """Поиск кандидатов через GET запрос"""
+    'Search for candidates via GET request'
     try:
         candidates, hh_api_stats = search_service.search_candidates(search_request)
         
-        # Формируем правильную структуру ответа с информацией о HH API
+        # Form the correct HH API response structure
         return {
             "candidates": [candidate.model_dump() for candidate in candidates],
             "total_count": len(candidates),
             "page": search_request.page,
-            "pages": 1,  # Пока возвращаем одну страницу
+            "pages": 1,  # So far, we're returning one page.
             "hh_api_status": {
                 "total_requests": hh_api_stats["total_requests"],
                 "successful_requests": hh_api_stats["successful_requests"],
@@ -1183,8 +1183,8 @@ def search(search_request: SearchRequest = Depends(create_search_request_search)
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Ошибка поиска: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка поиска")
+        logger.error(f"Error of search: {e}")
+        raise HTTPException(status_code=500, detail='Error of search')
 
 if __name__ == "__main__":
     import uvicorn

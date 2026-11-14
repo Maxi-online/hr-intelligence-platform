@@ -1,276 +1,276 @@
-# 🏗️ Workflow Office - Структура Базы Данных Агентов
+# 🏗️ Workflow Office - Structure of the Data Agency Database
 
-## 📋 Оглавление
-1. [Обзор](#обзор)
-2. [Основные таблицы](#основные-таблицы)
-3. [Таблицы памяти](#таблицы-памяти)
-4. [История и логирование](#история-и-логирование)
-5. [Правила и конфигурации](#правила-и-конфигурации)
-6. [Обучающие данные](#обучающие-данные)
-7. [Организационная структура](#организационная-структура)
-8. [Метрики и аналитика](#метрики-и-аналитика)
-9. [Связи между таблицами](#связи-между-таблицами)
-10. [Примеры запросов](#примеры-запросов)
-
----
-
-## 🎯 Обзор
-
-Централизованная база данных для хранения **всех конфигураций AI-агентов**, их промптов, настроек GPT, инструментов, памяти и метрик производительности.
-
-### Ключевые особенности:
-- ✅ **Версионность** - полная история изменений конфигураций
-- ✅ **Модульность** - раздельное хранение промптов, настроек, инструментов
-- ✅ **Память** - Core, Operational и Long-term память
-- ✅ **Аудит** - полное логирование всех действий агентов
-- ✅ **Масштабируемость** - поддержка неограниченного количества агентов
-- ✅ **Гибкость** - JSON поля для кастомных данных
+## 📋 Contents
+1. [Review](#review)
+2. [Basic tables](#core tables)
+3. [Memory tables (# Memory tables))
+4. [History and logic](#logistics)
+5. [Regulations and configurations](#rules-and-configurations)
+6. [Learning data](#Learning data)
+7. [Organization](#Organization)
+8. [Metrics and Analysts] (#metrics-and-analytics)
+9. [Linkages between tables](#communications between tables)
+10. [Examples of requests](#examples of requests)
 
 ---
 
-## 📊 Основные таблицы
+## 🎯 Overview
 
-### 1. `agents` - Основная таблица агентов
-**Назначение:** Хранение базовой информации о каждом агенте
+A centralized database for storing **all AI agents configurations**, their prompt, GPT settings, tools, memory and performance metrics.
 
-| Поле | Тип | Описание |
+### Key features:
+- ✅ **Versionarity** - Full history of configuration changes
+- ✅ **Modular** - separate storage of prompts, settings, tools
+- ✅ **Core, Operational and Long-term Memory
+- ✅ **Audit** - full logic of all agent actions
+- ✅ **Scale** - support for unlimited number of agents
+- ✅ **Flexibility** - JSON Castomic Data Fields
+
+---
+
+## 📊 Main tables
+
+### 1. `agents` - Basic Table of Agents
+**Destination:** Storage of basic information on each agent
+
+| Fields . Type . Description |
 |------|-----|----------|
-| `agent_id` | VARCHAR(255) PK | Уникальный ID агента (например: `supervisor_001`) |
-| `agent_name` | VARCHAR(255) | Отображаемое имя (например: `@boss.ai`) |
-| `agent_type` | VARCHAR(100) | Тип агента (supervisor, recruiter, scrinner, menu) |
-| `display_name` | VARCHAR(255) | Человеческое имя (например: "Алена Сергеева") |
-| `role` | VARCHAR(255) | Роль (Supervisor, Active Recruiter) |
-| `persona` | TEXT | Краткое описание личности |
+| `agent_id` | VARCHAR(255) PK | UniqueID agent(e.g.:`supervisor_001`) |
+| `agent_name` | VARCHAR(255) | Identified Name(e.g.:`@boss.ai`) |
+| `agent_type & ♪ VARCHAR(100) ♪ Type of Agent (supervisor, recruiter, scrinner, menu) |
+| `display_name & ♪ VARCHAR(255) ♪ Human name (e.g. "Alena Sergeyev"") |
+| `(Supervisor, Active Recruiter)) |
+| `persona & . . . TEXT . . short description of the identity |
 | `telegram_username` | VARCHAR(255) | Telegram username |
 | `teams_identity` | VARCHAR(255) | Microsoft Teams identity |
 | `status` | ENUM | active, inactive, maintenance, archived |
-| `version` | VARCHAR(50) | Версия конфигурации |
+| `version & ♪ VARCHAR(50) ♪ configuration version |
 
-**Индексы:**
+**Indexes:**
 - PRIMARY KEY: `agent_id`
 - INDEX: `agent_type`, `status`, `is_active`
 - UNIQUE: `telegram_username`, `teams_identity`
 
 ---
 
-### 2. `agent_prompts` - Промпты агентов
-**Назначение:** Хранение системных промптов с версионностью
+### 2. `agent_prompts` - Prompts of agents
+**Destination:** Storage of system prompts with versionarity
 
-| Поле | Тип | Описание |
+| Fields . Type . Description |
 |------|-----|----------|
-| `prompt_id` | VARCHAR(255) PK | Уникальный ID промпта |
-| `agent_id` | VARCHAR(255) FK | ID агента |
-| `system_prompt` | TEXT | Основной системный промпт |
-| `tone_of_voice` | TEXT | Тон и стиль общения |
-| `version` | VARCHAR(50) | Версия промпта |
-| `is_current` | BOOLEAN | Текущая версия |
-| `examples` | JSON | Примеры диалогов (Few-Shot) |
+| `prompt_id & ♪ VARCHAR(255) PK ♪ Unique ID Prompt |
+| `agent_id & \ VARCHAR(255) FK \ ID agent |
+| `system_prompt & \TEXT \ Basic System Prompte |
+* `tone_of_voice` * TEXT * Tone and style of communication *
+| `version & ♪ VARCHAR(50) ♪ Prompt version |
+| `is_current & ♪ BOOLEAN ♪ Current version |
+| `examples & ♪ JSON ♪ Examples of dialogs (Few-Shot)) |
 
-**Особенности:**
-- ✅ **Версионность** - можно хранить историю всех промптов
-- ✅ **Откат** - легко вернуться к предыдущей версии
-- ✅ **A/B тестирование** - сравнение разных версий
+** Specialities:**
+- ✅ **Versonicity** - you can keep the history of all prompts
+- ✅ **Reverse** - Easy to return to previous version
+- ✅ **A/B testing** - comparison of different versions
 
 ---
 
-### 3. `agent_gpt_settings` - Настройки GPT
-**Назначение:** Конфигурация GPT модели для каждого агента
+### 3. `agent_gpt_settings` - GPT settings
+**Purpose:** Model GPT configuration for each agent
 
-| Поле | Тип | Описание |
+| Fields . Type . Description |
 |------|-----|----------|
-| `setting_id` | VARCHAR(255) PK | Уникальный ID настройки |
-| `agent_id` | VARCHAR(255) FK | ID агента |
-| `model` | VARCHAR(100) | Модель (gpt-5-nano, gpt-5, gpt-4.1) |
+| `setting_id & ♪ VARCHAR(255) PK ♪ Unique ID setup |
+| `agent_id & \ VARCHAR(255) FK \ ID agent |
+| `model & ♪ VARCHAR(100) ♪ (gpt-5-nano, gpt-5, gpt-4.1)) |
 | `reasoning_effort` | ENUM | minimal, low, medium, high (GPT-5) |
-| `temperature` | DECIMAL(3,2) | Temperature для GPT-4 |
-| `max_tokens` | INTEGER | Макс. токенов в ответе |
+| `Timerature & ♪ DECIMAL(3.2) ♪ Temperature for GPT-4 |
+| `max_tokens & ~ INTEGER ~ Max. currents in response |
 | `tool_choice` | VARCHAR(50) | auto, required, none |
-| `parallel_tool_calls` | BOOLEAN | Параллельные вызовы |
-| `prompt_cache_enabled` | BOOLEAN | Кеширование промпта |
+| `parallel_tool_calls & ♪ BOOLEAN ♪ Parallel calls |
+| `prompt_cache_enabled & ♪ BOOLEAN ♪ Prompta Cashing Original Air Date on October 24, 2013 |
 
-**Примечания:**
-- 🆕 **GPT-5** использует `reasoning_effort` вместо `temperature`
-- 🚀 **Оптимизация** - prompt caching и параллельные tool calls
-- ⚙️ **Гибкость** - индивидуальные настройки для каждого агента
+**Notes:**
+- 🆕 **GPT-5** uses `reasoning_effort` instead of `temperature`
+- 🚀 **Optimization** - Prompt caching and parallel tool calls
+- ⚙️ **Flexible** - individual settings for each agent
 
 ---
 
-### 4. `agent_tools` - Инструменты (Tools)
-**Назначение:** Каталог всех доступных инструментов
+### 4. `agent_tools` - Tools (Tools)
+** Designation:** Catalogue of all available tools
 
-| Поле | Тип | Описание |
+| Fields . Type . Description |
 |------|-----|----------|
-| `tool_id` | VARCHAR(255) PK | Уникальный ID инструмента |
-| `tool_name` | VARCHAR(255) | Название (search_resumes) |
+| `tool_id & ♪ VARCHAR(255) PK ♪ Unique ID tool |
+| `tool_name & ♪ VARCHAR(255) ♪ Name (search_resumes)) |
 | `tool_type` | ENUM | function, mcp, api, database |
-| `description` | TEXT | Описание для GPT |
-| `parameters` | JSON | JSON схема параметров |
-| `mcp_server_url` | VARCHAR(500) | URL MCP сервера |
-| `api_endpoint` | VARCHAR(500) | Endpoint внешнего API |
+| `Description & ♪ TEXT ♪ Description for GPT |
+| `Parameters & ~ JSON ~ JSONE parameter diagram |
+| `mcp_server_url & ♪ VARCHAR(500) ♪ URL MCP server |
+| `api_endpoint & ♪ VARCHAR(500) ♪ Endpoint External API |
 
-**Поддерживаемые типы:**
-- 🔧 **function** - обычные Python функции
-- 🌐 **mcp** - MCP серверы (например, DaData)
-- 🔗 **api** - внешние REST API
-- 💾 **database** - прямые запросы к БД
-
----
-
-### 5. `agent_tools_mapping` - Связь агентов с инструментами
-**Назначение:** Какие инструменты доступны каждому агенту
-
-| Поле | Тип | Описание |
-|------|-----|----------|
-| `mapping_id` | VARCHAR(255) PK | Уникальный ID связи |
-| `agent_id` | VARCHAR(255) FK | ID агента |
-| `tool_id` | VARCHAR(255) FK | ID инструмента |
-| `is_enabled` | BOOLEAN | Включен ли инструмент |
-| `priority` | INTEGER | Приоритет (0 - высший) |
-| `custom_params` | JSON | Кастомные параметры |
+** Supported types:**
+- 🔧 **function** - normal Python functions
+- 🌐 **mcp** - MCP servers (e.g. DaData))
+- 🔗 **api** - external REST API
+- 💾 **database** = direct database requests
 
 ---
 
-## 🧠 Таблицы памяти
+### 5. `agent_tools_mapping` - Contact of agents with instruments
+**Purpose: ** What tools are available to each agent
 
-### 6. `core_memory` - Core память
-**Назначение:** Критически важные правила и факты агента
-
-| Поле | Тип | Описание |
+| Fields . Type . Description |
 |------|-----|----------|
-| `memory_id` | VARCHAR(255) PK | ID записи памяти |
-| `agent_id` | VARCHAR(255) FK | ID агента |
+| `mapping_id & ♪ VARCHAR(255) PK ♪ Unique ID communication |
+| `agent_id & \ VARCHAR(255) FK \ ID agent |
+| `tool_id & \ VARCHAR(255) FK \ ID tool |
+| `is_enabled' ♪ BOOLEAN ♪ Is the tool included |
+| `priority & ~ INTEGER ~ priority (0 = highest priority)) |
+| `custom_params & ♪ JSON ♪ Cast-in Options |
+
+---
+
+## 🧠 Memory tables
+
+### `core_memory` - Core memory
+** Designation:** Critical rules and facts of the agent
+
+| Fields . Type . Description |
+|------|-----|----------|
+| `memory_id`♰ VARCHAR(255) PK♰ ID memory recording |
+| `agent_id & \ VARCHAR(255) FK \ ID agent |
 | `memory_type` | ENUM | rule, fact, persona, constraint |
-| `memory_key` | VARCHAR(255) | Ключ (response_language) |
-| `memory_value` | TEXT | Значение |
-| `priority` | INTEGER | Приоритет (1-10) |
-| `is_permanent` | BOOLEAN | Постоянная память |
+| `memory_key & ♪ VARCHAR(255) ♪ key (response_language)) |
+| `memory_value & \TEXT \ \ \ |
+| `priority & ~ INTERGER ~ Priority (1-10)) |
+| `is_permanent`♰ BOOLEAN♰ Permanent memory |
 
-**Примеры core памяти:**
+**Examples of core memory:**
 ```sql
--- Язык ответов
-('mem_001', 'supervisor_001', 'rule', 'response_language', 'Всегда отвечай на русском', 1, TRUE)
+-- Language of replies
+('mem_001, `supervisor_001', 'rule', 'response_language' and 'Always answer Russian', 1, TRUE)
 
--- Стиль общения
-('mem_002', 'recruiter_001', 'persona', 'communication_style', 'Дружелюбная, профессиональная', 2, TRUE)
+-- Communication style
+('mem_002, `recruiter_001', 'persona', 'communication_style, 'friendly, professional', 2, TRUE)
 
--- Ограничения
+-- Limitations
 ('mem_003', 'scrinner_001', 'constraint', 'max_candidates_per_session', '10', 3, FALSE)
 ```
 
 ---
 
-### 7. `operational_memory` - Оперативная память
-**Назначение:** Контекст текущих задач и сессий
+### `operational_memory` - Operating memory
+** Designation: ** Context of current tasks and sessions
 
-| Поле | Тип | Описание |
+| Fields . Type . Description |
 |------|-----|----------|
-| `operation_id` | VARCHAR(255) PK | ID операции |
-| `agent_id` | VARCHAR(255) FK | ID агента |
-| `session_id` | VARCHAR(255) | ID сессии |
-| `user_id` | VARCHAR(255) | ID пользователя |
-| `task_context` | TEXT | Контекст задачи |
-| `current_focus` | TEXT | Текущий фокус |
-| `expires_at` | TIMESTAMP | Срок истечения (TTL) |
+| `operation_id & \ VARCHAR(255) PK \ ID operation |
+| `agent_id & \ VARCHAR(255) FK \ ID agent |
+| `session_id & \ VARCHAR(255) \ID session |
+| `user_id & ♪ VARCHAR(255) ♪ user ID |
+| `task_context & ~ TEXT ♪ The context of the task |
+| `current_focus & \TEXT \ Current Focus |
+| `expires_at & ~ TIMESTAMP ~ Expiration Time (TTL)) |
 
-**Особенности:**
-- ⏰ **TTL** - автоматическое удаление по истечении срока
-- 🔄 **Сессионная** - привязана к сессии пользователя
-- 📊 **Контекст** - хранит текущее состояние задачи
+** Specialities:**
+- ⏰ **TTL** - Automatic removal after expiry
+- 🔄 **Session** - linked to user session
+- 📊 **Context** - Maintains the current status of the task
 
 ---
 
-### 8. `long_term_memory` - Долговременная память
-**Назначение:** Обучение и адаптация агента
+### `long_term_memory` - Long-term memory
+** Designation:** Training and adaptation of the agent
 
-| Поле | Тип | Описание |
+| Fields . Type . Description |
 |------|-----|----------|
-| `ltm_id` | VARCHAR(255) PK | ID записи |
-| `agent_id` | VARCHAR(255) FK | ID агента |
+| `ltm_id & \ VARCHAR(255) PK \ ID records |
+| `agent_id & \ VARCHAR(255) FK \ ID agent |
 | `memory_type` | ENUM | learned_pattern, user_preference, success_case |
-| `title` | VARCHAR(500) | Заголовок |
-| `content` | TEXT | Содержимое |
-| `usage_count` | INTEGER | Количество применений |
-| `success_rate` | DECIMAL(5,2) | Процент успеха |
+| `Title & ♪ VARCHAR(500) ♪ Heading |
+| `Content & . . . TEXT .  |
+| `usage_count & ~ INTEGER ~ Amount of use |
+| `success_rate & ♪ DECIMAL(5.2) ♪ Percentage of success |
 
-**Примеры:**
-- 📈 **Learned patterns** - выявленные паттерны поведения
-- 👤 **User preferences** - предпочтения пользователей
-- ✅ **Success cases** - успешные кейсы
-- ❌ **Failure cases** - неудачные случаи (для обучения)
+** Examples:**
+- 📈 **Learned Patterns** - identified behavioral patterns
+- 👤 **User preferences** - user preferences
+- ✅ **Communication cases** - successful briefcases
+- ❌ **Failure cases** - failures (for training))
 
 ---
 
-## 📜 История и логирование
+## 📜 History and logic
 
-### 9. `chat_history` - История чатов
-**Назначение:** Полная история всех сообщений
+### 9. `chat_history` - chat history
+** Designation:** Full history of all messages
 
-| Поле | Тип | Описание |
+| Fields . Type . Description |
 |------|-----|----------|
-| `message_id` | VARCHAR(255) PK | ID сообщения |
-| `agent_id` | VARCHAR(255) FK | ID агента |
-| `session_id` | VARCHAR(255) | ID сессии |
+| `message_id & \ VARCHAR(255) PK \ ID message |
+| `agent_id & \ VARCHAR(255) FK \ ID agent |
+| `session_id & \ VARCHAR(255) \ID session |
 | `role` | ENUM | user, assistant, system, tool |
-| `content` | TEXT | Содержимое |
-| `tool_calls` | JSON | Вызовы инструментов |
+| `Content & . . . TEXT .  |
+| `tool_calls' ♪ JSON ♪ Tool Challenges |
 | `platform` | ENUM | telegram, teams, slack, web |
-| `tokens_used` | INTEGER | Использовано токенов |
+| `tokens_used & ♪ INTEGER ♪ Use of currents |
 
 ---
 
-### 10. `agent_activity_log` - Лог активности
-**Назначение:** Детальное логирование всех действий
+### 10. `agent_activity_log` - Activity Log
+** Designation:** Detailed logic of all actions
 
-| Поле | Тип | Описание |
+| Fields . Type . Description |
 |------|-----|----------|
-| `log_id` | VARCHAR(255) PK | ID лога |
-| `agent_id` | VARCHAR(255) FK | ID агента |
+| `log_id & \ VARCHAR(255) PK \ ID log |
+| `agent_id & \ VARCHAR(255) FK \ ID agent |
 | `activity_type` | ENUM | message, tool_call, error, startup |
 | `status` | ENUM | success, failure, partial |
-| `duration_ms` | INTEGER | Длительность в мс |
+* `duration_ms` * INTERGER * Duration in ms
 
 ---
 
-### 11. `agent_version_history` - История версий
-**Назначение:** Отслеживание всех изменений конфигурации
+### 11. `agent_version_history` - Version History
+** Designation:** Tracking all configuration changes
 
-| Поле | Тип | Описание |
+| Fields . Type . Description |
 |------|-----|----------|
-| `history_id` | VARCHAR(255) PK | ID записи |
-| `agent_id` | VARCHAR(255) FK | ID агента |
-| `version` | VARCHAR(50) | Версия |
+| `history_id & \ VARCHAR(255) PK \ ID records |
+| `agent_id & \ VARCHAR(255) FK \ ID agent |
+| `version & ♪ VARCHAR(50) ♪ Version |
 | `change_type` | ENUM | prompt, settings, tools, full_config |
-| `config_snapshot_before` | JSON | Снапшот до |
-| `config_snapshot_after` | JSON | Снапшот после |
+| `config_snapshot_before' ♪ JSON ♪ Snapshot to |
+| `config_snapshot_after' ♪ JSON ♪ Snapshot after |
 
 ---
 
-## ⚙️ Правила и конфигурации
+## ⚙️ Rules and configurations
 
-### 12. `agent_rules` - Правила поведения
-**Назначение:** Правила, которым должен следовать агент
+### 12. `agent_rules` - Rules of conduct
+** Designation: ** Rules to be followed by the agent
 
-| Поле | Тип | Описание |
+| Fields . Type . Description |
 |------|-----|----------|
-| `rule_id` | VARCHAR(255) PK | ID правила |
-| `agent_id` | VARCHAR(255) FK | ID агента |
+| `rule_id & \ VARCHAR(255) PK \ ID rules |
+| `agent_id & \ VARCHAR(255) FK \ ID agent |
 | `rule_type` | ENUM | communication, behavior, security |
-| `rule_content` | TEXT | Содержимое правила |
-| `priority` | INTEGER | Приоритет |
+| `rule_content & ~ TEXT ~ The contents of the regulation |
+* `priority` * INTERGER * Priority *
 
 ---
 
-### 13. `agent_routing_rules` - Правила маршрутизации
-**Назначение:** Как агенты взаимодействуют между собой
+### 13. `agent_routing_rules` - Routine rules
+** Designation:** How agents interact with each other
 
-| Поле | Тип | Описание |
+| Fields . Type . Description |
 |------|-----|----------|
-| `routing_id` | VARCHAR(255) PK | ID правила |
-| `source_agent_id` | VARCHAR(255) FK | Агент-источник |
-| `target_agent_id` | VARCHAR(255) FK | Агент-получатель |
+| `routing_id & \ VARCHAR(255) PK \ ID rules |
+| `source_agent_id & ♪ VARCHAR(255) FK ♪ Agent Source |
+| `target_agent_id & ♪ VARCHAR(255) FK ♪ |
 | `routing_type` | ENUM | delegation, escalation, collaboration |
 
-**Пример:**
+** Example:**
 ```
 supervisor_001 → recruiter_001 (delegation)
 recruiter_001 → scrinner_001 (delegation)
@@ -279,98 +279,98 @@ scrinner_001 → supervisor_001 (report)
 
 ---
 
-## 📚 Обучающие данные
+## 📚 Training data
 
-### 14. `agent_training_data` - Обучающие данные
-**Назначение:** Few-Shot примеры, сценарии, кейсы
+### 14. `agent_training_data` - Training data
+** Designation:**Few-Shot examples, scripts, briefcases
 
-| Поле | Тип | Описание |
+| Fields . Type . Description |
 |------|-----|----------|
-| `training_id` | VARCHAR(255) PK | ID данных |
-| `agent_id` | VARCHAR(255) FK | ID агента |
+| `training_id & \ VARCHAR(255) PK \ ID data |
+| `agent_id & \ VARCHAR(255) FK \ ID agent |
 | `data_type` | ENUM | example, knowledge_base, faq, scenario |
-| `input_example` | TEXT | Пример входа |
-| `output_example` | TEXT | Пример выхода |
+| `input_example & \TEXT \ Example of entry |
+| `output_example & \TEXT \ Example of Exit |
 
 ---
 
-### 15. `agent_knowledge_base` - База знаний (RAG)
-**Назначение:** Семантический поиск и RAG
+### 15. `agent_knowledge_base` - Knowledge base (RAG)
+** Designation:** Semantic search and RAG
 
-| Поле | Тип | Описание |
+| Fields . Type . Description |
 |------|-----|----------|
-| `knowledge_id` | VARCHAR(255) PK | ID знаний |
-| `agent_id` | VARCHAR(255) FK | ID агента (NULL для общих) |
-| `content` | TEXT | Содержимое |
-| `embedding_vector` | JSON | Векторное представление |
-| `access_count` | INTEGER | Количество обращений |
+| `knowledge_id & \ VARCHAR(255) PK \ ID of knowledge |
+| `agent_id & \ VARCHAR(255) FK \ ID agent (NULL for general) |
+| `Content & . . . TEXT .  |
+| `embedding_vector & ♪ JSON ♪ Vector representation |
+* `access_count` * INTERGER * Number of hits *
 
 ---
 
-## 🏢 Организационная структура
+## 🏢 Organizational structure
 
-### 16. `organizational_structure` - Оргструктура
-**Назначение:** Иерархия компании и AI-агентов
+### 16. `organizational_structure` - Structure
+** Designation:** Hierarchy of company and AI agents
 
-| Поле | Тип | Описание |
+| Fields . Type . Description |
 |------|-----|----------|
-| `id` | VARCHAR(255) PK | ID записи |
-| `department` | VARCHAR(255) | Отдел (HR, IT, Finance) |
-| `position` | VARCHAR(255) | Должность |
-| `full_name` | VARCHAR(255) | ФИО |
-| `hierarchy_level` | INTEGER | Уровень (1 - топ) |
-| `agent_id` | VARCHAR(255) FK | ID агента (если AI) |
+| `id` ~ VARCHAR(255) PK ~ ID records |
+| `(HR, IT, Finance)) |
+| `Position & ♪ VARCHAR(255) ♪ Position |
+| `full_name & ♪ VARCHAR(255) ♪ FIO |
+| `hierarchy_level & ~ INTEGER ~ Level (1-top)) |
+| `agent_id & \ VARCHAR(255) FK \ ID agent (if AI) |
 
 ---
 
-### 17. `deployed_agents_registry` - Реестр развертывания
-**Назначение:** Информация о развернутых агентах
+### 17. `deployed_agents_registry` - Deployment register
+** Designation: ** Information on deployed agents
 
-| Поле | Тип | Описание |
+| Fields . Type . Description |
 |------|-----|----------|
-| `deployment_id` | VARCHAR(255) PK | ID развертывания |
-| `agent_id` | VARCHAR(255) FK | ID агента |
-| `telegram_bot_token` | VARCHAR(500) | Telegram токен |
+| `deployment_id & \ VARCHAR(255) PK \ ID deployment |
+| `agent_id & \ VARCHAR(255) FK \ ID agent |
+| `telegram_bot_token & \ VARCHAR(500) \Telegram current |
 | `deployment_status` | ENUM | deployed, stopped, maintenance |
-| `last_health_check` | TIMESTAMP | Последняя проверка |
+| `last_health_check & ~ TIMESTAMP ~ Receivable Check |
 
 ---
 
-## 📈 Метрики и аналитика
+## 📈 Metro and analyst
 
-### 18. `agent_performance_metrics` - Метрики производительности
-**Назначение:** Детальные метрики работы агентов
+### 18. `agent_performance_metrics` - Productivity metrics
+** Designation:** Detailed agent performance metrics
 
-| Поле | Тип | Описание |
+| Fields . Type . Description |
 |------|-----|----------|
-| `metric_id` | VARCHAR(255) PK | ID метрики |
-| `agent_id` | VARCHAR(255) FK | ID агента |
-| `metric_name` | VARCHAR(255) | Название метрики |
-| `metric_value` | DECIMAL(20,6) | Значение |
+| `metric_id & ♪ VARCHAR(255) PK ♪ ID metrics |
+| `agent_id & \ VARCHAR(255) FK \ ID agent |
+| `metric_name & ♪ VARCHAR(255) ♪ The name of the metrics |
+| `metric_value & ♪ DECIMAL(20.6) ♪ |
 | `period` | ENUM | minute, hour, day, week, month |
 
-**Примеры метрик:**
-- 📊 `messages_processed` - обработано сообщений
-- ⏱️ `avg_response_time` - среднее время ответа
-- 🔧 `tool_calls_count` - количество вызовов инструментов
-- ✅ `success_rate` - процент успешных запросов
-- 🎯 `user_satisfaction` - удовлетворенность пользователей
+** Examples of metrics:**
+- 📊 `messages_processed' - Messages processed
+- ⏱️ `avg_response_time' is the average response time
+- 🔧 `tool_calls_count' is the number of tool calls
+- ✅ `success_rate' is the percentage of successful requests
+- 🎯 `user_satisfaction' - User satisfaction
 
 ---
 
-### 19. `system_metrics` - Системные метрики
-**Назначение:** Общие метрики системы
+### 19. `system_metrics` - System metrics
+** Designation:** Common metrics of the system
 
-| Поле | Тип | Описание |
+| Fields . Type . Description |
 |------|-----|----------|
-| `id` | VARCHAR(255) PK | ID метрики |
-| `metric_name` | VARCHAR(255) | Название |
-| `metric_value` | DECIMAL(20,6) | Значение |
-| `agent_id` | VARCHAR(255) FK | ID агента (опционально) |
+| `id` ~ VARCHAR(255) PK ~ ID metrics |
+| `metric_name & ♪ VARCHAR(255) ♪ Name |
+| `metric_value & ♪ DECIMAL(20.6) ♪ |
+| `agent_id & \ VARCHAR(255) FK \ ID agent (optimal)) |
 
 ---
 
-## 🔗 Связи между таблицами
+## 🔗 Links between tables
 
 ```
 ┌─────────────────┐
@@ -410,9 +410,9 @@ scrinner_001 → supervisor_001 (report)
 
 ---
 
-## 💡 Примеры запросов
+## 💡 Examples of requests
 
-### Получить полную конфигурацию агента
+### Receive full agent configuration
 ```sql
 SELECT 
     a.agent_id,
@@ -431,7 +431,7 @@ WHERE a.agent_id = 'supervisor_001'
 GROUP BY a.agent_id;
 ```
 
-### Получить core память агента
+### Recovering the core memory of the agent
 ```sql
 SELECT 
     memory_key,
@@ -444,7 +444,7 @@ WHERE agent_id = 'supervisor_001'
 ORDER BY priority ASC;
 ```
 
-### Статистика по агенту за день
+### Agent statistics for the day
 ```sql
 SELECT 
     COUNT(*) as total_messages,
@@ -456,7 +456,7 @@ WHERE agent_id = 'recruiter_001'
     AND role = 'assistant';
 ```
 
-### История изменений агента
+### History of Agent Change
 ```sql
 SELECT 
     version,
@@ -471,7 +471,7 @@ ORDER BY changed_at DESC
 LIMIT 10;
 ```
 
-### Метрики производительности за неделю
+### Productivity metrics per week
 ```sql
 SELECT 
     metric_name,
@@ -485,7 +485,7 @@ WHERE agent_id = 'scrinner_001'
 GROUP BY metric_name;
 ```
 
-### Маршруты взаимодействия агентов
+### Agents &apos; Interface Routes
 ```sql
 SELECT 
     s.agent_name as source_agent,
@@ -501,46 +501,46 @@ ORDER BY s.agent_name, r.priority;
 
 ---
 
-## 🎨 Преимущества структуры
+## 🎨 Benefits of the structure
 
-### ✅ Масштабируемость
-- Неограниченное количество агентов
-- Независимое хранение компонентов
-- Горизонтальное масштабирование
+### ✅ Scale
+- Unlimited number of agents
+- Independent storage of components
+- Horizontal scale
 
-### ✅ Версионность
-- История всех изменений
-- Легкий откат к предыдущим версиям
-- A/B тестирование конфигураций
+### ✅ Versionarity
+- History of all changes
+- Easy rebound to previous versions
+- A/B configuration testing
 
-### ✅ Гибкость
-- JSON поля для кастомизации
-- Модульная архитектура
-- Легкое добавление новых типов
+### ✅ Flexible
+- JSON Castomization Fields
+- Modular architecture
+- Easy addition of new types
 
-### ✅ Производительность
-- Индексы на всех важных полях
-- Оптимизированные представления (views)
-- Кеширование часто используемых данных
+### ✅ Productivity
+- Indexes in all important fields
+- Optimized submissions (views)
+- Cashing of frequently used data
 
-### ✅ Аудит
-- Полное логирование действий
-- Метрики производительности
-- История изменений
-
----
-
-## 🚀 Следующие шаги
-
-1. **Миграция данных** - перенос существующих агентов
-2. **API интерфейс** - создание REST API для управления
-3. **Веб-интерфейс** - dashboard для администрирования
-4. **Мониторинг** - система алертов и уведомлений
-5. **Бэкапы** - автоматическое резервное копирование
+### ✅ Audit
+- Full logic of action
+- Productivity metrics
+- History of change
 
 ---
 
-**Версия:** 2.0.0  
-**Дата:** 2025-10-13  
-**Автор:** Workflow Office Team
+## 🚀 Next steps
+
+1. ** Data migration** - transfer of existing agents
+2. **API interface** - creation of REST API for management
+3. ** Web interface** - dashboard for administration
+4. ** Monitoring** - Alert and Notification System
+5. **Backapps** - Automatic backup
+
+---
+
+** Version:** 2.0.0  
+**Date:** 2025-10-13  
+**Audience:** Workflow Office Team
 

@@ -3,9 +3,9 @@
 # =================================
 
 # ===============================
-# КОНФИДЕНЦИАЛЬНЫЕ ДАННЫЕ
+# CONFIDENTIAL DATA
 # ===============================
-# Файлы настроек с API ключами и токенами
+# Settings files with API keys and currents
 settings.json
 settings_local.json
 settings_prod.json
@@ -19,7 +19,7 @@ settings_dev.json
 *.p12
 *.pfx
 
-# Резервные копии настроек
+# Backup of settings
 settings.json.bak
 settings.*.json
 config.secret.*
@@ -136,7 +136,7 @@ env.bak/
 venv.bak/
 
 # ===============================
-# ВИРТУАЛЬНОЕ ОКРУЖЕНИЕ ПРОЕКТА
+# VIRTUAL ENVIRONMENT OF THE PROJECT
 # ===============================
 supevisor_env/
 supervisor_env/
@@ -144,31 +144,31 @@ supervisor_env/
 venv/
 
 # ===============================
-# БАЗЫ ДАННЫХ
+# DATABASE
 # ===============================
 # SQLite
 *.db
 *.sqlite
 *.sqlite3
 
-# PostgreSQL dumps (НЕ игнорируем init-db.sql!)
+# PostgreSQL dumps (Don't ignore it.init-db.sql!)
 *.dump
 *.backup
-# Игнорируем только бэкапы и дампы
+# Ignore only backpacks and dames.
 *_dump.sql
 *_backup.sql
 backup_*.sql
 dump_*.sql
 
-# Локальные файлы БД
+# database local files
 database/
 db_backup/
 *.db-journal
 
 # ===============================
-# AI / ML МОДЕЛИ И ДАННЫЕ
+# AI / ML MODELS AND DATA
 # ===============================
-# Большие файлы моделей
+# Large Model Files
 *.pkl
 *.pickle
 *.joblib
@@ -178,30 +178,30 @@ db_backup/
 *.pth
 *.safetensors
 
-# Данные для обучения
+# Data for training
 data/
 datasets/
 training_data/
 models/
 checkpoints/
 
-# Векторные базы данных
+# Vector databases
 *.index
 *.faiss
 chromadb/
 pinecone_data/
 
 # ===============================
-# ЛОГИ И ВРЕМЕННЫЕ ФАЙЛЫ
+# LOGIES AND TEMPORARY FLYLES
 # ===============================
-# Логи
+# Logging
 *.log
 logs/
 log/
 *.out
 *.err
 
-# Временные файлы
+# Temporary files
 *.tmp
 *.temp
 temp/
@@ -209,7 +209,7 @@ tmp/
 .cache/
 
 # ===============================
-# IDE И РЕДАКТОРЫ
+# IDE AND EDITORS
 # ===============================
 # VSCode
 .vscode/
@@ -244,7 +244,7 @@ tramp
 .\#*
 
 # ===============================
-# ОПЕРАЦИОННЫЕ СИСТЕМЫ
+# OPERATIONAL SYSTEMS
 # ===============================
 # Windows
 Thumbs.db
@@ -288,43 +288,43 @@ Temporary Items
 .nfs*
 
 # ===============================
-# СПЕЦИФИЧНЫЕ ДЛЯ ПРОЕКТА
+# SPECIFIC FOR THE PROJECT
 # ===============================
-# Файлы памяти и кэша
+# Memory and Cash
 memory_storage/
 chat_history/
 simple_memory.db
 *.memory
 
-# Результаты тестов микросервисов
+# Microservice test results
 test_results/
 benchmark_results/
 
-# Резюме и данные кандидатов (если есть тестовые)
+# Summary and data of candidates (if any)
 resumes/
 candidates_data/
 hr_data/
 
-# Экспорты и отчеты
+# Exports and reports
 exports/
 reports/
 *.xlsx
 *.csv
 *.pdf
 
-# Прокси и сетевые настройки
+# Proxie and network settings
 proxy_config/
 network_logs/
 
-# Мониторинг и метрики
+# Monitoring and metrics
 monitoring/
 metrics/
 performance_logs/
 
 # ===============================
-# БЕЗОПАСНОСТЬ
+# SECURITY
 # ===============================
-# Приватные ключи и сертификаты
+# Private keys and certificates
 *.key
 *.crt
 *.csr
@@ -334,67 +334,67 @@ performance_logs/
 ssh_keys/
 certificates/
 
-# OAuth токены и сессии
+# OAuth currents and sessions
 tokens/
 sessions/
 .oauth/
 
-# Файлы аудита
+# Audit files
 audit/
 security_logs/
 
 # ===============================
-# РАЗНОЕ
+# Miscellaneous
 # ===============================
-# Архивы
+# Archives
 *.zip
 *.tar.gz
 *.rar
 *.7z
 
-# Бэкапы
+# Backup
 *.bak
 *.backup
 *.old
 backup/
 
-# Node.js (если используется для фронтенда)
+# Node.js (if used for frontend)
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
 # Docker
-# НЕ игнорируем .dockerignore - это важный конфигурационный файл!
+# Don't ignore .dockerignore is an important configuration file!
 docker-compose.override.yml
 docker-compose.local.yml
 
 # ===============================
-# ИСКЛЮЧЕНИЯ (что НЕ игнорировать)
+# EXCEPTIONS (which should not be ignored)
 # ===============================
-# Оставляем примеры настроек
+# Leave examples of settings.
 !settings.example.json
 !config.example.py
 !.env.example
 
-# Документация
+# Documentation
 !README.md
 !CHANGELOG.md
 !LICENSE
 !docs/
 
-# Конфигурационные файлы проекта
+# Project configuration files
 !requirements.txt
 !setup.py
 !pyproject.toml
 !config.py
 
-# Docker файлы
+# Docker Files
 !.dockerignore
 !Dockerfile
 !docker-compose.yml
 
-# SQL файлы инициализации
+# SQL file initialization
 !docker/init-db.sql
 !**/init*.sql
 !schema.sql
