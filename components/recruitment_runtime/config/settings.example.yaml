@@ -155,46 +155,8 @@ ai_analysis:
       max_tool_calls_per_iteration: 5
       timeout_minutes: 30
   prompts:
-    skill_analysis: 'Проанализируй навыки кандидата для вакансии "{job_title}".
-
-
-      Навыки кандидата: {skills}
-
-      Описание опыта: {experience}
-
-      Поисковый запрос: {search_query}
-
-
-      Для каждого навыка оцени:
-
-      1. Релевантность для вакансии (0-1)
-
-      2. Уровень владения (Junior/Middle/Senior/Expert)
-
-      3. Годы опыта (если можно определить)
-
-      4. Уверенность в оценке (0-1)
-
-
-      Формат ответа: JSON массив объектов с полями skill_name, relevance_score, proficiency_level,
-      years_experience, ai_confidence
-
-      '
-    overall_assessment: "Оцени ОБЩУЮ пригодность кандидата для вакансии \"{job_title}\"\
-      \ с учетом важности критериев.\n\nДАННЫЕ КАНДИДАТА:\n- Анализ навыков: {skill_analysis}\n\
-      - Поисковый запрос: {search_query}\n- Резюме кандидата: {candidate_data}\n-\
-      \ Фильтры поиска: {search_filters}\n\nВЕСА КРИТЕРИЕВ ОЦЕНКИ (важность каждого\
-      \ критерия):\n- Релевантность по ключевым словам: {keyword_relevance_weight}\
-      \ (соответствие навыков и опыта поисковому запросу)\n- Соответствие фильтрам:\
-      \ {filter_match_weight} (зарплата, локация, опыт работы)\n- Актуальность резюме:\
-      \ {recency_weight} (как недавно обновлялось резюме)\n- Полнота профиля: {profile_completeness_weight}\
-      \ (насколько подробно заполнен профиль)\n\nЗАДАЧА: Проанализируй кандидата по\
-      \ каждому критерию (0-1) и дай ИТОГОВУЮ взвешенную оценку.\n\nУчитывай веса:\
-      \ если вес критерия выше, он важнее для итоговой оценки.\n\nФормат ответа: JSON\
-      \ объект с полями:\n{\n  \"keyword_relevance_score\": 0.8,\n  \"filter_match_score\"\
-      : 0.9,\n  \"recency_score\": 0.7,\n  \"profile_completeness_score\": 0.6,\n\
-      \  \"overall_score\": 0.75,\n  \"summary\": \"Краткое резюме (2-3 предложения)\"\
-      ,\n  \"reasoning\": \"Обоснование итоговой оценки с учетом весов\"\n}\n"
+    skill_analysis: "\"{job_title)}\".\n\nCandidates &apos; skills: {skills}\nDescription of experience: {experience}\nSearch request: {search_query}\n\nFor each skill, rate:\n1. Vacancy relevance (0-1)\n2. Level of ownership (Junior/Middle/Senior/Expert)\n3. Years of experience (if possible)\n4. Confidence in evaluation (0-1)\n\nResponse format: JSON array of objects with fields skill_name, relevance_score, proficiency_level, years_experience,ai_confidence\n"
+    overall_assessment: "Assess the general suitability of the candidate for the {job_title} vacancy, taking into account the importance of the criteria.\n\nCANDIDATE DATA:\n- Skills analysis: {skill_analysis}\n- Search request: {search_query}\n- Summary of the candidate: {candidate_data}\n- Search Filters: {search_filters}\n\nEVALUATION CRITERIA (importantness of each criterion):\n- Qualitative relevance: {keyword_relevance_weight} (matching skills and experience with a search request)\n- Compliance with filters: {filter_match_weight} (salary, location, work experience)\n- Relevance of the executive summary: {recency_weight} (as recently updated summary)\n- Profile Fullness: {profile_completeness_weight} (How detailed the profile is)\n\nTASK: Analyse the candidate for each criterion (0-1) and give a weighted estimate.\n\nConsider the weight: If the weight of the criterion is higher, it is more important for the final estimate.\n\nResponse format: JSON subject with fields:\n{\n  \"keyword_relevance_score\": 0.8,\n  \"filter_match_score\": 0.9,\n  \"recency_score\": 0.7,\n  \"profile_completeness_score\": 0.6,\n  \"overall_score\": 0.75,\n  \"summary\": \"Executive summary (2-3 proposals)\",\n  \"reasoning\": \"Rationale for the final balance estimate\"\n}\n"
 database:
   type: clickhouse
   clickhouse:

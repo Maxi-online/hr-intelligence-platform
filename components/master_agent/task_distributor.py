@@ -1,8 +1,8 @@
 """
-Task Distributor - Распределитель задач между нейросотрудниками
+Tsk Distributor - Task manager between Neuro staff
 
-Отвечает за анализ задач, выбор подходящих агентов, делегирование
-и координацию выполнения между всеми нейросотрудниками.
+Responsible for task analysis, selection of suitable agents, delegation
+and coordination of implementation among all Neuro staff.
 
 Author: Candidate Analysis Team
 Version: 1.0.0
@@ -26,14 +26,14 @@ logger = logging.getLogger("task-distributor")
 
 class TaskDistributor:
     """
-    Универсальный оркестратор задач для директора
+    Universal Tasks Orchestra for the Director
     
-    Функции:
-    - Распределение задач по всем доступным инструментам
-    - Гибкая система подбора инструментов
-    - Мониторинг выполнения по всем отделам
-    - Балансировка нагрузки ресурсов
-    - Координация межотдельных процессов
+    Functions:
+    - Distribution of tasks across all available tools
+    - Flexible tool selection system
+    - Monitoring of implementation across all divisions
+    - Balance of resources
+    - Coordination of inter-divisional processes
     """
     
     def __init__(self, config: Dict[str, Any], master_agent: "MasterAgent"):
@@ -41,23 +41,23 @@ class TaskDistributor:
         self.master_agent = master_agent
         self.logger = logger
         
-        # Конфигурация агентов
+        # Agent configuration
         self.services_config = config.get("services", {})
         
-        # Состояние инструментов
+        # Status of tools
         self.tool_statuses: Dict[str, ToolStatus] = {}
         self.tool_endpoints: Dict[str, str] = {}
         self.active_assignments: Dict[str, TaskAssignment] = {}
         
-        # Очереди задач по типам инструментов
+        # Sets of tasks by type of tool
         self.task_queues: Dict[str, List[TaskAssignment]] = {
             tool_type.value: [] for tool_type in ToolType
         }
         
-        # Метрики производительности по всем отделам
+        # Productivity metrics across all divisions
         self.performance_metrics: Dict[str, Dict[str, Any]] = {}
         
-        # Статистика директорского управления
+        # Directors &apos; statistics
         self.stats = {
             "tasks_distributed": 0,
             "tasks_completed": 0,
@@ -71,20 +71,20 @@ class TaskDistributor:
         self._initialize_tool_endpoints()
     
     def _initialize_tool_endpoints(self):
-        """Инициализация endpoints всех доступных инструментов"""
-        # HR инструменты
+        'Initialization of endpoints of all available tools'
+        # HR tools
         recruitment_runtime_config = self.services_config.get("recruitment_runtime", {})
         self.tool_endpoints["recruitment_runtime"] = (
             f"http://{recruitment_runtime_config.get('host', 'localhost')}:"
             f"{recruitment_runtime_config.get('port', 8010)}"
         )
         
-        # Развиваемые инструменты (пока заглушки)
+        # Developing instruments (while plugging)
         self.tool_endpoints["active_recruiter"] = "http://localhost:8011"
         self.tool_endpoints["screener"] = "http://localhost:8012"
         self.tool_endpoints["onboarder"] = "http://localhost:8013"
         
-        # Новые универсальные инструменты
+        # New universal instruments
         self.tool_endpoints["data_analyst"] = "http://localhost:8015"
         self.tool_endpoints["content_generator"] = "http://localhost:8016"
         self.tool_endpoints["code_reviewer"] = "http://localhost:8017"
@@ -93,27 +93,27 @@ class TaskDistributor:
         self.tool_endpoints["generic_tool"] = "http://localhost:8021"
     
     async def initialize(self):
-        """Инициализация Task Distributor"""
+        'Initialization of Task Distributor'
         try:
-            # Проверка доступности инструментов
+            # Checking the availability of tools
             await self.check_tool_availability()
             
-            # Инициализация метрик
+            # Initialization of metric
             await self._initialize_performance_metrics()
             
-            self.logger.info("✅ Task Distributor инициализирован")
+            self.logger.info('✅ Tsk Distributor initialized')
             
         except Exception as e:
-            self.logger.error(f"❌ Ошибка инициализации Task Distributor: {e}")
+            self.logger.error(f"Error: ❌ Initialization of Task Distributor: {e}")
             raise
     
     async def check_tool_availability(self) -> Dict[str, Dict[str, Any]]:
-        """Проверка доступности всех инструментов"""
+        'Checking the availability of all tools'
         availability = {}
         
         for tool_type, endpoint in self.tool_endpoints.items():
             try:
-                # Проверка health endpoint
+                # Checking Health Endpoint
                 health_url = f"{endpoint}/health"
                 
                 async with aiohttp.ClientSession() as session:
@@ -151,7 +151,7 @@ class TaskDistributor:
         return availability
     
     async def delegate_task(self, assignment: TaskAssignment) -> Dict[str, Any]:
-        """Универсальное делегирование задачи"""
+        'Universal delegation of tasks'
         try:
             if assignment.assignment_type == "tool":
                 return await self._delegate_to_tool(assignment)
@@ -160,45 +160,45 @@ class TaskDistributor:
             else:
                 return {
                     "success": False,
-                    "error": f"Неизвестный тип назначения: {assignment.assignment_type}"
+                    "error": f"Unknown type of destination: {assignment.assignment_type}"
                 }
                 
         except Exception as e:
-            self.logger.error(f"❌ Ошибка делегирования задачи: {e}")
+            self.logger.error(f"❌ Error of Delegation of Task: {e}")
             return {
                 "success": False,
                 "error": str(e)
             }
     
     async def _delegate_to_tool(self, assignment: TaskAssignment) -> Dict[str, Any]:
-        """Делегирование задачи ИИ-инструменту"""
+        'Delegation of the IE tool task'
         try:
             tool_type = assignment.tool_type.value
             
-            # Проверка доступности инструмента
+            # Checking the accessibility of the tool
             availability = await self.check_tool_availability()
             if not availability.get(tool_type, {}).get("available", False):
                 return {
                     "success": False,
-                    "error": f"Инструмент {tool_type} недоступен",
+                    "error": f"Instrument {tool_type} not available",
                     "tool_type": tool_type
                 }
             
-            # Отправка задачи инструменту
+            # Send task to tool
             result = await self._send_task_to_tool(assignment)
             
             if result.get("success", False):
-                # Сохранение назначения в активных
+                # Maintaining appointment in active service
                 self.active_assignments[assignment.task_id] = assignment
                 self.task_queues[tool_type].append(assignment)
                 self.stats["tasks_distributed"] += 1
                 
-                self.logger.info(f"✅ Задача {assignment.task_id} делегирована инструменту {tool_type}")
+                self.logger.info(f"✅ Objective {assignment.task_id} delegated to tool {tool_type}")
             
             return result
             
         except Exception as e:
-            self.logger.error(f"❌ Ошибка делегирования инструменту: {e}")
+            self.logger.error(f"❌ Error of Delegation of the Instrument: {e}")
             return {
                 "success": False,
                 "error": str(e),
@@ -206,11 +206,11 @@ class TaskDistributor:
             }
     
     async def _delegate_to_human(self, assignment: TaskAssignment) -> Dict[str, Any]:
-        """Делегирование задачи человеку"""
+        'Delegation of the task to the human being'
         try:
-            # Пока заглушка - в реальной реализации здесь будет
-            # отправка уведомлений через Teams/Telegram/Email
-            self.logger.info(f"📝 Задача для {assignment.human_assignee} в отделе {assignment.department} создана")
+            # As long as the plug goes, there's gonna be a real implementation here.
+            # Send notifications via Teams/Telegram/Email
+            self.logger.info(f"📝 Task for {assignment.human_assignee} in the Division {assignment.department} established")
             
             self.stats["tasks_distributed"] += 1
             
@@ -219,28 +219,28 @@ class TaskDistributor:
                 "assignment_type": "human",
                 "assignee": assignment.human_assignee,
                 "department": assignment.department,
-                "message": f"Задача направлена {assignment.human_assignee}",
+                "message": f"Objective {assignment.human_assignee}",
                 "notification_sent": True
             }
             
         except Exception as e:
-            self.logger.error(f"❌ Ошибка делегирования человеку: {e}")
+            self.logger.error(f"❌ Error of Delegation to Man: {e}")
             return {
                 "success": False,
                 "error": str(e),
-                "assignee": assignment.human_assignee or "неизвестен"
+                "assignee": assignment.human_assignee or 'unknown'
             }
     
     async def _send_task_to_tool(self, assignment: TaskAssignment) -> Dict[str, Any]:
-        """Отправка задачи конкретному инструменту"""
+        'Sending a task to a specific tool'
         try:
             tool_type = assignment.tool_type.value
             endpoint = self.tool_endpoints.get(tool_type)
             
             if not endpoint:
-                return {"success": False, "error": f"Endpoint для {tool_type} не найден"}
+                return {"success": False, "error": f"Endpoint for {tool_type} not found"}
             
-            # Подготовка данных для инструмента
+            # Preparation of data for the tool
             if tool_type == "recruitment_runtime":
                 return await self._send_to_recruitment_runtime(assignment, endpoint)
             elif tool_type in ["active_recruiter", "screener", "onboarder"]:
@@ -250,16 +250,16 @@ class TaskDistributor:
             elif tool_type == "generic_tool":
                 return await self._send_to_generic_tool(assignment, endpoint)
             else:
-                return {"success": False, "error": f"Неизвестный тип инструмента: {tool_type}"}
+                return {"success": False, "error": f"Unknown type of tool: {tool_type}"}
                 
         except Exception as e:
-            self.logger.error(f"❌ Ошибка отправки задачи инструменту: {e}")
+            self.logger.error(f"❌ Error in sending the tool task: {e}")
             return {"success": False, "error": str(e)}
     
     async def _send_to_recruitment_runtime(self, assignment: TaskAssignment, endpoint: str) -> Dict[str, Any]:
-        """Отправка задачи существующему Recruitment Runtime"""
+        'Send a task to the existing Recruitment Runtime'
         try:
-            # Формат запроса для существующего autorecruiter API
+            # Request Format for the Existing Auto-Procruiter API
             request_data = {
                 "goal": assignment.goal,
                 "context": assignment.context,
@@ -272,7 +272,7 @@ class TaskDistributor:
                 "tools_allowed": ["vacancy_builder", "vacancy_processor", "ranking", "ai_analysis"]
             }
             
-            # URL для создания задачи в autorecruiter
+            # URL to create a task in autorecruiter
             task_url = f"{endpoint}/api/autorecruiter/tasks"
             
             async with aiohttp.ClientSession() as session:
@@ -297,30 +297,30 @@ class TaskDistributor:
                         }
                         
         except Exception as e:
-            self.logger.error(f"❌ Ошибка отправки в Recruitment Runtime: {e}")
+            self.logger.error(f"❌ Errors in Recruitment Runtime: {e}")
             return {"success": False, "error": str(e)}
     
     async def _send_to_hr_tool(self, assignment: TaskAssignment, tool_type: str, endpoint: str) -> Dict[str, Any]:
-        """Отправка задачи HR инструментам (заглушка)"""
-        # Пока эти инструменты не реализованы
-        self.logger.info(f"📝 Задача для HR инструмента {tool_type} добавлена в очередь")
+        'Send HR to Tools (Silencing)'
+        # So far, these instruments have not been implemented
+        self.logger.info(f"📝 A challenge for the HR tool {tool_type} added in line")
         
         return {
             "success": True,
             "tool_type": tool_type,
             "tool_task_id": f"hr_mock_{uuid.uuid4().hex[:8]}",
             "estimated_duration": assignment.estimated_time,
-            "message": f"Задача принята HR инструментом {tool_type} (в разработке)",
+            "message": f"Target accepted by HR tool {tool_type} (in development)",
             "endpoint": endpoint,
             "mock": True
         }
     
     async def collect_results(self, master_task_id: str) -> List[Dict[str, Any]]:
-        """Сбор результатов от всех агентов по задаче"""
+        'Collection of results from all task agents'
         try:
             results = []
             
-            # Поиск всех назначений задач
+            # Searching for all mission assignments
             related_assignments = [
                 assignment for assignment in self.active_assignments.values()
                 if assignment.task_id == master_task_id
@@ -340,15 +340,15 @@ class TaskDistributor:
             return results
             
         except Exception as e:
-            self.logger.error(f"❌ Ошибка сбора результатов: {e}")
+            self.logger.error(f"❌ Error in collecting results: {e}")
             return []
     
     async def _get_recruitment_runtime_result(self, assignment: TaskAssignment) -> Optional[Dict[str, Any]]:
-        """Получение результата от Recruitment Runtime"""
+        'Recruitation Runtime'
         try:
             endpoint = self.agent_endpoints["recruitment_runtime"]
             
-            # Предполагаем что у autorecruiter есть endpoint для получения результата
+            # We assume that autorecruiter has an endpoint to produce a result
             result_url = f"{endpoint}/api/autorecruiter/tasks/{assignment.task_id}/result"
             
             async with aiohttp.ClientSession() as session:
@@ -364,30 +364,30 @@ class TaskDistributor:
                             "execution_time": result_data.get("execution_time", 0)
                         }
                     else:
-                        self.logger.warning(f"⚠️ Не удалось получить результат от Recruitment Runtime: {response.status}")
+                        self.logger.warning(f"⚠️ Unable to obtain results from Recruitation Runtime: {response.status}")
                         return None
                         
         except Exception as e:
-            self.logger.error(f"❌ Ошибка получения результата от Recruitment Runtime: {e}")
+            self.logger.error(f"Error: ❌ Results from Recruitment Runtime: {e}")
             return None
     
     async def _get_tool_result(self, assignment: TaskAssignment, tool_type: str) -> Dict[str, Any]:
-        """Получение результата от инструментов (заглушка)"""
+        'The result from the instruments (shuffle)'
         return {
             "tool_type": tool_type,
             "task_id": assignment.task_id,
             "success": True,
-            "result_data": {"mock_result": f"Результат от {tool_type}"},
-            "message": f"Задача выполнена инструментом {tool_type} (заглушка)",
+            "result_data": {"mock_result": f"Result from {tool_type}"},
+            "message": f"Objective accomplished by tool {tool_type} (shuffles)",
             "execution_time": 60,
             "mock": True
         }
     
     async def monitor_task_progress(self, task_id: str) -> Dict[str, Any]:
-        """Мониторинг прогресса выполнения задачи"""
+        'Monitoring progress towards the goal'
         try:
             if task_id not in self.active_tasks:
-                return {"error": "Задача не найдена"}
+                return {"error": 'The task is not found.'}
             
             task = self.active_tasks[task_id]
             agent_type = task.agent_type.value
@@ -398,11 +398,11 @@ class TaskDistributor:
                 return await self._monitor_future_agent_progress(task, agent_type)
                 
         except Exception as e:
-            self.logger.error(f"❌ Ошибка мониторинга задачи: {e}")
+            self.logger.error(f"❌ Error of task monitoring: {e}")
             return {"error": str(e)}
     
     async def _monitor_recruitment_runtime_progress(self, assignment: TaskAssignment) -> Dict[str, Any]:
-        """Мониторинг прогресса Recruitment Runtime"""
+        'Monitoring progress'
         try:
             endpoint = self.agent_endpoints["recruitment_runtime"]
             status_url = f"{endpoint}/api/autorecruiter/tasks/{assignment.task_id}/status"
@@ -427,18 +427,18 @@ class TaskDistributor:
             return {"task_id": assignment.task_id, "error": str(e)}
     
     async def _monitor_tool_progress(self, assignment: TaskAssignment, tool_type: str) -> Dict[str, Any]:
-        """Мониторинг прогресса инструментов (заглушка)"""
+        'Monitoring of progress of instruments (shuffle)'
         return {
             "task_id": assignment.task_id,
             "tool_type": tool_type,
             "status": "in_progress",
             "progress": 0.5,
-            "current_action": f"Выполняется инструментом {tool_type}",
+            "current_action": f"Implemented by tool {tool_type}",
             "mock": True
         }
     
     def _get_agent_workload(self, agent_type: str) -> float:
-        """Получение текущей загрузки агента"""
+        'Receiving the current loading of the agent'
         if agent_type not in self.task_queues:
             return 0.0
         
@@ -447,12 +447,12 @@ class TaskDistributor:
             if task.status in ["pending", "in_progress"]
         ])
         
-        # Предполагаем максимум 5 одновременных задач на агента
+        # We're assuming a maximum of five simultaneous tasks on the agent.
         max_concurrent_tasks = 5
         return min(active_tasks / max_concurrent_tasks, 1.0)
     
     async def _check_agent_availability(self):
-        """Проверка доступности агентов при инициализации"""
+        'Check the availability of agents during initialization'
         availability = await self.check_agent_availability()
         
         available_agents = [
@@ -461,12 +461,12 @@ class TaskDistributor:
         ]
         
         if not available_agents:
-            self.logger.warning("⚠️ Ни один агент не доступен!")
+            self.logger.warning('⚠️ No agent is available!')
         else:
-            self.logger.info(f"✅ Доступные агенты: {', '.join(available_agents)}")
+            self.logger.info(f"✅ Affordable agents: {', '.join(available_agents)}")
     
     async def _initialize_performance_metrics(self):
-        """Инициализация метрик производительности"""
+        'Initialization of productivity metrics'
         for tool_type in ToolType:
             self.performance_metrics[tool_type.value] = {
                 "total_tasks": 0,
@@ -478,8 +478,8 @@ class TaskDistributor:
             }
     
     async def get_stats(self) -> Dict[str, Any]:
-        """Получение статистики Task Distributor"""
-        # Обновление статистики загрузки инструментов
+        'Getting Tsk Distributor statistics'
+        # Update tools download statistics
         for tool_type in ToolType:
             self.stats["tool_utilization"][tool_type.value] = self._get_tool_workload(tool_type.value)
         
@@ -494,30 +494,30 @@ class TaskDistributor:
         }
     
     async def balance_workload(self) -> Dict[str, Any]:
-        """Балансировка нагрузки между агентами"""
+        'Load balance between agents'
         try:
-            # Анализ загрузки инструментов
+            # Analysis of tool downloads
             workloads = {}
             for tool_type in ToolType:
                 workloads[tool_type.value] = self._get_tool_workload(tool_type.value)
             
-            # Поиск перегруженных агентов
+            # Search for overloaded agents
             overloaded_agents = [
                 agent for agent, workload in workloads.items()
                 if workload > 0.8
             ]
             
-            # Поиск недогруженных агентов
+            # Search for underworked agents
             underloaded_agents = [
                 agent for agent, workload in workloads.items()
                 if workload < 0.5
             ]
             
-            # Логика перераспределения задач (пока базовая)
+            # Logic of redeployment of tasks (as long as basic)
             rebalanced_tasks = 0
             
-            # В реальной реализации здесь была бы логика перемещения задач
-            # между очередями агентов одного типа
+            # In real terms, there would be a logic of moving tasks
+            # between numbers of agents of the same type
             
             return {
                 "rebalanced_tasks": rebalanced_tasks,
@@ -527,5 +527,5 @@ class TaskDistributor:
             }
             
         except Exception as e:
-            self.logger.error(f"❌ Ошибка балансировки нагрузки: {e}")
+            self.logger.error(f"Error: ❌ Balance of load: {e}")
             return {"error": str(e)}

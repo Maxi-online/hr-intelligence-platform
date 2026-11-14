@@ -1,6 +1,6 @@
 """
-Centralized Supervisor FastAPI приложение
-HTTP API для микросервиса Supervisor
+Centralized Supervisor FastAPI application
+HTTP API for Supervisor Microservice
 """
 import os
 
@@ -12,7 +12,7 @@ from pydantic import BaseModel
 import uvicorn
 from supervisor import CentralizedSupervisor
 
-# Настройка логирования
+# Logging settings
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
@@ -21,27 +21,27 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="Centralized Supervisor Service",
-    description="HTTP API для централизованного Supervisor микросервиса",
+    description='HTTP API for a centralized Supervisor Microservice',
     version="1.0.0"
 )
 
-# Глобальный экземпляр Supervisor
+# Global Supervisor
 supervisor: CentralizedSupervisor = None
 
 @app.on_event("startup")
 async def startup_event():
-    """Инициализация при запуске"""
+    'Initialize at startup'
     global supervisor
-    logger.info("🚀 Запуск Centralized Supervisor API...")
+    logger.info('🚀 Start Centralized Supervisor API...')
     
-    # Конфигурация OpenAI
+    # OpenAI configuration
     openai_config = {
-        'api_key': 'your-openai-api-key',  # Будет загружаться из настроек
-        'proxy_url': 'http://your-proxy-url:port',  # Будет загружаться из настроек
+        'api_key': 'your-openai-api-key',  # Will be downloaded from settings
+        'proxy_url': 'http://your-proxy-url:port',  # Will be downloaded from settings
         'model': 'gpt-5-mini'
     }
     
-    # Конфигурация базы данных PostgreSQL
+    # PostgreSQL database configuration
     db_config = {
         'host': 'localhost',
         'port': 5432,
@@ -52,15 +52,15 @@ async def startup_event():
     
     supervisor = CentralizedSupervisor(openai_config, db_config)
     await supervisor.initialize()
-    logger.info("✅ Centralized Supervisor API готова")
+    logger.info('✅ Centralized Supervisor API ready')
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    """Очистка при остановке"""
+    'Cleaning during stoppage'
     global supervisor
     if supervisor:
         await supervisor.cleanup()
-    logger.info("👋 Centralized Supervisor API остановлена")
+    logger.info('👋 Centralized Supervisor API stopped')
 
 class MessageRequest(BaseModel):
     message: str
@@ -69,12 +69,12 @@ class MessageRequest(BaseModel):
 
 @app.get("/")
 async def root():
-    """Информация о сервисе"""
+    'Service information'
     return {
         "service": "Centralized Supervisor Service",
         "version": "1.0.0",
         "status": "active",
-        "description": "Централизованный Supervisor для управления командой AI-агентов",
+        "description": 'Central Supervisor for AI Agent Command',
         "architecture": "PostgreSQL + GPT-5 + Centralized Management"
     }
 
@@ -89,9 +89,9 @@ async def health_check():
 
 @app.post("/process_message")
 async def process_message(request: MessageRequest):
-    """Обработка сообщения через Supervisor"""
+    'Supervisor message processing'
     if not supervisor:
-        raise HTTPException(status_code=503, detail="Supervisor не инициализирован")
+        raise HTTPException(status_code=503, detail='Supervisor not initialized')
     
     try:
         response = await supervisor.process_message(
@@ -106,55 +106,55 @@ async def process_message(request: MessageRequest):
             "session_id": request.session_id
         }
     except Exception as e:
-        logger.error(f"❌ Ошибка обработки сообщения: {e}")
+        logger.error(f"❌ Error in communication processing: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/system_info")
 async def get_system_info():
-    """Получение информации о системе"""
+    'Getting information on the system'
     if not supervisor:
-        raise HTTPException(status_code=503, detail="Supervisor не инициализирован")
+        raise HTTPException(status_code=503, detail='Supervisor not initialized')
     
     try:
-        # Используем внутренний метод для получения системной информации
+        # Using an internal method to obtain system information
         result = await supervisor._get_system_info(detailed=True, include_metrics=True)
         return {"system_info": result}
     except Exception as e:
-        logger.error(f"❌ Ошибка получения системной информации: {e}")
+        logger.error(f"❌ Error in System Information: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/agent_status")
 async def get_agent_status():
-    """Получение статуса всех агентов"""
+    'Acquiring the status of all agents'
     if not supervisor:
-        raise HTTPException(status_code=503, detail="Supervisor не инициализирован")
+        raise HTTPException(status_code=503, detail='Supervisor not initialized')
     
     try:
         result = await supervisor._get_agent_status(include_performance=True)
         return {"agent_status": result}
     except Exception as e:
-        logger.error(f"❌ Ошибка получения статуса агентов: {e}")
+        logger.error(f"❌ Error in obtaining the status of agents: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/statistics")
 async def get_statistics():
-    """Получение статистики работы"""
+    'Collection of work statistics'
     if not supervisor:
-        raise HTTPException(status_code=503, detail="Supervisor не инициализирован")
+        raise HTTPException(status_code=503, detail='Supervisor not initialized')
     
     try:
         result = await supervisor._get_statistics(period="today", metrics=["all"])
         return {"statistics": result}
     except Exception as e:
-        logger.error(f"❌ Ошибка получения статистики: {e}")
+        logger.error(f"❌ Error in obtaining statistics: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
-    logger.info("🚀 Запуск Centralized Supervisor FastAPI сервера")
+    logger.info('🚀 Start Centralized Supervisor FastAPI server')
     uvicorn.run(
         "app:app",
         host="0.0.0.0",
-        port=8100,  # Supervisor на порту 8100
+        port=8100,  # Supervisor at port 8100
         reload=True,
         log_level="info"
     )

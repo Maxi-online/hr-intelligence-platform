@@ -1,8 +1,8 @@
 """
 AutoGPT Recruitment Runtime - Models
 
-Модели для настоящих AutoGPT агентов которые используют LLM 
-для автономного планирования и принятия решений.
+Models for real AutoGPT agents that use LLM 
+For autonomous planning and decision-making.
 
 Author: Candidate Analysis Team
 Version: 1.0.0
@@ -14,7 +14,7 @@ from datetime import datetime
 from enum import Enum
 
 class AutoGPTTaskStatus(str, Enum):
-    """Статус AutoGPT задачи"""
+    'AutoGPT Task Status'
     ACCEPTED = "accepted"
     PLANNING = "planning"
     IN_PROGRESS = "in_progress"
@@ -22,7 +22,7 @@ class AutoGPTTaskStatus(str, Enum):
     FAILED = "failed"
 
 class AutoGPTActionType(str, Enum):
-    """Типы действий AutoGPT агента"""
+    'AutoGPT Agent Activity Types'
     THINK = "think"
     PLAN = "plan"
     EXECUTE_TOOL = "execute_tool"
@@ -32,148 +32,148 @@ class AutoGPTActionType(str, Enum):
 # ===== REQUEST MODELS =====
 
 class AutoGPTTaskRequest(BaseModel):
-    """Запрос для AutoGPT агента"""
-    goal: str = Field(..., description="Высокоуровневая цель для автономного выполнения")
-    context: Optional[Dict[str, Any]] = Field(None, description="Контекст и дополнительная информация")
-    requirements: Optional[Dict[str, Any]] = Field(None, description="Конкретные требования к результату")
-    constraints: Optional[List[str]] = Field(None, description="Ограничения и правила выполнения")
-    max_iterations: int = Field(10, description="Максимум итераций автономного планирования")
-    tools_allowed: Optional[List[str]] = Field(None, description="Разрешенные инструменты")
+    'Request for AutoGPT Agent'
+    goal: str = Field(..., description='High-level objective for autonomous implementation')
+    context: Optional[Dict[str, Any]] = Field(None, description='Context and additional information')
+    requirements: Optional[Dict[str, Any]] = Field(None, description='Specific result requirements')
+    constraints: Optional[List[str]] = Field(None, description='Limitations and implementation rules')
+    max_iterations: int = Field(10, description='Maximum iterations of autonomous planning')
+    tools_allowed: Optional[List[str]] = Field(None, description='Authorized tools')
 
 # ===== RESPONSE MODELS =====
 
 class AutoGPTTaskResponse(BaseModel):
-    """Ответ на создание AutoGPT задачи"""
-    task_id: str = Field(..., description="ID автономной задачи")
-    status: str = Field(..., description="Статус принятия задачи")
-    message: str = Field(..., description="Сообщение от AutoGPT агента")
-    estimated_duration: str = Field(..., description="Оценка времени выполнения")
+    'Response to AutoGPT Task'
+    task_id: str = Field(..., description='ID Self-contained task')
+    status: str = Field(..., description='Status of acceptance of task')
+    message: str = Field(..., description='Message from AutoGPT Agent')
+    estimated_duration: str = Field(..., description='Estimation of time of implementation')
     created_at: datetime = Field(default_factory=datetime.now)
 
 class AutoGPTAction(BaseModel):
-    """Действие AutoGPT агента"""
-    action_type: AutoGPTActionType = Field(..., description="Тип действия")
-    description: str = Field(..., description="Описание действия")
-    reasoning: str = Field(..., description="Обоснование действия")
-    tool_name: Optional[str] = Field(None, description="Используемый инструмент")
-    tool_params: Optional[Dict[str, Any]] = Field(None, description="Параметры инструмента")
-    result: Optional[Dict[str, Any]] = Field(None, description="Результат выполнения")
+    'AutoGPT Agent Action'
+    action_type: AutoGPTActionType = Field(..., description='Type of action')
+    description: str = Field(..., description='Description of action')
+    reasoning: str = Field(..., description='Justification for action')
+    tool_name: Optional[str] = Field(None, description='Tool used')
+    tool_params: Optional[Dict[str, Any]] = Field(None, description='Tool Options')
+    result: Optional[Dict[str, Any]] = Field(None, description='Result')
     timestamp: datetime = Field(default_factory=datetime.now)
 
 class AutoGPTTaskStatus(BaseModel):
-    """Статус выполнения AutoGPT задачи"""
-    task_id: str = Field(..., description="ID задачи")
-    status: AutoGPTTaskStatus = Field(..., description="Текущий статус")
-    current_action: str = Field(..., description="Текущее действие агента")
-    agent_thoughts: List[str] = Field(default_factory=list, description="Мысли агента")
-    actions_taken: List[AutoGPTAction] = Field(default_factory=list, description="Выполненные действия")
-    created_at: datetime = Field(..., description="Время создания")
-    progress_percentage: Optional[float] = Field(None, description="Прогресс выполнения")
+    'AutoGPT Task Status'
+    task_id: str = Field(..., description='ID Tasks')
+    status: AutoGPTTaskStatus = Field(..., description='Current status')
+    current_action: str = Field(..., description='Current action of agent')
+    agent_thoughts: List[str] = Field(default_factory=list, description="Agent's Thoughts")
+    actions_taken: List[AutoGPTAction] = Field(default_factory=list, description='Actions implemented')
+    created_at: datetime = Field(..., description='Time of creation')
+    progress_percentage: Optional[float] = Field(None, description='Progress in implementation')
 
 # ===== AGENT MODELS =====
 
 class AutoGPTThought(BaseModel):
-    """Мысль AutoGPT агента"""
-    content: str = Field(..., description="Содержание мысли")
-    type: str = Field(..., description="Тип мысли (analysis, planning, evaluation)")
-    confidence: float = Field(..., description="Уверенность в мысли (0-1)")
+    "AutoGPT Agent's Thought"
+    content: str = Field(..., description='Content of the thought')
+    type: str = Field(..., description='Type of thought (analysis, planning, evaluation)')
+    confidence: float = Field(..., description='Confidence in the mind (0-1)')
     timestamp: datetime = Field(default_factory=datetime.now)
 
 class AutoGPTMemory(BaseModel):
-    """Память AutoGPT агента"""
-    task_id: str = Field(..., description="ID задачи")
-    goal: str = Field(..., description="Цель задачи")
-    context: Dict[str, Any] = Field(default_factory=dict, description="Контекст")
-    thoughts: List[AutoGPTThought] = Field(default_factory=list, description="История мыслей")
-    actions: List[AutoGPTAction] = Field(default_factory=list, description="История действий")
-    current_plan: Optional[List[str]] = Field(None, description="Текущий план")
-    learned_facts: List[str] = Field(default_factory=list, description="Изученные факты")
-    available_tools: List[str] = Field(default_factory=list, description="Доступные инструменты")
+    'Memory of the AutoGPT Agent'
+    task_id: str = Field(..., description='ID Tasks')
+    goal: str = Field(..., description='Objective')
+    context: Dict[str, Any] = Field(default_factory=dict, description='Context')
+    thoughts: List[AutoGPTThought] = Field(default_factory=list, description='The History of Thinking')
+    actions: List[AutoGPTAction] = Field(default_factory=list, description='History of action')
+    current_plan: Optional[List[str]] = Field(None, description='Current plan')
+    learned_facts: List[str] = Field(default_factory=list, description='The facts studied')
+    available_tools: List[str] = Field(default_factory=list, description='Affordable tools')
 
 class AutoGPTPlan(BaseModel):
-    """План AutoGPT агента"""
-    goal: str = Field(..., description="Цель плана")
-    steps: List[str] = Field(..., description="Шаги для выполнения")
-    reasoning: str = Field(..., description="Обоснование плана")
-    estimated_steps: int = Field(..., description="Ожидаемое количество шагов")
-    success_criteria: List[str] = Field(..., description="Критерии успеха")
-    tools_needed: List[str] = Field(..., description="Необходимые инструменты")
+    'AutoGPT Agent Plan'
+    goal: str = Field(..., description='Purpose of the plan')
+    steps: List[str] = Field(..., description='Steps to be taken')
+    reasoning: str = Field(..., description='Justification of the plan')
+    estimated_steps: int = Field(..., description='Expected number of steps')
+    success_criteria: List[str] = Field(..., description='Criteria for success')
+    tools_needed: List[str] = Field(..., description='Necessary tools')
     created_at: datetime = Field(default_factory=datetime.now)
 
 # ===== TOOL MODELS =====
 
 class AutoGPTTool(BaseModel):
-    """Инструмент AutoGPT агента"""
-    name: str = Field(..., description="Название инструмента")
-    description: str = Field(..., description="Описание возможностей")
-    parameters: Dict[str, Any] = Field(..., description="Схема параметров")
-    service_url: str = Field(..., description="URL микросервиса")
+    'AutoGPT Agent tool'
+    name: str = Field(..., description='Title of tool')
+    description: str = Field(..., description='Description of possibilities')
+    parameters: Dict[str, Any] = Field(..., description='Parameters diagram')
+    service_url: str = Field(..., description='URL Microservice')
     endpoint: str = Field(..., description="API endpoint")
-    method: str = Field(..., description="HTTP метод")
+    method: str = Field(..., description='HTTP Method')
 
 class AutoGPTToolResult(BaseModel):
-    """Результат использования инструмента"""
-    tool_name: str = Field(..., description="Название инструмента")
-    success: bool = Field(..., description="Успешность выполнения")
-    result_data: Dict[str, Any] = Field(..., description="Результат выполнения")
-    error: Optional[str] = Field(None, description="Ошибка если есть")
-    execution_time: float = Field(..., description="Время выполнения")
+    'Result of the tool'
+    tool_name: str = Field(..., description='Title of tool')
+    success: bool = Field(..., description='Success')
+    result_data: Dict[str, Any] = Field(..., description='Result')
+    error: Optional[str] = Field(None, description='Error if there is')
+    execution_time: float = Field(..., description='Implementation time')
     timestamp: datetime = Field(default_factory=datetime.now)
 
 # ===== LLM INTERACTION MODELS =====
 
 class AutoGPTPrompt(BaseModel):
-    """Промпт для LLM"""
-    system_message: str = Field(..., description="Системное сообщение")
-    user_message: str = Field(..., description="Сообщение пользователя")
-    context: Dict[str, Any] = Field(default_factory=dict, description="Контекст")
-    expected_format: str = Field(..., description="Ожидаемый формат ответа")
+    'Prompte for LLM'
+    system_message: str = Field(..., description='System message')
+    user_message: str = Field(..., description='User message')
+    context: Dict[str, Any] = Field(default_factory=dict, description='Context')
+    expected_format: str = Field(..., description='Expected format of response')
 
 class AutoGPTLLMResponse(BaseModel):
-    """Ответ от LLM"""
-    content: str = Field(..., description="Содержание ответа")
-    parsed_data: Optional[Dict[str, Any]] = Field(None, description="Распарсенные данные")
-    reasoning: Optional[str] = Field(None, description="Обоснование ответа")
-    confidence: Optional[float] = Field(None, description="Уверенность LLM")
-    tokens_used: int = Field(0, description="Использовано токенов")
-    processing_time: float = Field(0.0, description="Время обработки")
+    'Response from LLM'
+    content: str = Field(..., description='Contents of the reply')
+    parsed_data: Optional[Dict[str, Any]] = Field(None, description='Dissolved data')
+    reasoning: Optional[str] = Field(None, description='Justification of the reply')
+    confidence: Optional[float] = Field(None, description='LLM confidence')
+    tokens_used: int = Field(0, description='Token use')
+    processing_time: float = Field(0.0, description='Processing time')
 
 # ===== DECISION MODELS =====
 
 class AutoGPTDecision(BaseModel):
-    """Решение AutoGPT агента"""
-    decision_type: str = Field(..., description="Тип решения")
-    chosen_action: str = Field(..., description="Выбранное действие")
-    reasoning: str = Field(..., description="Обоснование решения")
-    alternatives_considered: List[str] = Field(..., description="Рассмотренные альтернативы")
-    confidence: float = Field(..., description="Уверенность в решении")
-    expected_outcome: str = Field(..., description="Ожидаемый результат")
+    'AutoGPT Agent &apos; s Decision'
+    decision_type: str = Field(..., description='Type of solution')
+    chosen_action: str = Field(..., description='Selected action')
+    reasoning: str = Field(..., description='Justification of the decision')
+    alternatives_considered: List[str] = Field(..., description='Alternatives considered')
+    confidence: float = Field(..., description='Confidence in Decision')
+    expected_outcome: str = Field(..., description='Output expected')
     timestamp: datetime = Field(default_factory=datetime.now)
 
 class AutoGPTEvaluation(BaseModel):
-    """Оценка результата действия"""
-    action_evaluated: str = Field(..., description="Оцениваемое действие")
-    success: bool = Field(..., description="Успешность действия")
-    goal_progress: float = Field(..., description="Прогресс к цели (0-1)")
-    lessons_learned: List[str] = Field(..., description="Извлеченные уроки")
-    next_action_suggestion: Optional[str] = Field(None, description="Предложение следующего действия")
+    'Impact assessment'
+    action_evaluated: str = Field(..., description='Measured action')
+    success: bool = Field(..., description='Success')
+    goal_progress: float = Field(..., description='Progress towards goal (0-1)')
+    lessons_learned: List[str] = Field(..., description='The learned lessons')
+    next_action_suggestion: Optional[str] = Field(None, description='Proposal for next action')
     timestamp: datetime = Field(default_factory=datetime.now)
 
 # ===== RESULT MODELS =====
 
 class AutoGPTTaskResult(BaseModel):
-    """Результат выполнения AutoGPT задачи"""
-    task_id: str = Field(..., description="ID задачи")
-    goal: str = Field(..., description="Цель задачи")
-    status: AutoGPTTaskStatus = Field(..., description="Финальный статус")
-    success: bool = Field(..., description="Успешность выполнения")
-    result_data: Dict[str, Any] = Field(..., description="Результаты выполнения")
-    total_iterations: int = Field(..., description="Общее количество итераций")
-    actions_taken: List[AutoGPTAction] = Field(..., description="Все выполненные действия")
-    agent_thoughts: List[AutoGPTThought] = Field(..., description="Все мысли агента")
-    lessons_learned: List[str] = Field(..., description="Извлеченные уроки")
-    execution_time: float = Field(..., description="Общее время выполнения")
-    tools_used: List[str] = Field(..., description="Использованные инструменты")
-    final_evaluation: str = Field(..., description="Финальная оценка результата")
-    created_at: datetime = Field(..., description="Время создания")
-    completed_at: datetime = Field(..., description="Время завершения")
+    'Outcome of AutoGPT Task'
+    task_id: str = Field(..., description='ID Tasks')
+    goal: str = Field(..., description='Objective')
+    status: AutoGPTTaskStatus = Field(..., description='Final status')
+    success: bool = Field(..., description='Success')
+    result_data: Dict[str, Any] = Field(..., description='Implementation results')
+    total_iterations: int = Field(..., description='Total number of iterations')
+    actions_taken: List[AutoGPTAction] = Field(..., description='All actions carried out')
+    agent_thoughts: List[AutoGPTThought] = Field(..., description="All Agent's Thoughts")
+    lessons_learned: List[str] = Field(..., description='The learned lessons')
+    execution_time: float = Field(..., description='Total implementation time')
+    tools_used: List[str] = Field(..., description='Tools used')
+    final_evaluation: str = Field(..., description='Final evaluation of results')
+    created_at: datetime = Field(..., description='Time of creation')
+    completed_at: datetime = Field(..., description='Completion time')

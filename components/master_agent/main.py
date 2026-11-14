@@ -1,8 +1,8 @@
 """
-Master Agent Service - Основной сервис мастер-агента
+Master Agent Service - Master &apos; s main service
 
-FastAPI сервис для запуска и управления мастер-агентом РЕКС.
-Предоставляет REST API для взаимодействия с агентом.
+FastAPI Launch and Control Service by the REX Master Agent.
+Provides REST API to interact with an agent.
 
 Author: Candidate Analysis Team
 Version: 1.0.0
@@ -59,39 +59,39 @@ def _resolve_settings_env(value):
 
 
 
-# Настройка логирования
+# Logging settings
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger("master-agent-service")
 
-# Создание FastAPI приложения
+# FastAPI application
 app = FastAPI(
-    title="Master Agent (РЕКС) API",
-    description="Главный координатор нейросотрудников организации",
+    title='Master Agent (REX) API',
+    description='Chief Coordinator of the Neuro staff of the organization',
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc"
 )
 
-# Добавление CORS middleware
+# Added by CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # В production ограничить домены
+    allow_origins=["*"],  # In production limit domains
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Глобальные переменные
+# Global variables
 master_agent: Optional[MasterAgent] = None
 config: Dict[str, Any] = {}
 active_tasks: Dict[str, Dict[str, Any]] = {}
 task_callbacks: Dict[str, List] = {}
 
 
-# Модели запросов
+# Request models
 class TaskCreationRequest(BaseModel):
     goal: str
     context: Dict[str, Any] = {}
@@ -110,61 +110,61 @@ class ConversationRequest(BaseModel):
 
 
 class WebhookMessage(BaseModel):
-    """Модель для webhook сообщений от мессенджеров"""
+    'Webhawk message model from massers'
     channel: str
     raw_message: Dict[str, Any]
 
 
-# События жизненного цикла
+# Life-cycle developments
 @app.on_event("startup")
 async def startup_event():
-    """Инициализация при запуске сервиса"""
+    'Initialization at the start of the service'
     global master_agent, config
     
     try:
-        logger.info("🚀 Запуск Master Agent сервиса...")
+        logger.info('🚀 Start Master Agent Service...')
         
-        # Загрузка конфигурации
+        # Upload configuration
         config = load_config()
         
-        # Создание и инициализация мастер-агента
+        # Creation and Initialization of Master Agent
         master_agent = MasterAgent(config)
         await master_agent.initialize()
         
-        # Настройка обработчиков сообщений
+        # Message handler settings
         if hasattr(master_agent, 'messenger'):
             master_agent.messenger.add_message_handler(handle_incoming_message)
         
-        logger.info("✅ Master Agent сервис успешно запущен")
+        logger.info('✅ Master Agent service successfully launched')
         
     except Exception as e:
-        logger.error(f"❌ Ошибка запуска Master Agent сервиса: {e}")
+        logger.error(f"❌ The Master Agent Service Error: {e}")
         raise
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    """Завершение работы сервиса"""
+    'Completion of service'
     global master_agent
     
     try:
-        logger.info("🛑 Завершение работы Master Agent сервиса...")
+        logger.info('🛑 Completion of Master Agency service...')
         
         if master_agent and hasattr(master_agent, 'memory_manager'):
             await master_agent.memory_manager.save_session()
         
-        logger.info("✅ Master Agent сервис завершен")
+        logger.info('✅ Master Agency service completed')
         
     except Exception as e:
-        logger.error(f"❌ Ошибка завершения сервиса: {e}")
+        logger.error(f"❌ Error of completion of service: {e}")
 
 
 # API endpoints
 @app.get("/health")
 async def health_check():
-    """Проверка здоровья сервиса"""
+    'Service health check'
     if master_agent is None:
-        raise HTTPException(status_code=503, detail="Master Agent не инициализирован")
+        raise HTTPException(status_code=503, detail='Master Agent not initialized')
     
     status = await master_agent.get_status()
     
@@ -179,12 +179,12 @@ async def health_check():
 
 @app.post("/api/master-agent/tasks", response_model=MasterTaskResponse)
 async def create_task(request: TaskCreationRequest, background_tasks: BackgroundTasks):
-    """Создание новой задачи для мастер-агента"""
+    'Creating a new task for the master agent'
     if master_agent is None:
-        raise HTTPException(status_code=503, detail="Master Agent не инициализирован")
+        raise HTTPException(status_code=503, detail='Master Agent not initialized')
     
     try:
-        # Создание задачи
+        # Creation of the task
         task_request = MasterTaskRequest(
             goal=request.goal,
             context=request.context,
@@ -194,7 +194,7 @@ async def create_task(request: TaskCreationRequest, background_tasks: Background
             constraints=request.constraints
         )
         
-        # Создание callback для отслеживания прогресса
+        # Creating callback to track progress
         task_progress_updates = []
         
         async def progress_callback(task_id: str, status: str, messages: List[str]):
@@ -205,7 +205,7 @@ async def create_task(request: TaskCreationRequest, background_tasks: Background
                 "timestamp": datetime.now().isoformat()
             })
         
-        # Запуск задачи в фоне
+        # Launching the task against the background
         background_tasks.add_task(
             process_task_in_background,
             master_agent,
@@ -213,33 +213,33 @@ async def create_task(request: TaskCreationRequest, background_tasks: Background
             progress_callback
         )
         
-        # Возврат начального ответа
+        # Return of initial reply
         response = MasterTaskResponse(
             task_id=f"task_{uuid.uuid4().hex[:8]}",
             status=MasterTaskStatus.RECEIVED,
-            message="Задача принята к выполнению",
-            estimated_duration="Анализирую...",
+            message='Target accepted',
+            estimated_duration="I'm analyzing...",
             assigned_agents=[]
         )
         
-        # Сохранение callback для получения обновлений
+        # Save callback for updates
         task_callbacks[response.task_id] = task_progress_updates
         
         return response
         
     except Exception as e:
-        logger.error(f"❌ Ошибка создания задачи: {e}")
+        logger.error(f"❌ Error in Creating Task: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/api/master-agent/tasks/{task_id}/status")
 async def get_task_status(task_id: str):
-    """Получение статуса выполнения задачи"""
+    'Getting the status of the task'
     if task_id not in active_tasks and task_id not in task_callbacks:
-        raise HTTPException(status_code=404, detail="Задача не найдена")
+        raise HTTPException(status_code=404, detail='The task is not found.')
     
     try:
-        # Получение обновлений из callback
+        # Receive updates from callback
         updates = task_callbacks.get(task_id, [])
         
         if not updates:
@@ -247,31 +247,31 @@ async def get_task_status(task_id: str):
                 "task_id": task_id,
                 "status": "pending",
                 "progress": 0.0,
-                "messages": ["Задача в очереди"]
+                "messages": ['Task in line']
             }
         
-        # Последнее обновление
+        # Last update
         latest_update = updates[-1]
         
         return {
             "task_id": task_id,
             "status": latest_update["status"],
-            "progress": len(updates) * 0.2,  # Примерный прогресс
+            "progress": len(updates) * 0.2,  # Indicative progress
             "messages": latest_update["messages"],
             "updates_count": len(updates),
             "last_update": latest_update["timestamp"]
         }
         
     except Exception as e:
-        logger.error(f"❌ Ошибка получения статуса задачи: {e}")
+        logger.error(f"❌ Error in obtaining the status of task: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/api/master-agent/tasks/{task_id}/result")
 async def get_task_result(task_id: str):
-    """Получение результата выполнения задачи"""
+    'Delivering the result of the task'
     if task_id not in active_tasks:
-        raise HTTPException(status_code=404, detail="Задача не найдена или еще выполняется")
+        raise HTTPException(status_code=404, detail='The task has not been found or is still being carried out')
     
     try:
         task_data = active_tasks[task_id]
@@ -286,18 +286,18 @@ async def get_task_result(task_id: str):
         }
         
     except Exception as e:
-        logger.error(f"❌ Ошибка получения результата задачи: {e}")
+        logger.error(f"❌ Error in obtaining the task result: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/api/master-agent/conversation")
 async def handle_conversation(request: ConversationRequest):
-    """Обработка диалога с мастер-агентом"""
+    'Processing the dialogue with the master agent'
     if master_agent is None:
-        raise HTTPException(status_code=503, detail="Master Agent не инициализирован")
+        raise HTTPException(status_code=503, detail='Master Agent not initialized')
     
     try:
-        # Создание сообщения
+        # Creation of a message
         conversation_id = request.conversation_id or f"conv_{uuid.uuid4().hex[:8]}"
         
         message = ConversationMessage(
@@ -309,7 +309,7 @@ async def handle_conversation(request: ConversationRequest):
             conversation_id=conversation_id
         )
         
-        # Обработка сообщения
+        # Processing of the communication
         response_message = await master_agent.handle_conversation(message)
         
         return {
@@ -319,47 +319,47 @@ async def handle_conversation(request: ConversationRequest):
         }
         
     except Exception as e:
-        logger.error(f"❌ Ошибка обработки диалога: {e}")
+        logger.error(f"❌ Error in dialogue processing: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/api/master-agent/webhook/{channel}")
 async def handle_webhook(channel: str, webhook_data: WebhookMessage):
-    """Обработка webhook от мессенджеров"""
+    'Webhawk from Massingers'
     if master_agent is None or not hasattr(master_agent, 'messenger'):
-        raise HTTPException(status_code=503, detail="Messenger Interface недоступен")
+        raise HTTPException(status_code=503, detail='Messenger Interface not available')
     
     try:
-        # Обработка входящего сообщения
+        # Processing of incoming message
         message = await master_agent.messenger.handle_incoming_message(
             webhook_data.raw_message, 
             channel
         )
         
         if message:
-            # Генерация ответа
+            # Response generation
             response_message = await master_agent.handle_conversation(message)
             
-            # Отправка ответа обратно
+            # Sending the reply back
             await master_agent.messenger.send_message(response_message)
             
             return {"status": "processed", "message_id": message.message_id}
         else:
-            return {"status": "ignored", "reason": "Не удалось обработать сообщение"}
+            return {"status": "ignored", "reason": 'Unable to process message'}
         
     except Exception as e:
-        logger.error(f"❌ Ошибка обработки webhook: {e}")
+        logger.error(f"❌ The Webhook Processing Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/api/master-agent/stats")
 async def get_stats():
-    """Получение статистики мастер-агента"""
+    'Getting Master Agent Statistics'
     if master_agent is None:
-        raise HTTPException(status_code=503, detail="Master Agent не инициализирован")
+        raise HTTPException(status_code=503, detail='Master Agent not initialized')
     
     try:
-        # Сбор статистики со всех компонентов
+        # Collection of statistics from all components
         agent_stats = await master_agent.get_status()
         
         stats = {
@@ -369,7 +369,7 @@ async def get_stats():
             "callbacks_count": len(task_callbacks)
         }
         
-        # Статистика компонентов
+        # Component statistics
         if hasattr(master_agent, 'task_distributor'):
             stats["task_distributor"] = await master_agent.task_distributor.get_stats()
         
@@ -388,33 +388,33 @@ async def get_stats():
         return stats
         
     except Exception as e:
-        logger.error(f"❌ Ошибка получения статистики: {e}")
+        logger.error(f"❌ Error in obtaining statistics: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/api/master-agent/quality/report")
 async def get_quality_report(period_days: int = 7):
-    """Получение отчета о качестве"""
+    'Collection of quality report'
     if master_agent is None or not hasattr(master_agent, 'quality_controller'):
-        raise HTTPException(status_code=503, detail="Quality Controller недоступен")
+        raise HTTPException(status_code=503, detail='Quality Control not available')
     
     try:
         report = await master_agent.quality_controller.generate_quality_report(period_days)
         return report
         
     except Exception as e:
-        logger.error(f"❌ Ошибка генерации отчета качества: {e}")
+        logger.error(f"❌ Error in Generating Quality Report: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# Вспомогательные функции
+# Support functions
 async def process_task_in_background(agent: MasterAgent, task_request: MasterTaskRequest, 
                                    progress_callback):
-    """Обработка задачи в фоновом режиме"""
+    'Task processing in background mode'
     try:
         result = await agent.process_task(task_request, progress_callback)
         
-        # Сохранение результата
+        # Retaining the result
         active_tasks[result.task_id] = {
             "status": result.status,
             "result": result,
@@ -422,42 +422,42 @@ async def process_task_in_background(agent: MasterAgent, task_request: MasterTas
         }
         
     except Exception as e:
-        logger.error(f"❌ Ошибка фоновой обработки задачи: {e}")
+        logger.error(f"❌ Error in background task processing: {e}")
 
 
 async def handle_incoming_message(message: ConversationMessage):
-    """Обработчик входящих сообщений от мессенджеров"""
+    'Incoming Messenger Messages Processor'
     try:
-        logger.info(f"📨 Получено сообщение от {message.sender}: {message.content[:50]}...")
+        logger.info(f"📨 Message received from {message.sender}: {message.content[:50]}...")
         
-        # Здесь может быть дополнительная логика обработки
+        # There may be an additional processing logic here.
         
     except Exception as e:
-        logger.error(f"❌ Ошибка обработки входящего сообщения: {e}")
+        logger.error(f"❌ Error in the processing of the input message: {e}")
 
 
 def load_config() -> Dict[str, Any]:
-    """Загрузка конфигурации"""
+    'Upload configuration'
     try:
-        # Попытка загрузки из config/settings.yaml
+        # Attempted download from config/settings.yaml
         config_path = "config/settings.yaml"
         if os.path.exists(config_path):
             with open(config_path, 'r', encoding='utf-8') as f:
                 config = _resolve_settings_env(yaml.safe_load(f))
-            logger.info(f"✅ Конфигурация загружена из {config_path}")
+            logger.info(f"✅ The configuration is downloaded from {config_path}")
             return config
         
-        # Базовая конфигурация
-        logger.warning("⚠️ Файл конфигурации не найден, используется базовая")
+        # Basic configuration
+        logger.warning('⚠️ No configuration file found, base used')
         return get_default_config()
         
     except Exception as e:
-        logger.error(f"❌ Ошибка загрузки конфигурации: {e}")
+        logger.error(f"❌ Configuration Error: {e}")
         return get_default_config()
 
 
 def get_default_config() -> Dict[str, Any]:
-    """Базовая конфигурация"""
+    'Basic configuration'
     return {
         "master_agent": {
             "main_model": "gpt-5-mini",
@@ -508,18 +508,18 @@ def get_default_config() -> Dict[str, Any]:
     }
 
 
-# Запуск сервиса
+# Start service
 if __name__ == "__main__":
-    # Настройка из переменных окружения или конфигурации
+    # Settings made of variable environment or configuration
     host = os.getenv("MASTER_AGENT_HOST", "0.0.0.0")
     port = int(os.getenv("MASTER_AGENT_PORT", "8020"))
     
-    logger.info(f"🚀 Запуск Master Agent сервиса на {host}:{port}")
+    logger.info(f"🚀 Start Master Agent service on {host}:{port}")
     
     uvicorn.run(
         "master_agent.main:app",
         host=host,
         port=port,
-        reload=False,  # В production отключить
+        reload=False,  # In Production Disable
         log_level="info"
     )

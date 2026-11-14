@@ -43,18 +43,18 @@ Inspect Compose's database image, initialization mounts and persistent volume be
 The following read-only examples describe configuration lookup in the MySQL-oriented reference schema. Confirm table names and SQL dialect before using them against a runtime database.
 
 ```sql
--- Подключение к базе
+-- Base connection
 mysql -u office_services_user -p office_services_agents
 
--- Проверка таблиц
+- Checking tables
 SHOW TABLES;
 
--- Просмотр агентов
+--Search agents
 SELECT * FROM active_agents_view;
 ```
 
 ```sql
--- Получить конфигурацию агента
+-- Get an agent configuration
 SELECT 
     a.agent_name,
     a.display_name,
@@ -69,10 +69,10 @@ WHERE a.agent_id = 'supervisor_001';
 ```
 
 ```sql
--- Использование VIEW
+-- Use of VIEW
 SELECT * FROM agent_full_config_view WHERE agent_id = 'supervisor_001';
 
--- Детальный запрос
+-- Detailed Request
 SELECT 
     a.agent_name,
     ap.system_prompt,
@@ -99,7 +99,7 @@ ORDER BY (data_length + index_length) DESC;
 ```
 
 ```sql
--- Количество сообщений по агентам
+-- Number of communications by agent
 SELECT 
     a.agent_name,
     COUNT(*) as total_messages,
