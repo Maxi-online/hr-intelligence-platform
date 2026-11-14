@@ -9,7 +9,7 @@ hh_api:
   user_tokens:
     access_token: ${HH_API_USER_TOKENS_ACCESS_TOKEN}
     refresh_token: ${HH_API_USER_TOKENS_REFRESH_TOKEN}
-    expires_at: 1209599
+    expires_at: 0
 services:
   gateway:
     port: 8088
