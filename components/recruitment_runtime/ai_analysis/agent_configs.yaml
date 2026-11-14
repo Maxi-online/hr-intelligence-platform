@@ -1,48 +1,48 @@
 # ================================
-# КОНФИГУРАЦИИ МУЛЬТИ-АГЕНТНОЙ СИСТЕМЫ
+# CONFIGUREMENT OF THE MULTI-AGENCY SYSTEM
 # ================================
 
-# Общие настройки системы
+# General system settings
 system_settings:
   max_parallel_agents: 7
   fallback_on_error: true
   log_level: "INFO"
 
 # ================================
-# КОНФИГУРАЦИИ АГЕНТОВ
+# CONFIGURE OF AGENCIES
 # ================================
 
 agents:
   requirements_agent:
-    name: "Агент Анализа Требований"
+    name: "Demand Analysis Agent"
     enabled: true
     priority: 1
     timeout: 15.0
     retry_count: 2
     
-    # Веса критериев (сумма должна быть 1.0)
+    # Weight of criteria (total to be 1.0)
     criteria_weights:
       skills_match: 0.50
       experience_match: 0.30
       education_match: 0.10
       language_match: 0.10
     
-    # Пороги для оценок
+    # Evaluation thresholds
     scoring_thresholds:
       excellent: 90
       good: 75
       acceptable: 60
       poor: 40
     
-    # Специфические настройки
+    # Specific Settings
     settings:
       strict_skill_matching: true
-      experience_tolerance: 0.8  # 80% от требуемого опыта
+      experience_tolerance: 0.8  # 80 per cent of required experience
       consider_related_skills: false
       education_importance: "medium"
 
   resume_analysis_agent:
-    name: "Агент Анализа Резюме" 
+    name: "Agent of Analysis Summary" 
     enabled: true
     priority: 2
     timeout: 20.0
@@ -68,7 +68,7 @@ agents:
       analyze_contact_completeness: true
 
   technical_skills_agent:
-    name: "Агент Технических Навыков"
+    name: "Agent in Technical Skills"
     enabled: true
     priority: 3
     timeout: 25.0
@@ -87,7 +87,7 @@ agents:
       poor: 40
     
     settings:
-      # Категории технических навыков
+      # Technical skills categories
       skill_categories:
         programming_languages:
           weight: 0.30
@@ -105,7 +105,7 @@ agents:
           weight: 0.10
           examples: ["Git", "IDE", "Testing frameworks", "Monitoring"]
       
-      # Уровни экспертизы
+      # Level of expertise
       expertise_levels:
         junior: 
           experience_years: [0, 2]
@@ -117,10 +117,10 @@ agents:
           experience_years: [5, 100]
           expected_skills: 8
       
-      technology_recency_years: 3  # Технологии актуальны если использовались в последние 3 года
+      technology_recency_years: 3  # Technologies relevant if used in the last 3 years
 
   skill_level_agent:
-    name: "Агент Оценки Уровня Навыков"
+    name: "Agent of the Assessment of the Level of Skills"
     enabled: true
     priority: 3
     timeout: 20.0
@@ -139,7 +139,7 @@ agents:
       poor: 40
     
     settings:
-      # Строгие стандарты по уровням опыта
+      # Strict standards by level of experience
       experience_standards:
         junior:
           min_years: 0
@@ -157,14 +157,14 @@ agents:
           max_skills: 25
           advanced_skills: 8
       
-      # Ключевые слова для детекции уровня
+      # Keywords for Level Detective
       advanced_keywords: ["senior", "lead", "advanced", "expert", "architect", "principal"]
-      leadership_keywords: ["управление", "лидерство", "руководство", "mentoring", "team lead", "scrum master"]
-      architecture_keywords: ["архитектура", "проектирование", "design patterns", "system design"]
+      leadership_keywords: ["management", "leadership", "management", "mentoring", "team lead", "scrum master"]
+      architecture_keywords: ["architecture", "design", "design patterns", "system design"]
       
-      # Продвинутые технологии (требуют проверки опыта)
+      # Advanced technologies (need to be tested)
       advanced_skills: ["blockchain", "quantum computing", "web3", "smart contracts"]
-      # Современные enterprise технологии (норма для middle+)
+      # Modern intraprise technology (normal for muddle+)
       enterprise_skills: ["kubernetes", "microservices", "ai", "machine learning", "docker", "aws", "azure"]
       incompatible_groups:
         - ["python 2", "python 3"]
@@ -172,23 +172,23 @@ agents:
         - ["java", "c#", ".net"]
         - ["ios", "android", "flutter", "react native"]
       
-      # Контекстные слова для подтверждения навыков
+      # Context words to demonstrate skills
       skill_contexts: 
-        - "разработал"
-        - "создал"
-        - "внедрил"
-        - "оптимизировал"
-        - "руководил"
-        - "проектировал"
-        - "анализировал"
-        - "настроил"
-        - "администрировал"
-        - "автоматизировал"
-        - "интегрировал"
-        - "тестировал"
+        - "I've developed"
+        - "He created it."
+        - "implemented"
+        - "Optimized"
+        - "Director"
+        - "Designed"
+        - "I did."
+        - "I set it up."
+        - "Administered"
+        - "Automation"
+        - "integrated"
+        - "Tested"
 
   experience_agent:
-    name: "Агент Профессионального Опыта"
+    name: "Agent of Professional Experience"
     enabled: true
     priority: 4
     timeout: 20.0
@@ -207,27 +207,27 @@ agents:
       poor: 38
     
     settings:
-      # Анализ стабильности работы
+      # Work stability analysis
       stability_analysis:
-        min_job_duration_months: 12  # Минимальная длительность работы
-        max_job_changes_per_year: 1.5  # Максимум смен работы в год
-        gap_tolerance_months: 3  # Допустимые перерывы в карьере
+        min_job_duration_months: 12  # Minimum duration of work
+        max_job_changes_per_year: 1.5  # Maximum change of work per year
+        gap_tolerance_months: 3  # Allowable career breaks
       
-      # Анализ карьерного роста
+      # Career analysis
       progression_indicators:
-        - "Повышение в должности"
-        - "Увеличение ответственности"
-        - "Рост команды в подчинении"
-        - "Расширение функций"
-        - "Переход в более крупную компанию"
+        - "Promotion"
+        - "Increased responsibility"
+        - "Team growth in command control"
+        - "Extension of functions"
+        - "Transition to a larger company"
       
-      # Типы достижений
+      # Types of achievements
       achievement_categories:
-        quantitative: ["Увеличил продажи на X%", "Сократил расходы на X%", "Управлял командой из X человек"]
-        qualitative: ["Внедрил новый процесс", "Получил награду", "Успешно завершил проект"]
+        quantitative: ["Increased sales by X%", "Reduced expenditure by X%", "Managed a team of X men."]
+        qualitative: ["I've introduced a new process.", "I got a reward.", "Successful completion of project"]
 
   formatting_agent:
-    name: "Агент Качества Оформления"
+    name: "Agent of Quality of Formation"
     enabled: true
     priority: 5
     timeout: 15.0
@@ -246,31 +246,31 @@ agents:
       poor: 40
     
     settings:
-      # Обязательные разделы
+      # Mandatory sections
       required_sections:
-        - "title"       # Название позиции
-        - "contacts"    # Контактная информация  
-        - "about"       # О себе
-        - "skills"      # Навыки
-        - "experience"  # Опыт работы
+        - "title"       # Item title
+        - "contacts"    # Contact information  
+        - "about"       # About yourself.
+        - "skills"      # Skills
+        - "experience"  # Experience
       
-      # Желательные разделы
+      # Desirable sections
       optional_sections:
-        - "education"   # Образование
-        - "languages"   # Языки
-        - "certificates" # Сертификаты
-        - "projects"    # Проекты
+        - "education"   # Education
+        - "languages"   # Languages
+        - "certificates" # Certificates
+        - "projects"    # Projects
       
-      # Проверки качества
+      # Quality checks
       quality_checks:
-        min_contact_fields: 2  # Email + телефон минимум
+        min_contact_fields: 2  # Email + telephone minimum
         min_about_words: 10
         max_about_words: 100
-        check_spelling: false  # Пока отключено
+        check_spelling: false  # It's been turned off for now.
         check_formatting_consistency: true
 
   anomaly_detection_agent:
-    name: "Агент Детекции Аномалий"
+    name: "Agent Anomaly Detective."
     enabled: true
     priority: 6
     timeout: 20.0
@@ -283,35 +283,35 @@ agents:
       qualitative_mismatches: 0.20
     
     scoring_thresholds:
-      excellent: 95  # Низкий риск аномалий
+      excellent: 95  # Low risk of anomalies
       good: 85
       acceptable: 70
-      poor: 50       # Высокий риск аномалий
+      poor: 50       # High risk of anomalies
     
     settings:
-      # Проверки временных нестыковок
+      # Checks of time inconsistencies
       temporal_checks:
         max_career_gap_months: 6
         min_job_duration_months: 3
         max_overlapping_jobs: 0
         check_education_timeline: true
       
-      # Логические проверки
+      # Logical checks
       logic_checks:
         skill_experience_consistency: true
         position_progression_logic: true
-        salary_progression_logic: false  # Данные о зарплате часто недоступны
+        salary_progression_logic: false  # Wage data are often not available
         company_size_progression: true
       
-      # Пороги подозрительности
+      # Thresholds of Suspicion
       suspicion_thresholds:
         max_promotions_per_year: 2
-        min_experience_for_senior: 4  # лет
+        min_experience_for_senior: 4  # years
         max_skills_for_junior: 15
         min_education_years: 4
 
 # ================================
-# КОНФИГУРАЦИИ ПО ТИПАМ ПОЗИЦИЙ
+# CONFIGURES ON THE TYPE OF POLICES
 # ================================
 
 position_configs:
@@ -327,7 +327,7 @@ position_configs:
       - "formatting_agent"
       - "anomaly_detection_agent"
     
-    # Веса агентов при расчете итоговой оценки
+    # Weights of agents in the calculation of the final estimate
     agent_weights:
       requirements_agent: 0.20
       technical_skills_agent: 0.25
@@ -395,26 +395,26 @@ position_configs:
       anomaly_detection_agent: 0.05
 
 # ================================
-# МАСТЕР-КООРДИНАТОР НАСТРОЙКИ
+# TYPE MATER-COORDINATION
 # ================================
 
 master_coordinator:
   scoring_method: "arithmetic_mean"  # arithmetic_mean | weighted_average
   
-  # Настройки GPT для мастер-координатора (переопределяют common_settings)
+  # GPT settings for Master Coordinator (redefined common_settings))
   gpt_settings:
     model: "gpt-5-mini"
-    max_completion_tokens: 2500  # GPT-5 параметр для мастер-координатора
+    max_completion_tokens: 2500  # GPT-5 parameter for Master Coordinator
     temperature: 0.3
-    # GPT-5 расширенные возможности
+    # GPT-5 Enhanced Opportunities
     verbosity: "high"
     reasoning_effort: "medium"
-    # Context-Free Grammar для строгого форматирования JSON
+    # Context-Free Grammar for the strict formatting of JSON
     response_format: 
       type: "json_object"
-      schema: null  # Можно задать JSON Schema для валидации
+      schema: null  # You can ask JSON Schema for validation.
   
-  # Пороги для рекомендаций
+  # Criteria for recommendations
   recommendation_thresholds:
     highly_recommended: 85
     recommended: 70
@@ -422,7 +422,7 @@ master_coordinator:
     requires_additional_review: 40
     not_recommended: 0
   
-  # Настройки отчетов
+  # Reporting settings
   report_settings:
     max_red_flags_display: 5
     max_positive_points_display: 5
@@ -430,14 +430,14 @@ master_coordinator:
     include_agent_details: true
     include_processing_times: true
   
-  # Обработка ошибок агентов
+  # Errors of agents
   error_handling:
     exclude_failed_agents: true
     min_successful_agents: 2
     fallback_score: 50.0
     
 # ================================
-# ЛОГИРОВАНИЕ И МОНИТОРИНГ
+# LOIGRATION AND MONITORING
 # ================================
 
 monitoring:

@@ -1,19 +1,19 @@
 """
 Candidate Analysis - Master Coordinator for Multi-Agent System
 
-Мастер-координатор мульти-агентной системы анализа кандидатов.
+Coordinator of the Multi-Agency System for the Analysis of Candidates.
 
-Этот модуль представляет собой "мозг" всей системы AI анализа, который:
-- Управляет оркестрацией 6 специализированных агентов
-- Агрегирует результаты всех агентов в единое заключение
-- Генерирует профессиональные рекомендации в стиле топ-менеджера
-- Обеспечивает истинно параллельную обработку через AsyncOpenAI
+This module is the brain of the entire AI analysis system, which:
+- Managing the orchestra of 6 specialized agents
+- Arranges the results of all agents into a single conclusion
+- Generates professional recommendations in the top manager style
+- Provides true parallel processing through AsyncOpenAI
 
 Core Functionality:
-- Agent Orchestration: координация работы всех специализированных агентов
-- Results Aggregation: объединение отчётов агентов в единую картину
-- Master Analysis: финальный анализ через GPT-5-nano
-- Professional Recommendations: бизнес-заключения для HR отделов
+- Agent Organization: coordination of the work of all specialized agents
+- Results Aggregation: Combining agent reports into a single picture
+- Master Analysis: Final analysis via GPT-5-nano
+- Professional Recommendations: Business Conclusions for HR Divisions
 
 Architecture:
     MasterCoordinator
@@ -24,24 +24,24 @@ Architecture:
     └── Professional Recommendation Generation
 
 Key Features:
-- AsyncOpenAI для параллельных вызовов мастер-анализа
-- Настраиваемые наборы агентов под тип позиции
-- Интеллектуальное агрегирование оценок
-- Профессиональные рекомендации (РЕКОМЕНДУЮ/НЕ РЕКОМЕНДУЮ/УСЛОВНО)
-- Детальная диагностика ошибок и performance metrics
+- AsyncOpenAI for parallel master analysis calls
+- Sub-sets of agents to suit the type of item
+- Intelligent aggregation of estimates
+- Professional recommendations (recommand/not recommended/not applicable))
+- Diagnosis of errors and performance metrics
 
 Performance:
-- Время мастер-анализа: ~3-5 секунд на кандидата
-- Поддержка батчевой параллельной обработки
-- Экспоненциальные повторы при ошибках OpenAI
-- Graceful degradation при недоступности агентов
+- Master analysis time: ~3-5 seconds per candidate
+- Support for Batchev parallel processing
+- Exponential Repeat for OpenAI Errors
+- Graceful degration when agents are not available
 
 Master Report Structure:
-- overall_score: Итоговая оценка (0-100)
-- recommendation: РЕКОМЕНДУЮ/НЕ РЕКОМЕНДУЮ/УСЛОВНО РЕКОМЕНДУЮ
-- master_assessment: Развёрнутое профессиональное заключение
-- individual_scores: Детальные оценки по каждому критерию
-- strengths/weaknesses: Сильные и слабые стороны кандидата
+- overall_score: Final evaluation (0-100)
+- Recommendation: RECOMMENDATION/ NOT RECOMMENDED/OR
+- master_assessment: Opened professional opinion
+- individual_scores: Detailed estimates for each criterion
+- structurals/weaknesses: The strengths and weaknesses of the candidate
 
 Author: Candidate Analysis Team
 Version: 3.0.0 (AsyncOpenAI + True Parallelism)
@@ -59,7 +59,7 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Импортируем AsyncOpenAI для GPT анализа
+# Import AsyncOpenAI for GPT analysis
 try:
     import openai
     from openai import AsyncOpenAI
@@ -76,18 +76,18 @@ from shared.models import (
 )
 from shared.utils import setup_logging
 
-# ПРОСТОЙ ИМПОРТ АГЕНТОВ БЕЗ ОТНОСИТЕЛЬНЫХ ПУТЕЙ
+# EXPENSIVE AGENCIES WITHOUT RELEVANT WAYS
 import sys
 import os
 
-# В Docker контейнере все файлы находятся в /app
-# Добавляем ai_analysis в PYTHONPATH если нужно
+# In the Docker container, all files are in /app
+# Add ai_analysis to PYTHONPATH if necessary
 if '/app/ai_analysis' not in sys.path:
     sys.path.insert(0, '/app/ai_analysis')
 if '/app' not in sys.path:
     sys.path.insert(0, '/app')
 
-# Простой импорт без относительных путей
+# Simple imports without relative routes
 from agents import RequirementsAgent, ResumeAnalysisAgent, ExperienceAgent
 from agents import FormattingAgent, AnomalyDetectionAgent
 from agents import TechnicalSkillsAgent, SkillLevelAgent
@@ -95,27 +95,27 @@ from agents import TechnicalSkillsAgent, SkillLevelAgent
 logger = setup_logging("master-coordinator")
 
 class MasterCoordinator:
-    """Мастер-координатор мульти-агентной системы"""
+    'Multi-agent system coordinator workshop'
     
     def __init__(self):
         self.logger = logger
         
-        # ЗАГРУЖАЕМ КОНФИГУРАЦИЮ ЧЕРЕЗ load_config()
+        # FACILITATION OF load_config()
         from shared.utils import load_config
         self.config = load_config()
         
-        # ИСПРАВЛЕНИЕ: Загружаем отдельную конфигурацию мастер-координатора
+        # CORRIGENDUM: Load the separate master coordinator configuration
         self._load_coordinator_config()
         self.ai_config = self.config.get("ai_analysis", {})
         
-        # ИСПОЛЬЗУЕМ PROMPT MANAGER ВМЕСТО САМОДЕЛЬНОЙ ЗАГРУЗКИ
+        # USE PROMPT MANAGER INTO A SELECTED POLLUTANT
         from prompt_manager import get_prompt_manager
         self.prompt_manager = get_prompt_manager()
         
-        # НАСТРАИВАЕМ OPENAI КЛИЕНТ С ПРОКСИ (как в BaseAgent)
+        # OUTCOME OPENAI CLICKS WITH PROKSY (as in BaseAgent)
         self._setup_openai_with_proxy()
         
-        # Инициализируем всех доступных агентов
+        # Initiate all available agents
         self.agents = {
             "requirements": RequirementsAgent(),
             "resume_analysis": ResumeAnalysisAgent(), 
@@ -126,7 +126,7 @@ class MasterCoordinator:
             "anomaly_detection": AnomalyDetectionAgent()
         }
         
-        # Конфигурация агентов для разных типов позиций
+        # Agent configuration for different types of entries
         self.position_agent_config = {
             "technical": ["requirements", "technical_skills", "skill_level", "resume_analysis", "experience", "formatting", "anomaly_detection"],
             "management": ["requirements", "skill_level", "resume_analysis", "experience", "formatting", "anomaly_detection"],
@@ -135,26 +135,26 @@ class MasterCoordinator:
         }
     
     async def analyze_candidate(self, request: MultiAgentAnalysisRequest) -> MultiAgentAnalysisResponse:
-        """Главная функция анализа кандидата через всех агентов"""
+        'Main function of analysis of candidate through all agents'
         start_time = time.time()
         
         try:
-            # 1. Определяем активных агентов
+            # 1. Identify active agents
             active_agents = self._get_active_agents(request.position_type, request.active_agents)
-            self.logger.info(f"Активируем агентов для анализа кандидата {request.candidate_id}: {active_agents}")
+            self.logger.info(f"Activate agents to analyse candidate {request.candidate_id}: {active_agents}")
             
-            # 2. Запускаем анализ всех активных агентов ПАРАЛЛЕЛЬНО
+            # 2. We're running an analysis of all active PARALLONO agents
             agent_reports = await self._run_agents_analysis(
                 active_agents, request.candidate_data, request.position_requirements, 
                 {"search_query": request.search_query, "search_filters": request.search_filters}
             )
             
-            # 3. Генерируем итоговый отчет мастера
-            self.logger.info(f"🔥 ОТЛАДКА: Переходим к генерации отчета мастера, получено {len(agent_reports)} отчетов агентов")
+            # 3. Generate the master's final report
+            self.logger.info(f"🔥 Let's move on to the production of the master's report, received {len(agent_reports)} agent reports")
             master_report = await self._generate_master_report(agent_reports, request)
-            self.logger.info(f"🔥 ОТЛАДКА: Отчет мастера сгенерирован успешно")
+            self.logger.info(f"🔥 The master &apos; s report has been successfully generated")
             
-            # 4. Формируем финальный ответ
+            # 4. Form the final answer.
             total_processing_time = time.time() - start_time
             
             return MultiAgentAnalysisResponse(
@@ -166,101 +166,101 @@ class MasterCoordinator:
             )
             
         except Exception as e:
-            self.logger.error(f"Критическая ошибка в мастер-координаторе для кандидата {request.candidate_id}: {e}")
+            self.logger.error(f"Critical error in the master coordinator for the candidate {request.candidate_id}: {e}")
             raise e
     
     def _get_active_agents(self, position_type: str, requested_agents: Optional[List[str]]) -> List[str]:
-        """Определяет список активных агентов"""
+        'Identify active agent list'
         if requested_agents:
-            # Используем явно указанных агентов
+            # Use clearly identified agents.
             return [agent for agent in requested_agents if agent in self.agents]
         
-        # Автоматическое определение по типу позиции
+        # Automatic definition by type of entry
         return self.position_agent_config.get(position_type, self.position_agent_config["general"])
     
     async def _run_agents_analysis(self, active_agents: List[str], candidate_data: Dict[str, Any], 
                                  position_requirements: Dict[str, Any], additional_context: Dict[str, Any]) -> List[AgentReport]:
-        """Запускает анализ всех активных агентов ПАРАЛЛЕЛЬНО"""
+        'Runs an analysis of all active agents of PARALLONO'
         
-        # Создаем задачи для всех агентов
+        # Create tasks for all agents
         tasks = []
         for agent_name in active_agents:
             agent = self.agents[agent_name]
             task = self._run_single_agent(agent_name, agent, candidate_data, position_requirements, additional_context)
             tasks.append(task)
         
-        self.logger.info(f"🚀 Запускаем {len(tasks)} агентов ПАРАЛЛЕЛЬНО")
+        self.logger.info(f"🚀 Launch {len(tasks)} PARALLELAL ASSISTANCES")
         
-        # Выполняем все задачи параллельно
+        # Perform all the tasks in parallel.
         agent_reports = await asyncio.gather(*tasks, return_exceptions=True)
         
-        # Обрабатываем результаты и ошибки
+        # Processing results and errors
         processed_reports = []
         for i, result in enumerate(agent_reports):
             agent_name = active_agents[i]
             
             if isinstance(result, Exception):
-                self.logger.error(f"❌ Ошибка в агенте {agent_name}: {result}")
-                # Создаем отчет об ошибке
+                self.logger.error(f"❌ Error in the agent {agent_name}: {result}")
+                # Create an error report
                 error_report = AgentReport(
                     agent_name=agent_name,
                     score=0.0,
                     status=AgentStatus.ERROR,
-                    summary=f"Ошибка выполнения агента {agent_name}",
-                    details=[f"Техническая ошибка: {str(result)}"],
-                    red_flags=["Агент не смог выполнить анализ"],
+                    summary=f"Error of the agent {agent_name}",
+                    details=[f"Technical errors: {str(result)}"],
+                    red_flags=['The agent failed to perform the analysis.'],
                     positive_points=[],
-                    recommendations=["Требуется ручная проверка"],
+                    recommendations=['Manual verification required'],
                     processing_time=0.0
                 )
                 processed_reports.append(error_report)
             else:
                 processed_reports.append(result)
-                self.logger.info(f"✅ Агент {agent_name} завершил анализ с оценкой {result.score:.1f}%")
+                self.logger.info(f"✅ Agent {agent_name} Completed the assessment analysis {result.score:.1f}%")
         
-        self.logger.info(f"🏁 Все {len(processed_reports)} агентов завершили работу")
+        self.logger.info(f"🏁 All {len(processed_reports)} agents have completed work")
         return processed_reports
     
     async def _run_single_agent(self, agent_name: str, agent, candidate_data: Dict[str, Any], 
                               position_requirements: Dict[str, Any], additional_context: Dict[str, Any]) -> AgentReport:
-        """Запускает одного агента с обработкой ошибок"""
+        'Starts one agent with error processing'
         try:
-            self.logger.info(f"⚡ Запускаем агента: {agent_name}")
+            self.logger.info(f"⚡ Launching agent: {agent_name}")
             report = await agent.analyze(candidate_data, position_requirements, additional_context)
             return report
         except Exception as e:
-            self.logger.error(f"💥 Критическая ошибка в агенте {agent_name}: {e}")
+            self.logger.error(f"💥 Critical error in the agent {agent_name}: {e}")
             raise e
     
     async def _generate_master_report(self, agent_reports: List[AgentReport], 
                                request: MultiAgentAnalysisRequest) -> MasterCoordinatorReport:
-        """Генерирует итоговый отчет мастер-координатора"""
+        'Generates the final report of the Coordinator'
         start_time = time.time()
         
-        # 1. Вычисляем среднее арифметическое оценок
+        # 1. Compute arithmetic average estimates
         valid_scores = [report.score for report in agent_reports if report.status != AgentStatus.ERROR]
         overall_score = statistics.mean(valid_scores) if valid_scores else 0.0
         
-        # 2. Собираем индивидуальные оценки
+        # 2. Individual assessments collected
         individual_scores = {report.agent_name: report.score for report in agent_reports}
         
-        # 3. Анализируем статусы агентов
+        # 3. Analysis of agent status
         agents_with_warnings = [r.agent_name for r in agent_reports if r.status == AgentStatus.WARNING]
         agents_with_failures = [r.agent_name for r in agent_reports if r.status == AgentStatus.FAIL]
         
-        # 4. Подсчитываем красные флаги и плюсы
+        # 4. Counting red flags and pros
         total_red_flags = sum(len(report.red_flags) for report in agent_reports)
         total_positive_points = sum(len(report.positive_points) for report in agent_reports)
         
-        # 5. Генерируем текстовую оценку мастера
-        self.logger.info(f"🤖 МАСТЕР-КООРДИНАТОР: Начинаем генерацию анализа для кандидата")
+        # 5. Generate the textual evaluation of the master
+        self.logger.info(f"🤖 MASTER COORDINATOR: Start generating analysis for the candidate")
         master_assessment = await self._generate_master_assessment(
             agent_reports, overall_score, total_red_flags, total_positive_points, 
             agents_with_warnings, agents_with_failures, request
         )
-        self.logger.info(f"🤖 МАСТЕР-КООРДИНАТОР: Анализ сгенерирован, длина: {len(master_assessment)} символов")
+        self.logger.info(f"🤖 MASTER COORDINATOR: Analysis generated, length: {len(master_assessment)} Symbols")
         
-        # 6. Определяем финальную рекомендацию
+        # 6. Defining the final recommendation
         recommendation = self._get_final_recommendation(overall_score, total_red_flags, len(agents_with_failures))
         
         processing_time = time.time() - start_time
@@ -281,10 +281,10 @@ class MasterCoordinator:
                                    total_red_flags: int, total_positive_points: int,
                                    agents_with_warnings: List[str], agents_with_failures: List[str],
                                    request: MultiAgentAnalysisRequest) -> str:
-        """Генерирует качественную текстовую оценку мастера через GPT"""
-        self.logger.info(f"🔥 ОТЛАДКА _generate_master_assessment: Начинаем генерацию, OpenAI клиент: {self.openai_client is not None}")
+        "Generates the master's quality text evaluation via GPT"
+        self.logger.info(f"🔥 OTADE_generate_master_assessment: Start generation, OpenAI client: {self.openai_client is not None}")
         
-        # Собираем все данные от агентов для анализа мастера
+        # Gather all the data from the agents for the master's analysis.
         agent_data = []
         for report in agent_reports:
             agent_info = {
@@ -299,7 +299,7 @@ class MasterCoordinator:
             }
             agent_data.append(agent_info)
         
-        # Генерируем качественный анализ через AsyncOpenAI
+        # Generate quality analysis through AsyncOpenAI
         return await self._call_gpt_for_master_analysis(
             agent_data, overall_score, request.candidate_data, 
             request.position_requirements, request.search_query
@@ -308,12 +308,12 @@ class MasterCoordinator:
 
     
     def _load_coordinator_config(self):
-        """Загружает конфигурацию мастер-координатора из agent_configs.yaml"""
+        'Uploads the master coordinator configuration from agent_configs.yaml'
         try:
             import yaml
-            # Пробуем несколько вариантов путей
+            # We're gonna try out a few ways.
             possible_paths = [
-                "ai_analysis/agent_configs.yaml",  # Локально
+                "ai_analysis/agent_configs.yaml",  # Local
                 "/app/ai_analysis/agent_configs.yaml"  # Docker
             ]
             
@@ -322,29 +322,29 @@ class MasterCoordinator:
                     with open(config_path, 'r', encoding='utf-8') as f:
                         full_config = yaml.safe_load(f)
                         self.coordinator_config = full_config.get('master_coordinator', {})
-                        self.logger.info(f"✅ Конфигурация мастер-координатора загружена из {config_path}")
+                        self.logger.info(f"✅ Workshop coordinator configuration downloaded from {config_path}")
                         return
             
-            self.logger.warning(f"⚠️ Файл agent_configs.yaml не найден для мастер-координатора")
+            self.logger.warning(f"⚠️ agent_configs.yaml file not found for Master Coordinator")
             self.coordinator_config = {}
         except Exception as e:
-            self.logger.error(f"❌ Ошибка загрузки конфигурации мастер-координатора: {e}")
+            self.logger.error(f"Error: ❌ Configuration of Master Coordinator: {e}")
             self.coordinator_config = {}
     
     def _setup_openai_with_proxy(self):
-        """Настраивает OpenAI клиент с прокси (копия логики из BaseAgent)"""
+        'OpenAI is a client with a proxie (a copy of the logic from BaseAgent))'
         try:
-            # Получаем API ключ
+            # Get an API key.
             api_key = self.ai_config.get("openai_api_key")
             if not api_key:
-                self.logger.warning(f"⚠️ OPENAI_API_KEY не установлен для мастер-координатора")
+                self.logger.warning(f"⚠️ OPENAI_API_KEY not installed for Master Coordinator")
             
-            # Настройка HTTP прокси из конфигурации
+            # Settings HTTP Proxi from configuration
             proxy_config = self.ai_config.get("proxy", {})
             proxy_enabled = proxy_config.get("enabled", False)
             
             if proxy_enabled and httpx:
-                # Получаем настройки прокси из конфигурации или переменных окружения
+                # We're going to get proxie settings from configuration or variable environments
                 proxy_host = proxy_config.get("host", "")
                 proxy_port = proxy_config.get("port", "")
                 proxy_username = proxy_config.get("username", "")
@@ -352,33 +352,33 @@ class MasterCoordinator:
                 proxy_protocol = proxy_config.get("protocol", "http")
                 
                 if proxy_host and proxy_port:
-                    # Формируем URL прокси
+                    # Form an uRL proxie
                     if proxy_username and proxy_password:
                         proxy_url = f"{proxy_protocol}://{proxy_username}:{proxy_password}@{proxy_host}:{proxy_port}"
                     else:
                         proxy_url = f"{proxy_protocol}://{proxy_host}:{proxy_port}"
                     
-                    # Создаем httpx клиент с прокси для AsyncOpenAI
+                    # Create httpx client proxie for AsyncOpenAI
                     http_client = httpx.AsyncClient(
                         proxy=proxy_url,
                         timeout=httpx.Timeout(60.0)
                     )
                     
-                    self.logger.info(f"🌐 OpenAI клиент с прокси инициализирован для мастер-координатора: {proxy_host}:{proxy_port}")
+                    self.logger.info(f"🌐 OpenAI Proxi client initialized for Master Coordinator: {proxy_host}:{proxy_port}")
                 else:
-                    # Если настройки прокси неполные, используем обычный клиент
+                    # If Proxi settings are incomplete, the normal customer is used
                     http_client = httpx.AsyncClient(timeout=httpx.Timeout(60.0))
-                    self.logger.warning(f"⚠️ Прокси включен для мастер-координатора, но настройки неполные. Используется прямое соединение.")
+                    self.logger.warning(f"⚠️ Proxi is on for the master coordinator, but the settings are incomplete. Direct connection used.")
             else:
-                # Обычный httpx клиент без прокси для AsyncOpenAI
+                # Normal httpx client with no proxie for AsyncOpenAI
                 if httpx:
                     http_client = httpx.AsyncClient(timeout=httpx.Timeout(60.0))
-                    self.logger.info(f"🔗 OpenAI клиент без прокси инициализирован для мастер-координатора")
+                    self.logger.info(f"🔗 OpenAI client without proxie initialized for master coordinator")
                 else:
                     http_client = None
-                    self.logger.warning(f"⚠️ httpx недоступен для мастер-координатора")
+                    self.logger.warning(f"⚠️ httpx is not available to the coordinator")
             
-            # Инициализация современного OpenAI клиента
+            # Initialization of the modern OpenAI client
             if openai and api_key:
                 if http_client:
                     self.openai_client = AsyncOpenAI(
@@ -388,70 +388,70 @@ class MasterCoordinator:
                 else:
                     self.openai_client = AsyncOpenAI(api_key=api_key)
                 
-                # Параметры модели ИЗ YAML agent_configs.yaml > master_coordinator > gpt_settings
+                # Model parameters YAML agent_configs.yaml > master_coordinator > gpt_settings
                 gpt_settings = self.coordinator_config.get('gpt_settings', {})
                 self.model = gpt_settings.get("model", "gpt-5-nano")
                 self.max_completion_tokens = gpt_settings.get("max_completion_tokens", 3000)
                 # self.temperature = gpt_settings.get("temperature", 0.3)
                 
-                self.logger.info(f"✅ AsyncOpenAI клиент мастер-координатора настроен (модель: {self.model})")
+                self.logger.info(f"✅ AsyncOpenAI Master Coordinator client set (model): {self.model})")
             else:
                 self.openai_client = None
-                self.logger.warning(f"⚠️ AsyncOpenAI недоступен для мастер-координатора")
+                self.logger.warning(f"⚠️ AsyncOpenAI is not available to the coordinator")
             
         except Exception as e:
-            self.logger.error(f"❌ Ошибка настройки AsyncOpenAI клиента для мастер-координатора: {e}")
+            self.logger.error(f"❌ AsyncOpenAI Customer Configuration Error for Master Coordinator: {e}")
             self.openai_client = None
     
     async def _call_gpt_for_master_analysis(self, agent_data: List[Dict], overall_score: float, 
                                      candidate_data: Dict, position_requirements: Dict, search_query: str) -> str:
-        """Вызывает GPT для качественного анализа всех данных мастер-координатором"""
+        'Call GPT for quality analysis of all data by the Coordinator'
         
-        self.logger.info(f"🤖 МАСТЕР-КООРДИНАТОР: Вызов GPT анализа начинается")
-        self.logger.info(f"🤖 МАСТЕР-КООРДИНАТОР: OpenAI клиент доступен: {self.openai_client is not None}")
+        self.logger.info(f"🤖 MATER-COORDINATOR: The GPT analysis challenge begins")
+        self.logger.info(f"🤖 OPENAI client available: {self.openai_client is not None}")
         
         if not self.openai_client:
-            # Fallback: если OpenAI недоступен, генерируем простой текст
-            self.logger.warning(f"⚠️ МАСТЕР-КООРДИНАТОР: OpenAI недоступен, используем fallback")
+            # Fallback: If OpenAI is not available, generate simple text
+            self.logger.warning(f"⚠️ OPENAI is not available and is used by Fallback")
             return self._generate_fallback_assessment(agent_data, overall_score, search_query)
         
         try:
-            # Проверяем тип candidate_data и обрабатываем правильно
+            # Check candidate_data type and process correctly
             if isinstance(candidate_data, list):
-                # Если это список, берем первый элемент
+                # If it's a list, take the first element.
                 candidate_dict = candidate_data[0] if candidate_data else {}
-                self.logger.warning(f"🤖 МАСТЕР-КООРДИНАТОР: candidate_data является списком, используем первый элемент")
+                self.logger.warning(f"🤖 MATER-COORDINATOR: candidate_data is a list using the first element")
             elif isinstance(candidate_data, dict):
                 candidate_dict = candidate_data
             else:
-                self.logger.error(f"🤖 МАСТЕР-КООРДИНАТОР: Неожиданный тип candidate_data: {type(candidate_data)}")
+                self.logger.error(f"🤖 MASTER-COORDINATOR: Unexpected type candidate_data: {type(candidate_data)}")
                 candidate_dict = {}
             
-            # Подготавливаем данные для GPT
+            # Prepare data for GPT
             candidate_summary = {
-                "name": candidate_dict.get("name", "Не указано"),
-                "title": candidate_dict.get("title", "Не указано"),
+                "name": candidate_dict.get("name", 'Not specified'),
+                "title": candidate_dict.get("title", 'Not specified'),
                 "experience_months": candidate_dict.get("experience", {}).get("total_months", 0) if isinstance(candidate_dict.get("experience"), dict) else 0,
-                "area": candidate_dict.get("area", {}).get("name", "Не указано") if isinstance(candidate_dict.get("area"), dict) else "Не указано",
+                "area": candidate_dict.get("area", {}).get("name", 'Not specified') if isinstance(candidate_dict.get("area"), dict) else 'Not specified',
                 "salary": candidate_dict.get("salary", {}),
                 "skills": candidate_dict.get("skills", []),
                 "education": candidate_dict.get("education", []),
                 "about": candidate_dict.get("about", "")
             }
             
-            # Получаем промпты из PromptManager
-            self.logger.info(f"🤖 МАСТЕР-КООРДИНАТОР: Загружаем промпты из PromptManager")
+            # We get prompts from PromptManager.
+            self.logger.info(f"🤖 ♪ We're downloading promptManager promptManager ♪")
             system_prompt = self.prompt_manager.get_prompt("master_coordinator", "system_prompt")
             analysis_prompt = self.prompt_manager.get_prompt("master_coordinator", "analysis_prompt")
             
-            self.logger.info(f"🤖 МАСТЕР-КООРДИНАТОР: system_prompt найден: {system_prompt is not None}")
-            self.logger.info(f"🤖 МАСТЕР-КООРДИНАТОР: analysis_prompt найден: {analysis_prompt is not None}")
+            self.logger.info(f"🤖 system_prompt found: {system_prompt is not None}")
+            self.logger.info(f"🤖 analysis_prompt found: {analysis_prompt is not None}")
             
             if not system_prompt or not analysis_prompt:
-                self.logger.warning("⚠️ МАСТЕР-КООРДИНАТОР: Промпты не найдены, используем fallback")
+                self.logger.warning('⚠️ MATER COORDINATOR: Prompts not found, used fallsback')
                 return self._generate_fallback_assessment(agent_data, overall_score, search_query)
             
-            # Форматируем analysis_prompt с данными
+            # Format analysis_prompt with data
             formatted_analysis_prompt = analysis_prompt.format(
                 candidate_summary=json.dumps(candidate_summary, ensure_ascii=False, indent=2),
                 search_query=search_query,
@@ -460,7 +460,7 @@ class MasterCoordinator:
                 overall_score=overall_score
             )
             
-            # ИСТИННАЯ АСИНХРОННОСТЬ - КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ!
+            # SUSTAINABLE ASYNCHRONY - KEY CORRECTION!
             response = await self.openai_client.chat.completions.create(
                 model=self.model,
                 messages=[
@@ -472,70 +472,70 @@ class MasterCoordinator:
             )
             
             gpt_analysis = response.choices[0].message.content.strip()
-            self.logger.info("✅ GPT мастер-анализ успешно сгенерирован")
+            self.logger.info('✅ GPT analysis successfully generated')
             return gpt_analysis
             
         except Exception as e:
-            self.logger.error(f"❌ Ошибка GPT анализа мастера: {e}")
+            self.logger.error(f"❌ GPT analysis error of master: {e}")
             return self._generate_fallback_assessment(agent_data, overall_score, search_query)
     
     def _generate_fallback_assessment(self, agent_data: List[Dict], overall_score: float, search_query: str) -> str:
-        """Генерирует упрощенный анализ когда GPT недоступен"""
+        'Generates simplified analysis when GPT is not available'
         
         high_scores = [agent for agent in agent_data if agent["score"] >= 70]
         low_scores = [agent for agent in agent_data if agent["score"] < 50]
         
-        assessment = f"**Автоматический анализ кандидата** (GPT недоступен)\n\n"
-        assessment += f"Общая оценка: {overall_score:.1f}%\n\n"
+        assessment = f"**Automatic analysis of the candidate** (GPT not available)\n\n"
+        assessment += f"Overall assessment: {overall_score:.1f}%\n\n"
         
         if overall_score >= 70:
-            assessment += f"Кандидат демонстрирует хорошее соответствие позиции '{search_query}'. "
+            assessment += f"The candidate shows a good match. '{search_query}'. "
         elif overall_score >= 50:
-            assessment += f"Кандидат частично соответствует требованиям позиции '{search_query}'. "
+            assessment += f"The candidate partially meets the requirements of the entry. '{search_query}'. "
         else:
-            assessment += f"Кандидат слабо соответствует требованиям позиции '{search_query}'. "
+            assessment += f"The candidate does not meet the requirements of the position.{search_query}'. "
         
         if high_scores:
-            assessment += f"Сильные стороны показали {len(high_scores)} агентов. "
+            assessment += f"The strengths have shown {len(high_scores)} Agents. "
         
         if low_scores:
-            assessment += f"Выявлены проблемы в {len(low_scores)} областях анализа. "
+            assessment += f"Problems identified in the {len(low_scores)} Areas of analysis. "
         
-        assessment += "\n\nДля полного анализа требуется активация GPT мастер-координатора."
+        assessment += '\n\nFull analysis requires the activation of the GPT Coordinator.'
         
         return assessment
     
     def _generate_conclusion(self, score: float, red_flags: int, failures: int, 
                            request: MultiAgentAnalysisRequest) -> str:
-        """Генерирует итоговое заключение"""
+        'Generates the final conclusion'
         if score >= 85 and red_flags <= 2:
-            return f"Отличный кандидат для позиции '{request.search_query}'. Высокое соответствие требованиям и минимум рисков. Рекомендуется для дальнейшего рассмотрения."
+            return f"Excellent candidate for position '{request.search_query}'. High compliance and minimum risk. Recommended for further consideration."
         
         elif score >= 70 and failures == 0:
-            return f"Хороший кандидат для позиции '{request.search_query}'. Соответствует основным требованиям с незначительными замечаниями. Подходит для собеседования."
+            return f"Good candidate for position.{request.search_query}'. Meets the basic requirements with minor comments. It's good for an interview."
         
         elif score >= 60:
-            return f"Кандидат может подойти для позиции '{request.search_query}' при дополнительной проверке. Есть области для обсуждения на собеседовании."
+            return f"The candidate can fit for position '{request.search_query}' with additional inspection. There are areas for discussion at the interview."
         
         elif score >= 40:
-            return f"Кандидат частично соответствует требованиям позиции '{request.search_query}'. Требуется тщательная оценка на собеседовании."
+            return f"The candidate partially meets the requirements of the entry. '{request.search_query}'. A thorough evaluation at the interview is required."
         
         else:
-            return f"Кандидат слабо соответствует требованиям позиции '{request.search_query}'. Высокие риски, рекомендуется поиск более подходящих кандидатов."
+            return f"The candidate does not meet the requirements of the position.{request.search_query}'. High risks, more suitable candidates recommended."
     
     def _get_final_recommendation(self, score: float, red_flags: int, failures: int) -> str:
-        """Определяет финальную рекомендацию"""
+        'Determines final recommendation'
         if score >= 80 and failures == 0:
-            return "РЕКОМЕНДУЕТСЯ к собеседованию"
+            return 'RECOMMENDED TO THE Interview'
         elif score >= 65 and failures <= 1:
-            return "РАССМОТРЕТЬ с осторожностью"
+            return 'SEE WITH care'
         elif score >= 50:
-            return "ТРЕБУЕТ дополнительной проверки"
+            return 'THINKS of additional checks'
         else:
-            return "НЕ РЕКОМЕНДУЕТСЯ"
+            return 'NOT RECOMMENDED'
     
     def _get_status_emoji(self, status: AgentStatus) -> str:
-        """Возвращает эмодзи для статуса"""
+        'Returns emoji for status.'
         emoji_map = {
             AgentStatus.PASS: "✅",
             AgentStatus.WARNING: "⚠️", 
@@ -545,9 +545,9 @@ class MasterCoordinator:
         return emoji_map.get(status, "❓")
     
     def get_available_agents(self) -> Dict[str, str]:
-        """Возвращает список доступных агентов"""
+        'Returns the list of available agents'
         return {name: agent.name for name, agent in self.agents.items()}
     
     def get_position_config(self) -> Dict[str, List[str]]:
-        """Возвращает конфигурацию агентов для разных типов позиций"""
+        'Returns agent configuration for different types of entries'
         return self.position_agent_config.copy()

@@ -1,6 +1,6 @@
 """
-Centralized Supervisor микросервис GPT-5
-Управляет командой агентов через централизованную базу данных
+Centralized Supervisor Microservice GPT-5
+Manages a team of agents through a centralized database
 """
 
 import asyncio
@@ -15,7 +15,7 @@ import httpx
 logger = logging.getLogger(__name__)
 
 class CentralizedSupervisor:
-    """Централизованный Supervisor для управления агентами"""
+    'Central Supervisor for Agent Management'
     
     def __init__(self, openai_config: Dict[str, Any], db_config: Dict[str, Any]):
         self.openai_config = openai_config
@@ -23,40 +23,40 @@ class CentralizedSupervisor:
         self.openai_client = None
         self.db_connection = None
         
-        # Инициализация OpenAI клиента
+        # Initialization of OpenAI client
         self._init_openai_client()
     
     def _init_openai_client(self):
-        """Инициализация OpenAI клиента с прокси"""
+        'OpenAI client initialization with proxy'
         try:
             proxy_url = self.openai_config.get('proxy_url')
             if proxy_url:
-                logger.info(f"🔧 Настройка прокси: {proxy_url}")
+                logger.info(f"🔧 Settings of Proxi: {proxy_url}")
                 http_client = httpx.AsyncClient(proxy=proxy_url, timeout=30.0)
                 self.openai_client = AsyncOpenAI(
                     api_key=self.openai_config['api_key'],
                     http_client=http_client
                 )
-                logger.info(f"✅ OpenAI клиент настроен с прокси: {proxy_url}")
+                logger.info(f"✅ OpenAI client set up with proxi: {proxy_url}")
             else:
-                logger.error("❌ ОШИБКА: proxy_url НЕ НАЙДЕН!")
-                raise ValueError("Прокси ОБЯЗАТЕЛЕН! Добавьте proxy_url в конфигурацию")
+                logger.error('❌ Error: proxy_url has not been found!')
+                raise ValueError('Proxie has a duty! Add proxy_url in configuration')
         except Exception as e:
-            logger.error(f"❌ Ошибка инициализации OpenAI клиента: {e}")
+            logger.error(f"❌ Customer Initialization Error OpenAI: {e}")
             raise
     
     async def initialize(self):
-        """Инициализация Supervisor"""
-        logger.info("🤖 Инициализация Centralized Supervisor...")
+        'Initialization of Supervisor'
+        logger.info('🤖 Initialization of Centralized Supervisor...')
         try:
             await self._connect_to_database()
-            logger.info("✅ Centralized Supervisor готов")
+            logger.info('✅ Centralized Supervisor is ready')
         except Exception as e:
-            logger.error(f"❌ Ошибка инициализации Supervisor: {e}")
+            logger.error(f"Error: ❌ Initialization of Supervisor: {e}")
             raise
     
     async def _connect_to_database(self):
-        """Подключение к централизованной базе данных"""
+        'Connecting to a centralized database'
         try:
             self.db_connection = psycopg2.connect(
                 host=self.db_config['host'],
@@ -65,79 +65,79 @@ class CentralizedSupervisor:
                 password=self.db_config['password'],
                 database=self.db_config['database']
             )
-            logger.info("✅ Подключение к централизованной базе данных установлено")
+            logger.info('✅ The connection to the centralized database has been established')
         except Exception as e:
-            logger.error(f"❌ Ошибка подключения к базе данных: {e}")
+            logger.error(f"❌ Error of connection to the database: {e}")
             raise
     
     async def process_message(self, user_message: str, user_id: str, session_id: str = None) -> str:
-        """Обработка сообщения пользователя через Supervisor"""
-        logger.info(f"📥 Supervisor обрабатывает: {user_message}")
+        'Processing of user message via Supervisor'
+        logger.info(f"📥 Supervisor processes: {user_message}")
         
         try:
-            # Сохраняем сообщение пользователя
+            # Save User Message
             await self._save_chat_message("supervisor_001", user_id, user_message, "user", session_id)
             
-            # Обрабатываем через Supervisor с инструментами
+            # Processing through Supervisor with tools
             response = await self._supervisor_with_tools(user_message, user_id, session_id)
             
-            # Сохраняем ответ Supervisor
+            # Save Supervisor's Answer
             await self._save_chat_message("supervisor_001", user_id, response, "assistant", session_id)
             
-            logger.info(f"✅ Supervisor ответил: {response[:100]}...")
+            logger.info(f"✅ Supervisor answered: {response[:100]}...")
             return response
             
         except Exception as e:
-            logger.error(f"❌ Ошибка обработки в Supervisor: {e}")
-            error_response = f"❌ Произошла ошибка при обработке запроса: {str(e)}"
+            logger.error(f"❌ Errors in Supervisor: {e}")
+            error_response = f"❌ There was an error in processing the request: {str(e)}"
             
             try:
                 await self._save_chat_message("supervisor_001", user_id, error_response, "assistant", session_id)
             except:
-                pass  # Игнорируем ошибки сохранения при основной ошибке
+                pass  # Ignoring storage errors at the main error
             
             return error_response
     
     async def _supervisor_with_tools(self, user_message: str, user_id: str, session_id: str = None) -> str:
-        """Supervisor с инструментами управления агентами"""
+        'Supervisor with Agent Management Tools'
         
-        # Получаем конфигурацию Supervisor из базы данных
+        # Get Supervisor configuration from the database
         supervisor_config = await self._get_agent_configuration("supervisor_001")
         if not supervisor_config:
-            return "❌ Ошибка: Конфигурация Supervisor не найдена в базе данных"
+            return '❌ Error: The Supervisor configuration is not found in the database'
         
-        # Получаем оперативную память
+        # We have an operational memory
         operational_memory = await self._get_operational_memory("supervisor_001", user_id, session_id)
         
-        # Получаем core память
+        # Get Core Memory
         core_memory = await self._get_core_memory("supervisor_001")
         
-        # Получаем историю чата
+        # Getting the chat history.
         chat_history = await self._get_chat_history("supervisor_001", user_id, session_id, limit=5)
         
-        # Формируем системный промпт
+        # Forming System Prompte
         system_prompt = self._build_system_prompt(supervisor_config, operational_memory, core_memory, chat_history)
         
-        # Получаем инструменты
+        # Getting the tools.
         tools = supervisor_config.get('tools', [])
         
         try:
-            # Формируем сообщения для GPT-5
+            # Form messages for GPT-5
             messages = self._build_messages(system_prompt, chat_history, user_message)
             
-            logger.info(f"🔍 Supervisor отправляет запрос к GPT-5: {self.openai_config['model']}")
+            logger.info(f"🔍 Supervisor sends a request to GPT-5: {self.openai_config['model']}")
             
-            # Запрос к GPT-5 Responses API
+            # Request for GPT-5 Responses API
             response = await self.openai_client.responses.create(
                 model=self.openai_config['model'],
                 input=messages,
                 tools=tools,
-                tool_choice="auto",  # Автоматический выбор инструментов
+                tool_choice="auto",  # Automatic selection of tools
                 text={"verbosity": "medium"},
                 reasoning={"effort": "high"}
             )
             
-            # Обрабатываем ответ GPT-5
+            # Processing the GPT-5 response
             content = ""
             tool_calls = None
             
@@ -154,30 +154,30 @@ class CentralizedSupervisor:
                         break
             
             if not content:
-                logger.error("❌ GPT-5 не вернул контент")
-                return "❌ Ошибка: GPT-5 не смог обработать запрос. Попробуйте переформулировать."
+                logger.error('❌ GPT-5 did not return content')
+                return '❌ Error: GPT-5 failed to process the request. Try to reformulate.'
             
             logger.info(f"📄 GPT-5 content: {content[:100]}...")
             logger.info(f"GPT-5 decision: {'FUNCTION CALLS' if tool_calls else 'DIRECT RESPONSE'}")
             
-            # Если GPT решил вызвать функции
+            # If the GPT decided to call the functions
             if tool_calls:
                 logger.info(f"GPT calling {len(tool_calls)} functions")
                 tool_results = await self._execute_tool_calls(tool_calls)
                 
-                # Формируем финальный ответ с результатами tools
+                # Form the final answer with the results
                 final_response = f"{content}\n\n" + "\n\n".join(tool_results) if content else "\n\n".join(tool_results)
                 return final_response
             else:
-                # GPT решил НЕ вызывать инструменты - простое общение
+                # GPT decided not to call tools - simple communication
                 return content
                 
         except Exception as e:
-            logger.error(f"❌ Ошибка GPT-5 запроса в Supervisor: {e}")
-            return f"❌ Техническая ошибка Supervisor: {str(e)}"
+            logger.error(f"❌ GPT-5 error in Supervisor request: {e}")
+            return f"❌ Technical Error of Supervisor: {str(e)}"
     
     async def _get_agent_configuration(self, agent_id: str) -> Optional[Dict[str, Any]]:
-        """Получение конфигурации агента из базы данных"""
+        'Collection of the agent configuration from the database'
         try:
             cursor = self.db_connection.cursor()
             cursor.execute("""
@@ -206,11 +206,11 @@ class CentralizedSupervisor:
             return None
             
         except Exception as e:
-            logger.error(f"❌ Ошибка получения конфигурации агента {agent_id}: {e}")
+            logger.error(f"❌ Configuration error of the agent {agent_id}: {e}")
             return None
     
     async def _get_operational_memory(self, agent_id: str, user_id: str, session_id: str = None) -> Dict[str, Any]:
-        """Получение оперативной памяти агента"""
+        'Recovery of Operational Memory of the Agent'
         try:
             cursor = self.db_connection.cursor()
             cursor.execute("""
@@ -236,11 +236,11 @@ class CentralizedSupervisor:
             }
             
         except Exception as e:
-            logger.error(f"❌ Ошибка получения оперативной памяти: {e}")
+            logger.error(f"❌ Error in obtaining operational memory: {e}")
             return {'task_context': "", 'message_history': [], 'current_focus': ""}
     
     async def _get_core_memory(self, agent_id: str) -> List[Dict[str, Any]]:
-        """Получение core памяти агента"""
+        'Core Memory of the Agent'
         try:
             cursor = self.db_connection.cursor()
             cursor.execute("""
@@ -263,11 +263,11 @@ class CentralizedSupervisor:
             ]
             
         except Exception as e:
-            logger.error(f"❌ Ошибка получения core памяти: {e}")
+            logger.error(f"❌ Error in Core Memory: {e}")
             return []
     
     async def _get_chat_history(self, agent_id: str, user_id: str, session_id: str = None, limit: int = 10) -> List[Dict[str, Any]]:
-        """Получение истории чата"""
+        'Getting the chat history'
         try:
             cursor = self.db_connection.cursor()
             query = """
@@ -294,49 +294,49 @@ class CentralizedSupervisor:
                     'content': row[1],
                     'timestamp': row[2]
                 }
-                for row in reversed(results)  # Возвращаем в хронологическом порядке
+                for row in reversed(results)  # Return in chronological order
             ]
             
         except Exception as e:
-            logger.error(f"❌ Ошибка получения истории чата: {e}")
+            logger.error(f"❌ Error in getting a chat history: {e}")
             return []
     
     def _build_system_prompt(self, agent_config: Dict[str, Any], 
                            operational_memory: Dict[str, Any], 
                            core_memory: List[Dict[str, Any]],
                            chat_history: List[Dict[str, Any]]) -> str:
-        """Построение системного промпта"""
+        'Building a System Prompt'
         
-        # Базовый системный промпт
+        # Basic System Prompte
         base_prompt = agent_config.get('system_prompt', '')
         
-        # Добавляем оперативную память
+        # Add operational memory
         if operational_memory.get('current_focus'):
-            base_prompt += f"\n\nТЕКУЩИЙ ФОКУС: {operational_memory['current_focus']}"
+            base_prompt += f"\n\nZING FOCUS: {operational_memory['current_focus']}"
         
-        # Добавляем core память
+        # Adding core memory
         if core_memory:
             core_rules = "\n".join([f"- {rule['rule_content']}" for rule in core_memory[:3]])
-            base_prompt += f"\n\nCORE ПАМЯТЬ:\n{core_rules}"
+            base_prompt += f"\n\nCORE MEMORY:\n{core_rules}"
         
         return base_prompt
     
     def _build_messages(self, system_prompt: str, chat_history: List[Dict[str, Any]], 
                        user_message: str) -> List[Dict[str, str]]:
-        """Построение сообщений для GPT"""
+        'Building Messages for GPT'
         messages = [{"role": "system", "content": system_prompt}]
         
-        # Добавляем историю чата
+        # Adding chat history
         for msg in chat_history:
             messages.append({"role": msg['role'], "content": msg['content']})
         
-        # Добавляем текущее сообщение пользователя
+        # Add current user message
         messages.append({"role": "user", "content": user_message})
         
         return messages
     
     async def _execute_tool_calls(self, tool_calls: List[Any]) -> List[str]:
-        """Выполнение вызовов инструментов"""
+        'Meeting the challenges of the instruments'
         tool_results = []
         
         for tool_call in tool_calls:
@@ -346,34 +346,34 @@ class CentralizedSupervisor:
             
             if function_name == "get_system_info":
                 result = await self._get_system_info(**arguments)
-                tool_results.append(f"📊 Информация о системе: {result}")
+                tool_results.append(f"📊 System information: {result}")
             elif function_name == "get_agent_status":
                 result = await self._get_agent_status(**arguments)
-                tool_results.append(f"🔍 Статус агента: {result}")
+                tool_results.append(f"🔍 Agent status: {result}")
             elif function_name == "get_statistics":
                 result = await self._get_statistics(**arguments)
-                tool_results.append(f"📈 Статистика: {result}")
+                tool_results.append(f"📈 Statistics: {result}")
             else:
-                tool_results.append(f"❓ Неизвестный инструмент: {function_name}")
+                tool_results.append(f"❓ Unknown tool: {function_name}")
         
         return tool_results
     
-    # === ИНСТРУМЕНТЫ SUPERVISOR ===
+    # == sync, corrected by elderman == @elder_man
     
     async def _get_system_info(self, detailed: bool = False, include_metrics: bool = True):
-        """Получение информации о состоянии системы"""
+        'Obtaining system status information'
         try:
             cursor = self.db_connection.cursor()
             
-            # Информация об агентах
+            # Information on agents
             cursor.execute("SELECT COUNT(*) FROM agent_configurations WHERE is_active = true")
             active_agents = cursor.fetchone()[0]
             
-            # Информация о развернутых агентах
+            # Information on deployed agents
             cursor.execute("SELECT COUNT(*) FROM deployed_agents_registry WHERE status = 'active'")
             deployed_agents = cursor.fetchone()[0]
             
-            # Общее количество сообщений
+            # Total communications
             cursor.execute("SELECT COUNT(*) FROM chat_history")
             total_messages = cursor.fetchone()[0]
             
@@ -396,16 +396,16 @@ class CentralizedSupervisor:
             return json.dumps(system_info, ensure_ascii=False, indent=2)
             
         except Exception as e:
-            logger.error(f"❌ Ошибка получения информации о системе: {e}")
-            return f"Ошибка: {str(e)}"
+            logger.error(f"❌ Error in obtaining information about the system: {e}")
+            return f"mistake: {str(e)}"
     
     async def _get_agent_status(self, agent_name: str = None, include_performance: bool = True):
-        """Проверка статуса агентов"""
+        'Verification of the status of agents'
         try:
             cursor = self.db_connection.cursor()
             
             if agent_name:
-                # Статус конкретного агента
+                # Status of the specific agent
                 cursor.execute("""
                     SELECT d.status, d.last_activity, d.performance_metrics
                     FROM deployed_agents_registry d
@@ -424,7 +424,7 @@ class CentralizedSupervisor:
                 else:
                     status_info = {"agent_name": agent_name, "status": "not_found"}
             else:
-                # Статус всех агентов
+                # Status of all agents
                 cursor.execute("""
                     SELECT a.agent_name, d.status, d.last_activity
                     FROM agent_configurations a
@@ -448,15 +448,15 @@ class CentralizedSupervisor:
             return json.dumps(status_info, ensure_ascii=False, indent=2)
             
         except Exception as e:
-            logger.error(f"❌ Ошибка получения статуса агентов: {e}")
-            return f"Ошибка: {str(e)}"
+            logger.error(f"❌ Error in obtaining the status of agents: {e}")
+            return f"mistake: {str(e)}"
     
     async def _get_statistics(self, period: str = "today", metrics: List[str] = None):
-        """Получение статистики работы"""
+        'Collection of work statistics'
         try:
             cursor = self.db_connection.cursor()
             
-            # Определяем период
+            # Defining period
             if period == "today":
                 time_filter = "timestamp >= CURRENT_DATE"
             elif period == "week":
@@ -466,11 +466,11 @@ class CentralizedSupervisor:
             else:
                 time_filter = "1=1"
             
-            # Статистика сообщений
+            # Communications statistics
             cursor.execute(f"SELECT COUNT(*) FROM chat_history WHERE {time_filter}")
             messages_count = cursor.fetchone()[0]
             
-            # Статистика по агентам
+            # Agent statistics
             cursor.execute(f"""
                 SELECT agent_id, COUNT(*) 
                 FROM chat_history 
@@ -491,12 +491,12 @@ class CentralizedSupervisor:
             return json.dumps(statistics, ensure_ascii=False, indent=2)
             
         except Exception as e:
-            logger.error(f"❌ Ошибка получения статистики: {e}")
-            return f"Ошибка: {str(e)}"
+            logger.error(f"❌ Error in obtaining statistics: {e}")
+            return f"mistake: {str(e)}"
     
     async def _save_chat_message(self, agent_id: str, user_id: str, content: str, 
                                role: str, session_id: str = None):
-        """Сохранение сообщения в историю чата"""
+        'Keeping the message in chat history'
         try:
             cursor = self.db_connection.cursor()
             cursor.execute("""
@@ -508,10 +508,10 @@ class CentralizedSupervisor:
             cursor.close()
             
         except Exception as e:
-            logger.error(f"❌ Ошибка сохранения сообщения: {e}")
+            logger.error(f"❌ Error in keeping the message: {e}")
     
     async def get_status(self) -> Dict[str, Any]:
-        """Получение статуса Supervisor"""
+        'Supervisor status'
         return {
             "service": "Centralized Supervisor",
             "version": "1.0.0",
@@ -519,23 +519,23 @@ class CentralizedSupervisor:
             "model": self.openai_config['model'],
             "database_connected": self.db_connection is not None,
             "timestamp": datetime.now().isoformat(),
-            "description": "Централизованный Supervisor для управления командой AI-агентов",
+            "description": 'Central Supervisor for AI Agent Command',
             "capabilities": [
-                "Управление агентами через централизованную базу",
-                "Мониторинг состояния системы",
-                "Получение статистики работы",
-                "Координация задач между агентами"
+                'Management of agents through centralized base',
+                'System monitoring',
+                'Collection of work statistics',
+                'Coordination of tasks between agents'
             ]
         }
     
     async def cleanup(self):
-        """Очистка ресурсов Supervisor"""
-        logger.info("🛑 Завершение работы Centralized Supervisor...")
+        'Cleaning Supervisor resources'
+        logger.info('🛑 Completion of Centralized Supervisor...')
         try:
             if self.db_connection:
                 self.db_connection.close()
             if hasattr(self.openai_client, '_client'):
                 await self.openai_client._client.aclose()
         except Exception as e:
-            logger.warning(f"⚠️ Ошибка при закрытии ресурсов: {e}")
-        logger.info("✅ Centralized Supervisor завершил работу")
+            logger.warning(f"⚠️ Error in closing resources: {e}")
+        logger.info('✅ Centralized Supervisor completed the work')

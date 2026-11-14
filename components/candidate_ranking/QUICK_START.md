@@ -1,38 +1,38 @@
-# 🚀 Быстрый старт — CandidateRanking
+# 🚀 Quick Start - CandidateRanking
 
-CandidateRanking строит ТОП кандидатов по ссылке на вакансию hh.ru: загружает отклики, тянет резюме, делает мульти‑агентный AI‑анализ и ранжирует.
+CandidateRanking builds the top of candidates by referring to the hh.ru vacation: downloads responses, draws a summary, makes a multi-agent AI analysis and rank.
 
-## 1) Подготовка
+## (1) Training
 ```bash
 cp config/settings.yaml.template config/settings.yaml
-# Вставьте ключи в config/settings.yaml:
+# Insert keys to config/settings.yaml:
 # - ai_analysis.openai_api_key
-# - hh_api.client_id / client_secret (OAuth работодателя)
-# - hh_api.user_tokens.access_token / refresh_token (если уже есть)
+# - hh_api.client_id / client_secret (OAuth employer)
+# - hh_api.user_tokens.access_token / refresh_token (If you already have)
 ```
 
-## 2) Запуск (Docker Compose)
+## (2) Launch (Docker Compose)
 ```bash
 docker-compose up -d --build
 ```
 
-## 3) Проверка
+## (3) Verification
 - Frontend: http://localhost:8501
 - Gateway API: http://localhost:8088/docs
 
-## 4) Получить ТОП по вакансии
-1. Откройте Frontend
-2. Вставьте ссылку вида `https://hh.ru/vacancy/<id>`
-3. Нажмите «Построить ТОП по откликам»
+## (4) Receive a TAP for a vacancy
+1. Open Frontend
+2. Insert `https://hh.ru/vacancy/<id>` mode link
+3. Press "Construct a TOP for Responses"
 
-Альтернатива через API (через gateway):
+Alternative via API (through Gateway):
 ```bash
 curl -X POST http://localhost:8088/vacancy/top \
   -H 'Content-Type: application/json' \
   -d '{"vacancy_url":"https://hh.ru/vacancy/123456789","limit":10}'
 ```
 
-## Состав сервисов и порты
+## Composition of services and ports
 - frontend: 8501
 - gateway: 8088
 - search: 8001
@@ -41,16 +41,16 @@ curl -X POST http://localhost:8088/vacancy/top \
 - ai_analysis: 8005
 - clickhouse: 8123 (http), 9000 (native)
 
-## Тонкости HH.ru
-- Для списка откликов используются «переговоры работодателя» (`/employer_negotiations`), требуется OAuth работодателя и права.
-- При 401/403 — проверьте `client_id/client_secret` и выдачу прав в кабинете.
-- При 429 — срабатывают повторы с задержкой, подождите окно лимитов.
+## Thickness HH.ru
+- The list of answers uses the “employee talks” (`/employer_negotiations`), requires the OAuth employer and rights.
+- At 401/403 - check `client_id/client_secret` and issue office rights.
+- At 429, reruns are delayed, wait for the limit window.
 
-## Тонкости AI
-- Ключ OpenAI берётся из `config/settings.yaml` (или `OPENAI_API_KEY`).
-- Анализ идёт батчем через `/multi-agent/batch`.
+## Thickness AI
+- OpenAI key is taken from `config/settings.yaml` (or `OPENAI_API_KEY`).
+- The analysis goes through `/multi-agent/batch`.
 
-## Обновление
+## Update
 ```bash
 docker-compose down && git pull && docker-compose up -d --build
 ```

@@ -1,6 +1,6 @@
 """
-Единый LLM микросервис GPT-5
-Получает информацию из SQL для ответа того или иного агента и имитирует ответ агента
+Single LLM Microservice GPT-5
+Receives information from SQL to respond to an agent and simulates an agent's response
 """
 
 import asyncio
@@ -16,24 +16,24 @@ import json
 logger = logging.getLogger(__name__)
 
 class UnifiedLLMService:
-    """Единый LLM микросервис для всех агентов"""
+    'A single LLM microservice for all agents'
     
     def __init__(self, openai_config: Dict[str, Any], db_config: Dict[str, Any]):
         self.openai_config = openai_config
         self.db_config = db_config
         self.db_connection = None
         
-        # Инициализация OpenAI клиента с прокси
+        # OpenAI client initialization with proxy
         self._init_openai_client()
         
-        logger.info("🤖 Unified LLM Service инициализирован")
+        logger.info('🤖 Universal LLM Service initialized')
     
     def _init_openai_client(self):
-        """Инициализация OpenAI клиента с прокси"""
+        'OpenAI client initialization with proxy'
         proxy_url = self.openai_config.get('proxy_url')
         
         if proxy_url:
-            logger.info(f"🔧 Настройка OpenAI с прокси: {proxy_url}")
+            logger.info(f"🔧 OpenAI with Proxi: {proxy_url}")
             
             http_client = httpx.AsyncClient(
                 proxy=proxy_url,
@@ -44,17 +44,17 @@ class UnifiedLLMService:
                 api_key=self.openai_config['api_key'],
                 http_client=http_client
             )
-            logger.info("✅ OpenAI клиент настроен с прокси")
+            logger.info('✅ OpenAI client set up with proxi')
         else:
-            raise ValueError("Прокси ОБЯЗАТЕЛЕН! Добавьте proxy_url в конфигурацию")
+            raise ValueError('Proxie has a duty! Add proxy_url in configuration')
     
     async def initialize(self):
-        """Инициализация сервиса"""
+        'Initialization of service'
         await self._connect_to_database()
-        logger.info("✅ Unified LLM Service готов к работе")
+        logger.info('✅ Universal LLM Service is ready for work')
     
     async def _connect_to_database(self):
-        """Подключение к централизованной PostgreSQL базе данных"""
+        'Connecting to a centralized PostgreSQL database'
         try:
             self.db_connection = psycopg2.connect(
                 host=self.db_config['host'],
@@ -63,67 +63,67 @@ class UnifiedLLMService:
                 password=self.db_config['password'],
                 database=self.db_config['database']
             )
-            logger.info("✅ Подключение к централизованной PostgreSQL базе данных установлено")
+            logger.info('✅ The connection to the central PostgreSQL database has been installed')
         except Exception as e:
-            logger.error(f"❌ Ошибка подключения к базе данных: {e}")
+            logger.error(f"❌ Error of connection to the database: {e}")
             raise
     
     async def generate_agent_response(self, agent_id: str, user_message: str, 
                                     user_id: str, session_id: str = None) -> str:
         """
-        Генерация ответа агента на основе его конфигурации из SQL
+        Agent response generation based on SQL configuration
         
         Args:
-            agent_id: ID агента (boss_ai, alena_ai, sergei_ai)
-            user_message: Входящее сообщение пользователя
-            user_id: ID пользователя
-            session_id: ID сессии (опционально)
+            agent_id: ID agent (boss_ai, alena_ai, sergei_ai)
+            user_message: Incoming User Message
+            user_id: User ID
+            session_id: ID session (optimal)
             
         Returns:
-            str: Ответ агента
+            str: Agent &apos; s response
         """
-        logger.info(f"🎯 Генерация ответа агента {agent_id} для пользователя {user_id}")
+        logger.info(f"🎯 Agent response generation {agent_id} for user {user_id}")
         
         try:
-            # 1. Получаем конфигурацию агента из SQL
+            # 1. Get the SQL Agent configuration
             agent_config = await self._get_agent_configuration(agent_id)
             if not agent_config:
-                return f"❌ Агент {agent_id} не найден в базе данных"
+                return f"❌ Agent {agent_id} not found in the database"
             
-            # 2. Получаем оперативную память (контекст задач)
+            # 2. Improve memory (context of task))
             operational_memory = await self._get_operational_memory(agent_id, user_id, session_id)
             
-            # 3. Получаем core-память (правила)
+            # 3. Core Memory (Rules of Memory))
             core_memory = await self._get_core_memory(agent_id)
             
-            # 4. Получаем историю чата
+            # 4. Getting the chat history.
             chat_history = await self._get_chat_history(agent_id, user_id, session_id)
             
-            # 5. Формируем системный промпт с персонализацией
+            # 5. Forming a system prompto with personalization
             system_prompt = self._build_system_prompt(agent_config, operational_memory, core_memory)
             
-            # 6. Формируем сообщения для GPT
+            # 6. Form messages for GPT
             messages = self._build_messages(system_prompt, chat_history, user_message)
             
-            # 7. Генерируем ответ через GPT-5
+            # 7. Generate the answer through GPT-5
             response = await self._call_gpt_with_tools(messages, agent_config['tools'])
             
-            # 8. Сохраняем историю чата
+            # 8. Save Chat's History
             await self._save_chat_message(agent_id, user_id, user_message, "user", session_id)
             await self._save_chat_message(agent_id, user_id, response, "assistant", session_id)
             
-            # 9. Обновляем оперативную память
+            # 9. Updates of operational memory
             await self._update_operational_memory(agent_id, user_id, session_id, user_message, response)
             
-            logger.info(f"✅ Ответ агента {agent_id} сгенерирован успешно")
+            logger.info(f"✅ Agent's Response {agent_id} Generated successfully")
             return response
             
         except Exception as e:
-            logger.error(f"❌ Ошибка генерации ответа агента {agent_id}: {e}")
-            return f"❌ Техническая ошибка агента {agent_id}: {str(e)}"
+            logger.error(f"❌ Errors of the Agent's Answer Generation {agent_id}: {e}")
+            return f"❌ Technical error of the agent {agent_id}: {str(e)}"
     
     async def _get_agent_configuration(self, agent_id: str) -> Optional[Dict[str, Any]]:
-        """Получение конфигурации агента из SQL"""
+        'Receive SQL Agent configuration'
         cursor = self.db_connection.cursor(dictionary=True)
         
         try:
@@ -138,25 +138,25 @@ class UnifiedLLMService:
             result = cursor.fetchone()
             
             if result:
-                # Парсим JSON поля
+                # JSON field parsim
                 result['tools'] = json.loads(result['tools']) if result['tools'] else []
                 result['rules'] = json.loads(result['rules']) if result['rules'] else {}
                 result['routing_rules'] = json.loads(result['routing_rules']) if result['routing_rules'] else {}
                 
-                logger.info(f"✅ Конфигурация агента {agent_id} загружена")
+                logger.info(f"✅ Agent configuration {agent_id} loaded")
                 return result
             else:
-                logger.warning(f"⚠️ Агент {agent_id} не найден или неактивен")
+                logger.warning(f"⚠️ Agent {agent_id} not found or inactive")
                 return None
                 
         except Error as e:
-            logger.error(f"❌ Ошибка получения конфигурации агента {agent_id}: {e}")
+            logger.error(f"❌ Configuration error of the agent {agent_id}: {e}")
             return None
         finally:
             cursor.close()
     
     async def _get_operational_memory(self, agent_id: str, user_id: str, session_id: str = None) -> Dict[str, Any]:
-        """Получение оперативной памяти (контекст задач)"""
+        'Acquisition of operational memory (context of tasks))'
         cursor = self.db_connection.cursor(dictionary=True)
         
         try:
@@ -187,13 +187,13 @@ class UnifiedLLMService:
                 }
                 
         except Error as e:
-            logger.error(f"❌ Ошибка получения оперативной памяти: {e}")
+            logger.error(f"❌ Error in obtaining operational memory: {e}")
             return {'task_context': '', 'message_history': [], 'current_focus': ''}
         finally:
             cursor.close()
     
     async def _get_core_memory(self, agent_id: str) -> List[Dict[str, Any]]:
-        """Получение core-памяти (правила)"""
+        'Recovery of Core Memory (Rules))'
         cursor = self.db_connection.cursor(dictionary=True)
         
         try:
@@ -207,17 +207,17 @@ class UnifiedLLMService:
             cursor.execute(query, (agent_id,))
             results = cursor.fetchall()
             
-            logger.info(f"✅ Загружено {len(results)} правил из core-памяти для {agent_id}")
+            logger.info(f"✅ Loaded {len(results)} The core memory for {agent_id}")
             return results
             
         except Error as e:
-            logger.error(f"❌ Ошибка получения core-памяти: {e}")
+            logger.error(f"❌ Error of Core Memory: {e}")
             return []
         finally:
             cursor.close()
     
     async def _get_chat_history(self, agent_id: str, user_id: str, session_id: str = None, limit: int = 10) -> List[Dict[str, Any]]:
-        """Получение истории чата"""
+        'Getting the chat history'
         cursor = self.db_connection.cursor(dictionary=True)
         
         try:
@@ -238,14 +238,14 @@ class UnifiedLLMService:
             cursor.execute(query, params)
             results = cursor.fetchall()
             
-            # Реверсируем порядок для правильной последовательности
+            # Reverse order for the correct sequence
             results.reverse()
             
-            logger.info(f"✅ Загружено {len(results)} сообщений из истории чата")
+            logger.info(f"✅ Loaded {len(results)} chat history")
             return results
             
         except Error as e:
-            logger.error(f"❌ Ошибка получения истории чата: {e}")
+            logger.error(f"❌ Error in getting a chat history: {e}")
             return []
         finally:
             cursor.close()
@@ -253,65 +253,65 @@ class UnifiedLLMService:
     def _build_system_prompt(self, agent_config: Dict[str, Any], 
                            operational_memory: Dict[str, Any], 
                            core_memory: List[Dict[str, Any]]) -> str:
-        """Построение системного промпта с персонализацией"""
+        'Building a system prompt with personalization'
         
-        # Базовый промпт агента
+        # Basic agent prompt
         system_prompt = agent_config['system_prompt']
         
-        # Добавляем core-память (правила)
+        # Add Core Memory (Rules))
         if core_memory:
-            rules_section = "\n\nВАЖНЫЕ ПРАВИЛА И ПРИНЦИПЫ:\n"
+            rules_section = '\n\nMAIN RULES AND PRINCIPLES:\n'
             for rule in core_memory:
                 rules_section += f"• {rule['rule_content']}\n"
             system_prompt += rules_section
         
-        # Добавляем tone of voice
+        # Add tone of voice
         if agent_config.get('tone_of_voice'):
-            system_prompt += f"\n\nСТИЛЬ ОБЩЕНИЯ:\n{agent_config['tone_of_voice']}\n"
+            system_prompt += f"\n\nSTYL COMMUNICATION:\n{agent_config['tone_of_voice']}\n"
         
-        # Добавляем оперативную память (контекст)
+        # Add operational memory (context))
         if operational_memory.get('task_context'):
-            system_prompt += f"\n\nТЕКУЩИЙ КОНТЕКСТ ЗАДАЧ:\n{operational_memory['task_context']}\n"
+            system_prompt += f"\n\nENT:\n{operational_memory['task_context']}\n"
         
         if operational_memory.get('current_focus'):
-            system_prompt += f"\n\nТЕКУЩИЙ ФОКУС:\n{operational_memory['current_focus']}\n"
+            system_prompt += f"\n\nENT FOCUS:\n{operational_memory['current_focus']}\n"
         
         return system_prompt
     
     def _build_messages(self, system_prompt: str, chat_history: List[Dict[str, Any]], 
                        user_message: str) -> List[Dict[str, str]]:
-        """Построение списка сообщений для GPT"""
+        'Building a message list for GPT'
         messages = [{"role": "system", "content": system_prompt}]
         
-        # Добавляем историю чата
+        # Adding chat history
         for msg in chat_history:
             messages.append({
                 "role": msg['role'],
                 "content": msg['content']
             })
         
-        # Добавляем текущее сообщение пользователя
+        # Add current user message
         messages.append({"role": "user", "content": user_message})
         
         return messages
     
     async def _call_gpt_with_tools(self, messages: List[Dict[str, str]], 
                                  tools: List[Dict[str, Any]]) -> str:
-        """Вызов GPT-5 с инструментами"""
+        'GPT-5 call with tools'
         try:
-            logger.info(f"🧠 Вызов GPT-5 с {len(tools)} инструментами")
+            logger.info(f"🧠 GPT-5 call c {len(tools)} instruments")
             
-            # Запрос к GPT-5 Responses API
+            # Request for GPT-5 Responses API
             response = await self.openai_client.responses.create(
                 model=self.openai_config['model'],
                 input=messages,
                 tools=tools,
-                tool_choice="none",  # Сначала просто общаемся, без функций
+                tool_choice="none",  # First we just talk, no functions.
                 text={"verbosity": "medium"},
                 reasoning={"effort": "high"}
             )
             
-            # Парсинг ответа GPT-5
+            # Parsing Response GPT-5
             content = ""
             tool_calls = None
             
@@ -328,48 +328,48 @@ class UnifiedLLMService:
                         break
             
             if not content:
-                return "❌ Ошибка: GPT-5 не смог обработать запрос"
+                return '❌ Error: GPT-5 failed to process the request'
             
-            # Если GPT решил вызвать инструменты
+            # If GPT decided to call the tools
             if tool_calls:
-                logger.info(f"🔧 GPT хочет вызвать {len(tool_calls)} инструментов")
+                logger.info(f"🔧 GPT wants to call {len(tool_calls)} Tools")
                 tool_results = await self._execute_tool_calls(tool_calls)
                 
-                # Формируем финальный ответ с результатами инструментов
+                # Form the final response with the results of the tools
                 final_response = f"{content}\n\n" + "\n\n".join(tool_results) if content else "\n\n".join(tool_results)
                 return final_response
             else:
                 return content
                 
         except Exception as e:
-            logger.error(f"❌ Ошибка вызова GPT-5: {e}")
-            return f"❌ Техническая ошибка: {str(e)}"
+            logger.error(f"❌ The error of calling GPT-5: {e}")
+            return f"❌ Technical errors: {str(e)}"
     
     async def _execute_tool_calls(self, tool_calls: List[Any]) -> List[str]:
-        """Выполнение вызовов инструментов"""
+        'Meeting the challenges of the instruments'
         tool_results = []
         
         for tool_call in tool_calls:
             function_name = tool_call.function.name
             arguments = json.loads(tool_call.function.arguments)
             
-            logger.info(f"🔧 Выполнение инструмента: {function_name}")
+            logger.info(f"🔧 Implementation of the instrument: {function_name}")
             
             try:
-                # Здесь можно добавить логику выполнения различных инструментов
-                # Пока возвращаем заглушку
-                result = f"Инструмент {function_name} выполнен с параметрами: {arguments}"
+                # Here we can add the logic of implementing the various instruments
+                # While we return the plug.
+                result = f"Instrument {function_name} with parameters: {arguments}"
                 tool_results.append(result)
                 
             except Exception as e:
-                error_result = f"❌ Ошибка выполнения {function_name}: {str(e)}"
+                error_result = f"❌ Error of execution {function_name}: {str(e)}"
                 tool_results.append(error_result)
         
         return tool_results
     
     async def _save_chat_message(self, agent_id: str, user_id: str, content: str, 
                                role: str, session_id: str = None):
-        """Сохранение сообщения в историю чата"""
+        'Keeping the message in chat history'
         cursor = self.db_connection.cursor()
         
         try:
@@ -390,18 +390,18 @@ class UnifiedLLMService:
             self.db_connection.commit()
             
         except Error as e:
-            logger.error(f"❌ Ошибка сохранения сообщения: {e}")
+            logger.error(f"❌ Error in keeping the message: {e}")
             self.db_connection.rollback()
         finally:
             cursor.close()
     
     async def _update_operational_memory(self, agent_id: str, user_id: str, session_id: str,
                                        user_message: str, agent_response: str):
-        """Обновление оперативной памяти"""
+        'Updated operational memory'
         cursor = self.db_connection.cursor()
         
         try:
-            # Получаем текущую оперативную память
+            # Get current operational memory
             select_query = """
             SELECT id, message_history FROM operational_memory 
             WHERE agent_id = %s AND user_id = %s AND session_id = %s
@@ -412,17 +412,17 @@ class UnifiedLLMService:
             result = cursor.fetchone()
             
             if result:
-                # Обновляем существующую запись
+                # Update existing entry
                 memory_id, message_history = result
                 
-                # Парсим историю сообщений
+                # Parse the message history.
                 history = json.loads(message_history) if message_history else []
                 
-                # Добавляем новые сообщения
+                # Adding new messages
                 history.append({"role": "user", "content": user_message, "timestamp": datetime.now().isoformat()})
                 history.append({"role": "assistant", "content": agent_response, "timestamp": datetime.now().isoformat()})
                 
-                # Ограничиваем размер истории (последние 20 сообщений)
+                # Limiting the size of history (20 last messages)
                 if len(history) > 20:
                     history = history[-20:]
                 
@@ -435,7 +435,7 @@ class UnifiedLLMService:
                 cursor.execute(update_query, (json.dumps(history), memory_id))
                 
             else:
-                # Создаем новую запись
+                # Create a new recording
                 insert_query = """
                 INSERT INTO operational_memory (agent_id, user_id, session_id, message_history, current_focus)
                 VALUES (%s, %s, %s, %s, %s)
@@ -451,19 +451,19 @@ class UnifiedLLMService:
                     user_id,
                     session_id,
                     json.dumps(new_history),
-                    "Активная беседа"
+                    'Active conversation'
                 ))
             
             self.db_connection.commit()
             
         except Error as e:
-            logger.error(f"❌ Ошибка обновления оперативной памяти: {e}")
+            logger.error(f"❌ Errors in operational memory update: {e}")
             self.db_connection.rollback()
         finally:
             cursor.close()
     
     async def get_agent_status(self, agent_id: str) -> Dict[str, Any]:
-        """Получение статуса агента"""
+        'Getting Agent Status'
         try:
             agent_config = await self._get_agent_configuration(agent_id)
             
@@ -476,7 +476,7 @@ class UnifiedLLMService:
                     "model": self.openai_config['model'],
                     "version": agent_config['version'],
                     "timestamp": datetime.now().isoformat(),
-                    "description": f"Агент {agent_config['role']} готов к работе"
+                    "description": f"Agent {agent_config['role']} Ready to work."
                 }
             else:
                 return {
@@ -486,7 +486,7 @@ class UnifiedLLMService:
                 }
                 
         except Exception as e:
-            logger.error(f"❌ Ошибка получения статуса агента {agent_id}: {e}")
+            logger.error(f"❌ Error in obtaining the status of agent {agent_id}: {e}")
             return {
                 "agent_id": agent_id,
                 "status": "error",
@@ -495,19 +495,19 @@ class UnifiedLLMService:
             }
     
     async def cleanup(self):
-        """Очистка ресурсов"""
-        logger.info("🛑 Завершение работы Unified LLM Service...")
+        'Cleaning of resources'
+        logger.info('🛑 Completion of Universal LLM Service...')
         
         try:
             if self.db_connection and self.db_connection.is_connected():
                 self.db_connection.close()
-                logger.info("🔒 Соединение с базой данных закрыто")
+                logger.info('🔒 The connection to the database is closed')
             
             if hasattr(self.openai_client, '_client'):
                 await self.openai_client._client.aclose()
-                logger.info("🔒 OpenAI клиент закрыт")
+                logger.info('🔒 OpenAI client closed')
                 
         except Exception as e:
-            logger.warning(f"⚠️ Ошибка при закрытии ресурсов: {e}")
+            logger.warning(f"⚠️ Error in closing resources: {e}")
         
-        logger.info("✅ Unified LLM Service завершил работу")
+        logger.info('✅ Universal LLM Service has completed its work')
